@@ -26,9 +26,9 @@
     </div>
 
     <div id="errorArea" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
-        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Error de Sistema detectado:</p>
+        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Error detectado:</p>
         <p id="errorMessage" class="text-sm mt-1">...</p>
-        <button onclick="window.location.reload()" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">Reintentar</button>
+        <button onclick="window.location.reload()" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-700">Reintentar</button>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
@@ -175,7 +175,7 @@
 
     <script>
         // ==========================================
-        // URL DE APPS SCRIPT (Verificada)
+        // URL DE APPS SCRIPT (TU URL AQUÍ)
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwiJc8SlJ0IAduewZ2B6BRg94Ww6tCuAvP3u94-dFRUTnhnd1cQxs1w1f3udSABs_ct0g/exec';
         // ==========================================
 
@@ -206,11 +206,10 @@
 
         window.onload = () => { 
             updateEquipment(); 
-            // Check si la librería de Excel cargó
+            // Check librería Excel
             if(typeof XLSX === 'undefined') {
-                console.warn("Librería XLSX no cargada, botón desactivado");
                 document.getElementById('btnDownload').disabled = true;
-                document.getElementById('btnDownload').innerText = "Excel no disponible (Red)";
+                document.getElementById('btnDownload').innerText = "Sin conexión (Excel off)";
                 document.getElementById('btnDownload').classList.add('bg-gray-400');
             }
             loadDashboard(); 
@@ -224,10 +223,7 @@
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-                .then(response => {
-                    if (!response.ok) throw new Error("Error de red al guardar");
-                    return response;
-                })
+                .then(response => { if (!response.ok) throw new Error("Error de red"); return response; })
                 .then(() => {
                     msg.classList.remove('hidden');
                     form.reset();
@@ -236,7 +232,7 @@
                     setTimeout(() => { msg.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; }, 2000);
                 })
                 .catch(err => {
-                    alert("No se pudo guardar: " + err);
+                    alert("Error al guardar: " + err);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE';
                 });
@@ -246,28 +242,20 @@
             try {
                 const res = await fetch(scriptURL);
                 if (!res.ok) throw new Error("No se pudo conectar con Google Sheets");
-                
                 const json = await res.json();
-                
-                if (!Array.isArray(json) || json.length === 0) {
-                    console.log("Hoja vacía o error de formato");
-                    // No mostramos error si solo está vacía, pero si rawData es null
-                }
                 
                 rawData = json;
                 populateFilter();
                 applyFilter();
             } catch (e) { 
-                console.error(e); 
-                showError("No se pudieron cargar los datos históricos. Verifica tu conexión o la URL del Script. Detalle: " + e.message);
+                showError("Error al cargar datos: " + e.message); 
             }
         }
 
         function populateFilter() {
-            if(!rawData) return;
+            if(!rawData || !rawData.length) return;
             const select = document.getElementById('filterCountry');
             const current = select.value;
-            // Filtro robusto para evitar error con celdas vacías
             const countries = [...new Set(rawData.map(r => r[2]).filter(x => x))].sort();
             select.innerHTML = '<option value="ALL">🌎 Vista Global</option>';
             countries.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
@@ -275,7 +263,7 @@
         }
 
         function applyFilter() {
-            if(!rawData) return;
+            if(!rawData || !rawData.length) return;
             const country = document.getElementById('filterCountry').value;
             filteredData = (country === "ALL") ? rawData : rawData.filter(r => r[2] === country);
 
@@ -283,10 +271,9 @@
             let totalCost = 0, totalTime = 0, countTime = 0;
 
             filteredData.forEach(r => {
-                // Validación de datos corruptos/vacíos
-                if (!r || r.length < 10) return;
+                if (!r || r.length < 10) return; // Saltar filas corruptas
 
-                let key = (country === "ALL") ? (r[2] || "Desconocido") : (r[6] || "Desconocido"); 
+                let key = (country === "ALL") ? (r[2] || "S/D") : (r[6] || "S/D"); 
                 let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 let tt = parseFloat(r[7])||0;
 
@@ -309,18 +296,55 @@
             const labels = Object.keys(stats);
             const costs = labels.map(k => (stats[k].costSum / stats[k].count).toFixed(0));
             const times = labels.map(k => (stats[k].timeSum / stats[k].count).toFixed(1));
+            
+            // LA FUNCIÓN QUE FALTABA YA ESTÁ AQUÍ
             renderCharts(labels, costs, times, country !== "ALL");
             renderTable(filteredData);
+        }
+
+        function renderCharts(labels, costs, times, isByCarrier) {
+            if(chartCost) chartCost.destroy();
+            if(chartTime) chartTime.destroy();
+
+            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+            chartCost = new Chart(document.getElementById('costChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Costo Promedio (USD)',
+                        data: costs,
+                        backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a',
+                        borderRadius: 4
+                    }]
+                },
+                options: commonOptions
+            });
+
+            chartTime = new Chart(document.getElementById('timeChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'TT Promedio (Días)',
+                        data: times,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: commonOptions
+            });
         }
 
         function renderTable(rows) {
             const tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = "";
             rows.slice().reverse().slice(0, 50).forEach(r => {
-                // Manejo seguro de fechas y nulos
                 let dateStr = '-';
                 try { dateStr = r[0] ? new Date(r[0]).toLocaleDateString() : '-'; } catch(e){}
-                
                 const total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 const tr = `
                     <tr class="bg-white border-b hover:bg-gray-50">
@@ -336,9 +360,6 @@
             });
         }
 
-        // ==========================================
-        // EXPORTACIÓN A EXCEL (.XLSX)
-        // ==========================================
         function downloadExcel() {
             if (typeof XLSX === 'undefined') { alert("Error: Librería Excel no cargada."); return; }
             if (!filteredData || filteredData.length === 0) { alert("No hay datos para exportar."); return; }
