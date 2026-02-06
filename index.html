@@ -26,9 +26,8 @@
     </div>
 
     <div id="errorArea" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
-        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Error detectado:</p>
+        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Mensaje del Sistema:</p>
         <p id="errorMessage" class="text-sm mt-1">...</p>
-        <button onclick="window.location.reload()" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-700">Reintentar</button>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
@@ -40,8 +39,8 @@
             
             <form id="comexForm" class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-500 uppercase">Referencia Expo</label>
-                    <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" placeholder="Ej: PO-4509 / EXP-001" required>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Referencia Expo (Única)</label>
+                    <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" placeholder="Ej: EXP-001" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -70,7 +69,7 @@
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase">Equipo / Carga</label>
                         <select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-gray-50 outline-none" required>
-                            </select>
+                        </select>
                     </div>
                 </div>
 
@@ -148,7 +147,7 @@
                     <h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico (Detalle)</h3>
                     
                     <button id="btnDownload" onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow flex items-center">
-                        <i class="fa-solid fa-file-excel mr-2"></i> Descargar Excel (.xlsx)
+                        <i class="fa-solid fa-file-excel mr-2"></i> Exportar
                     </button>
                 </div>
                 <div class="overflow-x-auto max-h-60 overflow-y-auto">
@@ -158,15 +157,21 @@
                                 <th class="px-4 py-2">Fecha</th>
                                 <th class="px-4 py-2">Ref</th>
                                 <th class="px-4 py-2">Destino</th>
-                                <th class="px-4 py-2">Modo</th>
-                                <th class="px-4 py-2">Equipo</th>
-                                <th class="px-4 py-2">Prov.</th>
+                                <th class="px-4 py-2">Carrier</th>
                                 <th class="px-4 py-2 text-right">Total USD</th>
+                                <th class="px-4 py-2 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody" class="text-gray-600">
                             </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white p-6 rounded shadow-xl text-center">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+                    <p class="font-bold">Procesando...</p>
                 </div>
             </div>
 
@@ -175,8 +180,8 @@
 
     <script>
         // ==========================================
-        // URL DE APPS SCRIPT (TU URL AQUÍ)
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwiJc8SlJ0IAduewZ2B6BRg94Ww6tCuAvP3u94-dFRUTnhnd1cQxs1w1f3udSABs_ct0g/exec';
+        // URL DE APPS SCRIPT
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyxMBikAD1YkmTh3y4f90ErfUV63FBu4K3UevfrE0t7T0LJ3OFRBWXuBZhmCvEtfRYaYg/exec';
         // ==========================================
 
         let rawData = [];
@@ -206,10 +211,8 @@
 
         window.onload = () => { 
             updateEquipment(); 
-            // Check librería Excel
             if(typeof XLSX === 'undefined') {
                 document.getElementById('btnDownload').disabled = true;
-                document.getElementById('btnDownload').innerText = "Sin conexión (Excel off)";
                 document.getElementById('btnDownload').classList.add('bg-gray-400');
             }
             loadDashboard(); 
@@ -238,18 +241,43 @@
                 });
         });
 
+        // NUEVA FUNCIÓN DE BORRADO
+        function deleteRecord(referencia) {
+            if(!confirm(`¿Estás seguro de que quieres eliminar la referencia ${referencia} del sistema?`)) return;
+
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+
+            // Creamos un FormData especial para la acción de borrar
+            const formData = new FormData();
+            formData.append('action', 'delete');
+            formData.append('referencia', referencia);
+
+            fetch(scriptURL, { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    if (data.result === "deleted") {
+                        alert("Registro eliminado correctamente.");
+                        loadDashboard(); // Recargar todo
+                    } else {
+                        alert("No se pudo borrar. Es posible que la referencia no exista o ya haya sido borrada.");
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                    alert("Error de conexión al borrar: " + err);
+                });
+        }
+
         async function loadDashboard() {
             try {
                 const res = await fetch(scriptURL);
                 if (!res.ok) throw new Error("No se pudo conectar con Google Sheets");
                 const json = await res.json();
-                
                 rawData = json;
                 populateFilter();
                 applyFilter();
-            } catch (e) { 
-                showError("Error al cargar datos: " + e.message); 
-            }
+            } catch (e) { showError("Error al cargar datos: " + e.message); }
         }
 
         function populateFilter() {
@@ -271,8 +299,7 @@
             let totalCost = 0, totalTime = 0, countTime = 0;
 
             filteredData.forEach(r => {
-                if (!r || r.length < 10) return; // Saltar filas corruptas
-
+                if (!r || r.length < 10) return;
                 let key = (country === "ALL") ? (r[2] || "S/D") : (r[6] || "S/D"); 
                 let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 let tt = parseFloat(r[7])||0;
@@ -281,7 +308,6 @@
                 stats[key].costSum += cost;
                 stats[key].timeSum += tt;
                 stats[key].count++;
-
                 totalCost += cost;
                 if(tt>0) { totalTime += tt; countTime++; }
             });
@@ -289,52 +315,27 @@
             document.getElementById('kpiCount').innerText = filteredData.length;
             document.getElementById('kpiAvgCost').innerText = filteredData.length ? `$${(totalCost/filteredData.length).toFixed(0)}` : "0";
             document.getElementById('kpiAvgTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + "d" : "-";
-            
             let topKey = Object.keys(stats).length ? Object.keys(stats).reduce((a, b) => stats[a].count > stats[b].count ? a : b) : '-';
             document.getElementById('kpiTop').innerText = topKey;
 
-            const labels = Object.keys(stats);
-            const costs = labels.map(k => (stats[k].costSum / stats[k].count).toFixed(0));
-            const times = labels.map(k => (stats[k].timeSum / stats[k].count).toFixed(1));
-            
-            // LA FUNCIÓN QUE FALTABA YA ESTÁ AQUÍ
-            renderCharts(labels, costs, times, country !== "ALL");
+            renderCharts(Object.keys(stats), Object.keys(stats).map(k => (stats[k].costSum / stats[k].count).toFixed(0)), Object.keys(stats).map(k => (stats[k].timeSum / stats[k].count).toFixed(1)), country !== "ALL");
             renderTable(filteredData);
         }
 
         function renderCharts(labels, costs, times, isByCarrier) {
             if(chartCost) chartCost.destroy();
             if(chartTime) chartTime.destroy();
-
             const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 
             chartCost = new Chart(document.getElementById('costChart'), {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Costo Promedio (USD)',
-                        data: costs,
-                        backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a',
-                        borderRadius: 4
-                    }]
-                },
+                data: { labels: labels, datasets: [{ label: 'Costo Promedio (USD)', data: costs, backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a', borderRadius: 4 }] },
                 options: commonOptions
             });
 
             chartTime = new Chart(document.getElementById('timeChart'), {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'TT Promedio (Días)',
-                        data: times,
-                        borderColor: '#4f46e5',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
+                data: { labels: labels, datasets: [{ label: 'TT Promedio (Días)', data: times, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3 }] },
                 options: commonOptions
             });
         }
@@ -346,15 +347,22 @@
                 let dateStr = '-';
                 try { dateStr = r[0] ? new Date(r[0]).toLocaleDateString() : '-'; } catch(e){}
                 const total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
+                
+                // NOTA: r[1] es la Referencia. Se usa para identificar qué borrar.
+                const referencia = r[1] || "";
+
                 const tr = `
-                    <tr class="bg-white border-b hover:bg-gray-50">
+                    <tr class="bg-white border-b hover:bg-gray-50 group">
                         <td class="px-4 py-2 font-medium">${dateStr}</td>
-                        <td class="px-4 py-2 text-xs">${r[1] || ''}</td>
+                        <td class="px-4 py-2 text-xs font-bold text-gray-700">${referencia}</td>
                         <td class="px-4 py-2">${r[2] || ''}</td>
-                        <td class="px-4 py-2 text-xs text-blue-600 font-bold">${r[3] || ''}</td>
-                        <td class="px-4 py-2 text-xs">${r[5] || ''}</td>
                         <td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6] || ''}</td>
                         <td class="px-4 py-2 text-right font-bold text-green-700">$${total.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-center">
+                            <button onclick="deleteRecord('${referencia}')" class="text-gray-400 hover:text-red-600 transition" title="Eliminar Registro">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>`;
                 tbody.innerHTML += tr;
             });
@@ -379,12 +387,14 @@
             }));
 
             const ws = XLSX.utils.json_to_sheet(excelData);
-            ws['!cols'] = [{wch:12}, {wch:15}, {wch:12}, {wch:10}, {wch:8}, {wch:15}, {wch:15}, {wch:10}, {wch:12}, {wch:15}, {wch:15}];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Reporte Comex");
             const countryName = document.getElementById('filterCountry').value;
             XLSX.writeFile(wb, `Reporte_Freddo_${countryName}.xlsx`);
         }
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>
