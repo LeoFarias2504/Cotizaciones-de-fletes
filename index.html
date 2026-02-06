@@ -3,209 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Dashboard Logístico</title>
+    <title>Freddo Comex - Registro de Fletes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .freddo-blue { background-color: #003366; }
-        .freddo-text { color: #003366; }
-        .card-gradient { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); }
+        .freddo-gradient { background: linear-gradient(135deg, #002855 0%, #00509d 100%); }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="freddo-gradient py-6 shadow-lg mb-8">
+        <h1 class="text-white text-center text-2xl font-bold tracking-widest uppercase">Freddo Argentina - Comercio Exterior</h1>
+    </div>
 
-    <nav class="freddo-blue p-4 shadow-xl mb-8">
-        <div class="container mx-auto flex justify-between items-center text-white">
-            <h1 class="font-bold text-xl tracking-tighter italic">FREDDO <span class="text-blue-300 font-light underline">COMEX ANALYTICS</span></h1>
-            <div class="flex gap-4 opacity-80">
-                <i class="fas fa-ship"></i>
-                <i class="fas fa-truck"></i>
-                <i class="fas fa-plane"></i>
+    <div class="max-w-4xl mx-auto px-4 pb-12">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-6 border-b border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-800 text-center">Carga de Cotización y Gastos</h2>
             </div>
-        </div>
-    </nav>
 
-    <main class="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-4 gap-8 pb-12">
-        
-        <div class="lg:col-span-1">
-            <div class="bg-white p-6 rounded-3xl shadow-2xl border-t-8 border-blue-600 sticky top-4">
-                <h2 class="freddo-text font-black text-xs uppercase mb-6 flex items-center gap-2">
-                    <i class="fas fa-plus-circle"></i> Cargar Nueva Cotización
-                </h2>
-                <form id="formComex" class="space-y-4">
-                    <input type="text" name="referencia" placeholder="Ref. Expo (Ej: EXP-101)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    <input type="text" name="destino" placeholder="Puerto / Ciudad Destino" class="w-full p-3 bg-slate-50 border rounded-xl text-sm outline-none" required>
-                    
-                    <select name="modalidad" class="w-full p-3 bg-slate-50 border rounded-xl text-sm cursor-pointer">
-                        <option value="Marítimo">🚢 Marítimo</option>
-                        <option value="Terrestre">🚛 Terrestre</option>
-                        <option value="Aéreo">✈️ Aéreo</option>
+            <form id="comexForm" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Referencia Expo</label>
+                    <input type="text" name="referencia" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: EXPO-2026-045" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Destino</label>
+                    <input type="text" name="destino" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: Puerto de Callao" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Modalidad</label>
+                    <select name="modalidad" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" required>
+                        <option value="Maritimo">Marítimo</option>
+                        <option value="Terrestre">Terrestre</option>
+                        <option value="Aereo">Aéreo</option>
                     </select>
+                </div>
 
-                    <input type="text" name="carrier" placeholder="Naviera / Transportista" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Transit Time</label>
-                            <input type="number" name="transit_time" placeholder="Días" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Flete USD</label>
-                            <input type="number" step="0.01" name="flete" placeholder="Monto" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
-                        </div>
-                    </div>
-                    <input type="number" step="0.01" name="gastos_locales" placeholder="Gastos Locales (USD)" class="w-full p-3 bg-slate-50 border rounded-xl text-sm" required>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Incoterm</label>
+                    <input type="text" name="incoterm" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="FOB, CIF, FCA..." required>
+                </div>
 
-                    <button type="submit" id="btnSave" class="w-full bg-[#003366] text-white font-bold py-4 rounded-2xl hover:bg-blue-800 transition shadow-lg transform hover:-translate-y-1">
-                        GUARDAR EN EXCEL
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Tipo de Contenedor</label>
+                    <select name="contenedor" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" required>
+                        <option value="" disabled selected>Seleccione opción...</option>
+                        <option value="20 pies">20 pies (Standard)</option>
+                        <option value="40 pies">40 pies (Standard)</option>
+                        <option value="40 HC">40 HC (High Cube)</option>
+                        <option value="20 rf">20 RF (Reefer)</option>
+                        <option value="40 rf">40 RF (Reefer)</option>
+                        <option value="Sider">Sider / Camión</option>
+                        <option value="Aereo">Carga Aérea</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nombre Marítima / Forwarder</label>
+                    <input type="text" name="carrier" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: Maersk / MSC" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Transit Time (Días)</label>
+                    <input type="number" name="transit_time" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Flete Internacional (USD)</label>
+                    <input type="number" step="0.01" name="flete" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00" required>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Gastos Locales (USD)</label>
+                    <input type="number" step="0.01" name="gastos_locales" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00" required>
+                </div>
+
+                <div class="md:col-span-2 mt-4">
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl hover:bg-blue-800 shadow-md transition-all active:scale-95">
+                        REGISTRAR EN BASE DE DATOS
                     </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="lg:col-span-3 space-y-8">
+                </div>
+            </form>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-3xl shadow-md border-l-8 border-blue-500 card-gradient">
-                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Promedio Flete</p>
-                    <h3 class="text-3xl font-black freddo-text" id="kpiAvgFlete">USD 0.00</h3>
-                    <i class="fas fa-file-invoice-dollar float-right opacity-10 text-4xl -mt-8"></i>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-md border-l-8 border-indigo-500 card-gradient">
-                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Avg. Transit Time</p>
-                    <h3 class="text-3xl font-black freddo-text" id="kpiAvgTime">0 Días</h3>
-                    <i class="fas fa-clock float-right opacity-10 text-4xl -mt-8"></i>
-                </div>
-
-                <div class="bg-white p-6 rounded-3xl shadow-md border-l-8 border-cyan-500 card-gradient">
-                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Operaciones</p>
-                    <h3 class="text-3xl font-black freddo-text" id="kpiTotal">0</h3>
-                    <i class="fas fa-boxes-stacked float-right opacity-10 text-4xl -mt-8"></i>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
-                    <h4 class="text-slate-500 font-bold text-[10px] uppercase mb-6 flex items-center gap-2 tracking-widest">
-                        <i class="fas fa-map-marked-alt text-blue-500"></i> Análisis por Destino
-                    </h4>
-                    <canvas id="barChart"></canvas>
-                </div>
-                <div class="bg-white p-6 rounded-3xl shadow-lg border border-slate-100">
-                    <h4 class="text-slate-500 font-bold text-[10px] uppercase mb-6 flex items-center gap-2 tracking-widest">
-                        <i class="fas fa-truck-moving text-blue-500"></i> Mix de Transporte
-                    </h4>
-                    <canvas id="pieChart"></canvas>
-                </div>
+            <div id="msg" class="hidden m-6 p-4 bg-green-100 text-green-700 text-center font-bold rounded-lg border border-green-200">
+                ¡Cotización enviada con éxito al histórico!
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        // TU URL DE GOOGLE APPS SCRIPT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxg3ZiHoRNF64b-y_yGe_FpVmyuA9uqt_yrutnMGxFKghy1eXPhz0GLpHIHXw7IJm01YA/exec';
+        // Reemplaza esto con tu URL de Google Apps Script
+        const scriptURL = 'TU_URL_DE_APPS_SCRIPT_AQUI';
+        const form = document.getElementById('comexForm');
+        const btn = document.getElementById('submitBtn');
+        const msg = document.getElementById('msg');
 
-        // FUNCIÓN PARA CARGAR DATOS DESDE EL EXCEL
-        async function loadDashboard() {
-            try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
-                
-                if (!data || data.length === 0) return;
-
-                // 1. Cálculos de KPIs
-                const totalOperaciones = data.length;
-                const totalFlete = data.reduce((acc, row) => acc + (parseFloat(row[8]) || 0), 0);
-                const totalTime = data.reduce((acc, row) => acc + (parseInt(row[7]) || 0), 0);
-                
-                document.getElementById('kpiTotal').innerText = totalOperaciones;
-                document.getElementById('kpiAvgFlete').innerText = 'USD ' + (totalFlete / totalOperaciones).toFixed(2);
-                document.getElementById('kpiAvgTime').innerText = Math.round(totalTime / totalOperaciones) + ' Días';
-
-                // 2. Procesar Gráfico de Barras (Costos por Destino)
-                const destinosData = {};
-                data.forEach(row => {
-                    const dest = row[2]; // Columna C: Destino
-                    const costo = parseFloat(row[8]) || 0; // Columna I: Flete
-                    if (!destinosData[dest]) destinosData[dest] = { suma: 0, cant: 0 };
-                    destinosData[dest].suma += costo;
-                    destinosData[dest].cant++;
-                });
-
-                const labelsDest = Object.keys(destinosData);
-                const valoresDest = labelsDest.map(l => (destinosData[l].suma / destinosData[l].cant).toFixed(0));
-
-                renderBarChart(labelsDest, valoresDest);
-
-                // 3. Procesar Gráfico de Torta (Modalidades)
-                const mods = { 'Marítimo': 0, 'Terrestre': 0, 'Aéreo': 0 };
-                data.forEach(row => {
-                    const m = row[3]; // Columna D: Modalidad
-                    if (mods.hasOwnProperty(m)) mods[m]++;
-                });
-
-                renderPieChart(Object.keys(mods), Object.values(mods));
-
-            } catch (error) {
-                console.error("Todavía no hay datos cargados o la URL es incorrecta.");
-            }
-        }
-
-        // RENDERIZAR GRÁFICO DE BARRAS
-        function renderBarChart(labels, values) {
-            new Chart(document.getElementById('barChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Flete Promedio (USD)',
-                        data: values,
-                        backgroundColor: '#003366',
-                        borderRadius: 10
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-        }
-
-        // RENDERIZAR GRÁFICO DE TORTA
-        function renderPieChart(labels, values) {
-            new Chart(document.getElementById('pieChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: ['#003366', '#3b82f6', '#94a3b8'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, cutout: '70%' }
-            });
-        }
-
-        // GUARDAR DATOS DEL FORMULARIO
-        document.getElementById('formComex').addEventListener('submit', async (e) => {
+        form.addEventListener('submit', e => {
             e.preventDefault();
-            const btn = document.getElementById('btnSave');
             btn.disabled = true;
-            btn.innerText = 'GUARDANDO...';
-
-            try {
-                await fetch(SCRIPT_URL, { method: 'POST', body: new FormData(e.target) });
-                alert('¡Cotización guardada exitosamente!');
-                location.reload(); // Recarga la página para actualizar el Dashboard
-            } catch (err) {
-                alert('Error al guardar. Verifica la conexión.');
-                btn.disabled = false;
-                btn.innerText = 'GUARDAR EN EXCEL';
-            }
+            btn.innerText = 'PROCESANDO...';
+            
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    msg.classList.remove('hidden');
+                    form.reset();
+                    btn.disabled = false;
+                    btn.innerText = 'REGISTRAR EN BASE DE DATOS';
+                    setTimeout(() => msg.classList.add('hidden'), 5000);
+                })
+                .catch(error => {
+                    alert('Hubo un error: ' + error.message);
+                    btn.disabled = false;
+                    btn.innerText = 'REGISTRAR EN BASE DE DATOS';
+                });
         });
-
-        // INICIALIZAR DASHBOARD AL CARGAR
-        loadDashboard();
     </script>
 </body>
 </html>
