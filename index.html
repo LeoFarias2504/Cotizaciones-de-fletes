@@ -6,7 +6,7 @@
     <title>Freddo Comex - Sistema de Gestión Logística</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 min-h-screen p-4 font-sans text-slate-800">
@@ -23,6 +23,12 @@
                 <i class="fa-solid fa-user-tie mr-1"></i> Perfil: Pasante Comex
             </div>
         </div>
+    </div>
+
+    <div id="errorArea" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
+        <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Error de Sistema detectado:</p>
+        <p id="errorMessage" class="text-sm mt-1">...</p>
+        <button onclick="window.location.reload()" class="mt-2 bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">Reintentar</button>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
@@ -141,7 +147,7 @@
                 <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
                     <h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico (Detalle)</h3>
                     
-                    <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow flex items-center">
+                    <button id="btnDownload" onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow flex items-center">
                         <i class="fa-solid fa-file-excel mr-2"></i> Descargar Excel (.xlsx)
                     </button>
                 </div>
@@ -169,7 +175,7 @@
 
     <script>
         // ==========================================
-        // URL DE APPS SCRIPT
+        // URL DE APPS SCRIPT (Verificada)
         const scriptURL = 'https://script.google.com/macros/s/AKfycbwiJc8SlJ0IAduewZ2B6BRg94Ww6tCuAvP3u94-dFRUTnhnd1cQxs1w1f3udSABs_ct0g/exec';
         // ==========================================
 
@@ -184,6 +190,11 @@
             "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"]
         };
 
+        function showError(msg) {
+            document.getElementById('errorArea').classList.remove('hidden');
+            document.getElementById('errorMessage').innerText = msg;
+        }
+
         function updateEquipment() {
             const mode = document.getElementById('modalidadSelect').value;
             const select = document.getElementById('equipoSelect');
@@ -193,7 +204,17 @@
             });
         }
 
-        window.onload = () => { updateEquipment(); loadDashboard(); };
+        window.onload = () => { 
+            updateEquipment(); 
+            // Check si la librería de Excel cargó
+            if(typeof XLSX === 'undefined') {
+                console.warn("Librería XLSX no cargada, botón desactivado");
+                document.getElementById('btnDownload').disabled = true;
+                document.getElementById('btnDownload').innerText = "Excel no disponible (Red)";
+                document.getElementById('btnDownload').classList.add('bg-gray-400');
+            }
+            loadDashboard(); 
+        };
 
         const form = document.getElementById('comexForm');
         form.addEventListener('submit', e => {
@@ -203,6 +224,10 @@
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    if (!response.ok) throw new Error("Error de red al guardar");
+                    return response;
+                })
                 .then(() => {
                     msg.classList.remove('hidden');
                     form.reset();
@@ -210,28 +235,47 @@
                     loadDashboard(); 
                     setTimeout(() => { msg.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; }, 2000);
                 })
-                .catch(err => alert("Error: " + err));
+                .catch(err => {
+                    alert("No se pudo guardar: " + err);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE';
+                });
         });
 
         async function loadDashboard() {
             try {
                 const res = await fetch(scriptURL);
-                rawData = await res.json();
+                if (!res.ok) throw new Error("No se pudo conectar con Google Sheets");
+                
+                const json = await res.json();
+                
+                if (!Array.isArray(json) || json.length === 0) {
+                    console.log("Hoja vacía o error de formato");
+                    // No mostramos error si solo está vacía, pero si rawData es null
+                }
+                
+                rawData = json;
                 populateFilter();
                 applyFilter();
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                showError("No se pudieron cargar los datos históricos. Verifica tu conexión o la URL del Script. Detalle: " + e.message);
+            }
         }
 
         function populateFilter() {
+            if(!rawData) return;
             const select = document.getElementById('filterCountry');
             const current = select.value;
-            const countries = [...new Set(rawData.map(r => r[2]).filter(Boolean))].sort();
+            // Filtro robusto para evitar error con celdas vacías
+            const countries = [...new Set(rawData.map(r => r[2]).filter(x => x))].sort();
             select.innerHTML = '<option value="ALL">🌎 Vista Global</option>';
             countries.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
             select.value = current;
         }
 
         function applyFilter() {
+            if(!rawData) return;
             const country = document.getElementById('filterCountry').value;
             filteredData = (country === "ALL") ? rawData : rawData.filter(r => r[2] === country);
 
@@ -239,7 +283,10 @@
             let totalCost = 0, totalTime = 0, countTime = 0;
 
             filteredData.forEach(r => {
-                let key = (country === "ALL") ? r[2] : r[6]; 
+                // Validación de datos corruptos/vacíos
+                if (!r || r.length < 10) return;
+
+                let key = (country === "ALL") ? (r[2] || "Desconocido") : (r[6] || "Desconocido"); 
                 let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 let tt = parseFloat(r[7])||0;
 
@@ -270,11 +317,14 @@
             const tbody = document.getElementById('historyTableBody');
             tbody.innerHTML = "";
             rows.slice().reverse().slice(0, 50).forEach(r => {
-                const date = r[0] ? new Date(r[0]).toLocaleDateString() : '-';
+                // Manejo seguro de fechas y nulos
+                let dateStr = '-';
+                try { dateStr = r[0] ? new Date(r[0]).toLocaleDateString() : '-'; } catch(e){}
+                
                 const total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 const tr = `
                     <tr class="bg-white border-b hover:bg-gray-50">
-                        <td class="px-4 py-2 font-medium">${date}</td>
+                        <td class="px-4 py-2 font-medium">${dateStr}</td>
                         <td class="px-4 py-2 text-xs">${r[1] || ''}</td>
                         <td class="px-4 py-2">${r[2] || ''}</td>
                         <td class="px-4 py-2 text-xs text-blue-600 font-bold">${r[3] || ''}</td>
@@ -287,15 +337,12 @@
         }
 
         // ==========================================
-        // FUNCIÓN DE EXCEL CORREGIDA (XLSX REAL)
+        // EXPORTACIÓN A EXCEL (.XLSX)
         // ==========================================
         function downloadExcel() {
-            if (!filteredData || filteredData.length === 0) {
-                alert("No hay datos para exportar.");
-                return;
-            }
+            if (typeof XLSX === 'undefined') { alert("Error: Librería Excel no cargada."); return; }
+            if (!filteredData || filteredData.length === 0) { alert("No hay datos para exportar."); return; }
 
-            // 1. Preparar datos limpios para Excel
             const excelData = filteredData.map(row => ({
                 "Fecha": row[0] ? new Date(row[0]).toLocaleDateString() : '',
                 "Referencia": row[1],
@@ -310,17 +357,10 @@
                 "Costo Total (USD)": (parseFloat(row[8])||0) + (parseFloat(row[9])||0)
             }));
 
-            // 2. Crear hoja de cálculo
             const ws = XLSX.utils.json_to_sheet(excelData);
-            
-            // Ajustar anchos de columna (opcional pero estético)
             ws['!cols'] = [{wch:12}, {wch:15}, {wch:12}, {wch:10}, {wch:8}, {wch:15}, {wch:15}, {wch:10}, {wch:12}, {wch:15}, {wch:15}];
-
-            // 3. Crear libro y agregar hoja
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Reporte Comex");
-
-            // 4. Descargar archivo .xlsx
             const countryName = document.getElementById('filterCountry').value;
             XLSX.writeFile(wb, `Reporte_Freddo_${countryName}.xlsx`);
         }
