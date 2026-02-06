@@ -3,225 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Dashboard en Tiempo Real</title>
+    <title>Freddo Comex - Dashboard Operativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-4 font-sans">
+<body class="bg-gray-100 min-h-screen p-4 font-sans text-gray-800">
 
-    <div class="mb-6 bg-white p-4 rounded-xl shadow flex items-center justify-between">
+    <div class="mb-6 bg-white p-5 rounded-xl shadow-md border-l-8 border-blue-900 flex justify-between items-center">
         <div>
-            <h1 class="text-2xl font-bold text-blue-900 uppercase">Freddo Comex</h1>
-            <p class="text-sm text-gray-500">Control de Costos Logísticos</p>
+            <h1 class="text-3xl font-bold text-blue-900 tracking-tight">FREDDO <span class="text-blue-500">COMEX</span></h1>
+            <p class="text-sm text-gray-500 font-medium mt-1">Gestión de Cotizaciones y Análisis de Costos</p>
         </div>
-        <div class="text-right hidden md:block">
-            <p class="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">LIVE DASHBOARD</p>
+        <div class="hidden md:block text-right">
+            <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                ● Sistema Online
+            </span>
         </div>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
         
-        <div class="w-full lg:w-1/3 bg-white rounded-xl shadow-lg p-6 h-fit border-t-4 border-blue-900">
-            <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                📝 Nueva Cotización
-            </h2>
-            
-            <form id="comexForm" class="space-y-3">
-                <input type="text" name="referencia" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Ref. Expo (ej: 001)" required>
+        <div class="w-full lg:w-1/3 space-y-4">
+            <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-600">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
+                    📥 Nueva Carga
+                </h2>
                 
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" name="destino" list="destinosList" class="border border-gray-300 p-2 rounded text-sm" placeholder="Destino" required>
-                    <datalist id="destinosList">
-                        <option value="Uruguay"><option value="Chile"><option value="Brasil"><option value="USA"><option value="Colombia"><option value="Perú"><option value="Mexico">
-                    </datalist>
+                <form id="comexForm" class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Referencia</label>
+                        <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Ej: EXP-24-001" required>
+                    </div>
 
-                    <select name="modalidad" class="border border-gray-300 p-2 rounded text-sm">
-                        <option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option>
-                    </select>
-                </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Destino</label>
+                            <input type="text" name="destino" list="destinosList" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none focus:ring-blue-500" placeholder="País" required>
+                            <datalist id="destinosList">
+                                <option value="Uruguay"><option value="Chile"><option value="Brasil"><option value="USA"><option value="Colombia"><option value="Perú"><option value="Mexico">
+                            </datalist>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Vía</label>
+                            <select name="modalidad" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none">
+                                <option value="Marítimo">Marítimo</option>
+                                <option value="Terrestre">Terrestre</option>
+                                <option value="Aéreo">Aéreo</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" name="incoterm" class="border border-gray-300 p-2 rounded text-sm" placeholder="Incoterm">
-                    <select name="contenedor" class="border border-gray-300 p-2 rounded text-sm" required>
-                        <option value="" disabled selected>Contenedor...</option>
-                        <option value="20 pies ST">20' ST</option><option value="40 pies ST">40' ST</option>
-                        <option value="40 HC">40' HC</option><option value="20 RF">20' RF</option>
-                        <option value="40 RF">40' RF</option><option value="Sider">Sider</option>
-                    </select>
-                </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label>
+                            <input type="text" name="incoterm" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="FOB/CFR">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Equipo</label>
+                            <select name="contenedor" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" required>
+                                <option value="" disabled selected>Tipo...</option>
+                                <option value="20 pies ST">20' ST</option>
+                                <option value="40 pies ST">40' ST</option>
+                                <option value="40 HC">40' HC</option>
+                                <option value="20 RF">20' RF</option>
+                                <option value="40 RF">40' RF</option>
+                                <option value="Sider">Sider</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <input type="text" name="carrier" class="w-full border border-gray-300 p-2 rounded text-sm" placeholder="Naviera / Carrier" required>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Naviera / Carrier</label>
+                        <input type="text" name="carrier" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="Ej: Maersk" required>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Días TT</label>
+                            <input type="number" name="transit_time" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Flete $</label>
+                            <input type="number" step="0.01" name="flete" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0.00" required>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase">Gastos $</label>
+                            <input type="number" step="0.01" name="gastos_locales" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md active:scale-95 mt-4">
+                        GUARDAR DATOS
+                    </button>
+                </form>
                 
-                <div class="grid grid-cols-3 gap-2">
-                    <input type="number" name="transit_time" class="border border-gray-300 p-2 rounded text-sm" placeholder="Días TT">
-                    <input type="number" step="0.01" name="flete" class="border border-gray-300 p-2 rounded text-sm" placeholder="Flete USD" required>
-                    <input type="number" step="0.01" name="gastos_locales" class="border border-gray-300 p-2 rounded text-sm" placeholder="Gastos USD" required>
+                <div id="loadingMsg" class="hidden mt-3 text-center text-sm text-blue-600 font-semibold animate-pulse">
+                    Enviando datos a Google Sheets...
                 </div>
-
-                <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow-lg mt-4">
-                    GUARDAR DATOS
-                </button>
-            </form>
-            <p id="msg" class="mt-2 text-center text-xs font-bold text-green-600 hidden">✅ Guardado y actualizado.</p>
+                <div id="successMsg" class="hidden mt-3 text-center text-sm text-green-600 font-bold bg-green-50 p-2 rounded border border-green-200">
+                    ✅ ¡Datos Guardados y Dashboard Actualizado!
+                </div>
+            </div>
         </div>
 
         <div class="w-full lg:w-2/3 space-y-4">
             
-            <div class="grid grid-cols-3 gap-4">
-                <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
-                    <p class="text-xs text-gray-500 uppercase font-bold">Total Cotizaciones</p>
-                    <p id="kpiCount" class="text-2xl font-bold text-gray-800">0</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-blue-500">
+                    <p class="text-xs text-gray-400 uppercase font-bold">Cotizaciones</p>
+                    <p id="kpiCount" class="text-2xl font-bold text-gray-800">Cargando...</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border-l-4 border-green-500">
-                    <p class="text-xs text-gray-500 uppercase font-bold">Promedio Flete</p>
-                    <p id="kpiCost" class="text-2xl font-bold text-gray-800">$0</p>
+                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-green-500">
+                    <p class="text-xs text-gray-400 uppercase font-bold">Promedio Flete</p>
+                    <p id="kpiCost" class="text-2xl font-bold text-gray-800">-</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-500">
-                    <p class="text-xs text-gray-500 uppercase font-bold">Destino Top</p>
+                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-indigo-500">
+                    <p class="text-xs text-gray-400 uppercase font-bold">Promedio TT</p>
+                    <p id="kpiTime" class="text-2xl font-bold text-gray-800">-</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-orange-500">
+                    <p class="text-xs text-gray-400 uppercase font-bold">Destino Top</p>
                     <p id="kpiDest" class="text-lg font-bold text-gray-800 truncate">-</p>
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow h-64 relative">
-                <h3 class="text-sm font-bold text-gray-600 mb-2">💰 Costo Total Promedio (USD) por Destino</h3>
-                <div class="h-48 w-full">
+            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-80">
+                <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase">💰 Comparativa: Costo Total (Flete + Gastos)</h3>
+                <div class="h-64 w-full">
                     <canvas id="costChart"></canvas>
                 </div>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow h-64 relative">
-                <h3 class="text-sm font-bold text-gray-600 mb-2">⏱️ Transit Time Promedio (Días)</h3>
-                <div class="h-48 w-full">
+            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-80">
+                <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase">⏱️ Análisis: Transit Time (Días)</h3>
+                <div class="h-64 w-full">
                     <canvas id="timeChart"></canvas>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // ============================================
-        // PEGA TU URL DE APPS SCRIPT AQUÍ ABAJO
-        const scriptURL = https://script.google.com/macros/s/AKfycbxg3ZiHoRNF64b-y_yGe_FpVmyuA9uqt_yrutnMGxFKghy1eXPhz0GLpHIHXw7IJm01YA/exec; 
-        // ============================================
+        // =========================================================================
+        // TU LINK DE GOOGLE APPS SCRIPT
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec';
+        // =========================================================================
 
-        // Inicializar variables de gráficos
-        let chartCost = null;
-        let chartTime = null;
+        let chartCostInstance = null;
+        let chartTimeInstance = null;
 
-        // Cargar gráficos al iniciar la página
-        window.onload = loadDashboard;
+        // 1. CARGAR DATOS AL ABRIR LA PÁGINA
+        window.onload = function() {
+            loadDashboard();
+        };
 
-        // Función para enviar formulario
+        // 2. ENVIAR FORMULARIO
         const form = document.getElementById('comexForm');
         form.addEventListener('submit', e => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('msg');
             
-            btn.disabled = true; 
-            btn.innerText = 'Guardando...';
+            // UI Feedback
+            const btn = document.getElementById('submitBtn');
+            const loadMsg = document.getElementById('loadingMsg');
+            const successMsg = document.getElementById('successMsg');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            loadMsg.classList.remove('hidden');
+            successMsg.classList.add('hidden');
 
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => {
-                    // 1. Mostrar mensaje de éxito
-                    msg.classList.remove('hidden');
+                    // Éxito al guardar
+                    loadMsg.classList.add('hidden');
+                    successMsg.classList.remove('hidden');
                     form.reset();
                     
-                    // 2. ACTUALIZAR GRÁFICOS AUTOMÁTICAMENTE
-                    loadDashboard(); 
+                    // Actualizar Dashboard Automáticamente
+                    loadDashboard();
 
-                    // 3. Restaurar botón
-                    btn.disabled = false; 
-                    btn.innerText = 'GUARDAR DATOS';
-                    setTimeout(() => msg.classList.add('hidden'), 3000);
+                    // Restaurar botón después de 3 seg
+                    setTimeout(() => {
+                        successMsg.classList.add('hidden');
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50');
+                    }, 3000);
                 })
                 .catch(error => {
-                    alert('Error: ' + error.message);
+                    alert('Error de conexión con Google Sheets: ' + error.message);
                     btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                    loadMsg.classList.add('hidden');
                 });
         });
 
-        // Función Maestra: Descarga datos y dibuja gráficos
+        // 3. FUNCIÓN PARA OBTENER DATOS Y DIBUJAR GRÁFICOS
         async function loadDashboard() {
             try {
-                const response = await fetch(scriptURL); // Llama al doGet()
+                const response = await fetch(scriptURL);
                 const data = await response.json();
-                renderCharts(data);
+                
+                console.log("Datos recibidos:", data); // Para depurar en consola
+                if(data.length > 0) {
+                    processData(data);
+                } else {
+                    document.getElementById('kpiCount').innerText = "0";
+                }
             } catch (error) {
-                console.error("Esperando datos...", error);
+                console.error("Error cargando dashboard:", error);
             }
         }
 
-        function renderCharts(rows) {
-            // Estructura Data: [Fecha, Ref, Destino, Mod, Incoterm, Cont, Carrier, TT, Flete, Gastos]
-            // Indices: Destino=2, TT=7, Flete=8, Gastos=9
+        // 4. PROCESAMIENTO DE DATOS
+        function processData(rows) {
+            // Estructura esperada de fila:
+            // [Fecha, Ref, Destino, Modalidad, Incoterm, Contenedor, Carrier, TT, Flete, Gastos]
+            // Índices: Destino=2, TT=7, Flete=8, Gastos=9
 
             const stats = {};
-            let totalFleteGlobal = 0;
-            let destCount = {};
+            let globalCost = 0;
+            let globalTime = 0;
+            let countTime = 0;
+            let destCounts = {};
 
             rows.forEach(row => {
-                let dest = row[2];
+                // Limpieza de datos
+                let dest = row[2] ? row[2].trim() : "Desconocido";
                 let tt = parseFloat(row[7]) || 0;
-                let cost = (parseFloat(row[8]) || 0) + (parseFloat(row[9]) || 0);
+                let flete = parseFloat(row[8]) || 0;
+                let gastos = parseFloat(row[9]) || 0;
+                let totalRow = flete + gastos;
 
-                if (!stats[dest]) { stats[dest] = { costSum: 0, timeSum: 0, count: 0 }; }
-                stats[dest].costSum += cost;
-                stats[dest].timeSum += tt;
+                // Agrupación por Destino
+                if (!stats[dest]) {
+                    stats[dest] = { sumCost: 0, sumTime: 0, count: 0 };
+                }
+                stats[dest].sumCost += totalRow;
+                stats[dest].sumTime += tt;
                 stats[dest].count++;
 
-                totalFleteGlobal += cost;
-                destCount[dest] = (destCount[dest] || 0) + 1;
+                // Globales
+                globalCost += totalRow;
+                if(tt > 0) { globalTime += tt; countTime++; }
+                destCounts[dest] = (destCounts[dest] || 0) + 1;
             });
 
-            // Preparar arrays
+            // Preparar Arrays para Gráficos
             const labels = Object.keys(stats);
-            const dataCost = labels.map(d => (stats[d].costSum / stats[d].count).toFixed(2));
-            const dataTime = labels.map(d => (stats[d].timeSum / stats[d].count).toFixed(1));
+            const avgCosts = labels.map(d => (stats[d].sumCost / stats[d].count).toFixed(2));
+            const avgTimes = labels.map(d => (stats[d].sumTime / stats[d].count).toFixed(1));
 
-            // Actualizar KPIs
+            // Actualizar KPIs HTML
             document.getElementById('kpiCount').innerText = rows.length;
-            document.getElementById('kpiCost').innerText = rows.length ? `$${(totalFleteGlobal / rows.length).toFixed(0)}` : '$0';
+            document.getElementById('kpiCost').innerText = "$" + (globalCost / rows.length).toFixed(0);
+            document.getElementById('kpiTime').innerText = countTime ? (globalTime / countTime).toFixed(1) + " días" : "-";
             
-            // Calcular destino más frecuente
-            let maxDest = Object.keys(destCount).reduce((a, b) => destCount[a] > destCount[b] ? a : b, '-');
-            document.getElementById('kpiDest').innerText = maxDest;
+            // Destino Top
+            let topDest = Object.keys(destCounts).reduce((a, b) => destCounts[a] > destCounts[b] ? a : b, '-');
+            document.getElementById('kpiDest').innerText = topDest;
 
-            // DIBUJAR GRÁFICO 1: COSTOS
+            // Renderizar Gráficos
+            renderCharts(labels, avgCosts, avgTimes);
+        }
+
+        function renderCharts(labels, costData, timeData) {
+            // Gráfico de Costos
             const ctx1 = document.getElementById('costChart').getContext('2d');
-            if (chartCost) chartCost.destroy();
-            chartCost = new Chart(ctx1, {
+            if (chartCostInstance) chartCostInstance.destroy();
+            
+            chartCostInstance = new Chart(ctx1, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Costo Total (USD)',
-                        data: dataCost,
-                        backgroundColor: '#1e3a8a', // Azul Freddo
-                        borderRadius: 4
+                        label: 'Costo Promedio (USD)',
+                        data: costData,
+                        backgroundColor: '#1e3a8a', // Azul Freddo Oscuro
+                        borderRadius: 6,
                     }]
                 },
-                options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
             });
 
-            // DIBUJAR GRÁFICO 2: TIEMPOS
+            // Gráfico de Tiempos
             const ctx2 = document.getElementById('timeChart').getContext('2d');
-            if (chartTime) chartTime.destroy();
-            chartTime = new Chart(ctx2, {
+            if (chartTimeInstance) chartTimeInstance.destroy();
+
+            chartTimeInstance = new Chart(ctx2, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Días de Tránsito',
-                        data: dataTime,
+                        label: 'Días Promedio',
+                        data: timeData,
                         borderColor: '#10b981', // Verde
                         backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#10b981',
                         fill: true,
                         tension: 0.3
                     }]
                 },
-                options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false } } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
             });
         }
     </script>
