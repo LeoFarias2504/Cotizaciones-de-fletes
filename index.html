@@ -3,119 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Registro de Fletes</title>
+    <title>Logística Freddo - Carga de Cotizaciones</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .freddo-gradient { background: linear-gradient(135deg, #002855 0%, #00509d 100%); }
-    </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans">
-    <div class="freddo-gradient py-6 shadow-lg mb-8">
-        <h1 class="text-white text-center text-2xl font-bold tracking-widest uppercase">Freddo Argentina - Comercio Exterior</h1>
-    </div>
-
-    <div class="max-w-4xl mx-auto px-4 pb-12">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div class="p-6 border-b border-gray-100">
-                <h2 class="text-xl font-semibold text-gray-800 text-center">Carga de Cotización y Gastos</h2>
-            </div>
-
-            <form id="comexForm" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Referencia Expo</label>
-                    <input type="text" name="referencia" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: EXPO-2026-045" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Destino</label>
-                    <input type="text" name="destino" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: Puerto de Callao" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Modalidad</label>
-                    <select name="modalidad" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" required>
-                        <option value="Maritimo">Marítimo</option>
-                        <option value="Terrestre">Terrestre</option>
-                        <option value="Aereo">Aéreo</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Incoterm</label>
-                    <input type="text" name="incoterm" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="FOB, CIF, FCA..." required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Tipo de Contenedor</label>
-                    <select name="contenedor" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white" required>
-                        <option value="" disabled selected>Seleccione opción...</option>
-                        <option value="20 pies">20 pies (Standard)</option>
-                        <option value="40 pies">40 pies (Standard)</option>
-                        <option value="40 HC">40 HC (High Cube)</option>
-                        <option value="20 rf">20 RF (Reefer)</option>
-                        <option value="40 rf">40 RF (Reefer)</option>
-                        <option value="Sider">Sider / Camión</option>
-                        <option value="Aereo">Carga Aérea</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Nombre Marítima / Forwarder</label>
-                    <input type="text" name="carrier" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej: Maersk / MSC" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Transit Time (Días)</label>
-                    <input type="number" name="transit_time" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" required>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Flete Internacional (USD)</label>
-                    <input type="number" step="0.01" name="flete" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00" required>
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-1">Gastos Locales (USD)</label>
-                    <input type="number" step="0.01" name="gastos_locales" class="w-full border-gray-300 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00" required>
-                </div>
-
-                <div class="md:col-span-2 mt-4">
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-4 rounded-xl hover:bg-blue-800 shadow-md transition-all active:scale-95">
-                        REGISTRAR EN BASE DE DATOS
-                    </button>
-                </div>
-            </form>
-            
-            <div id="msg" class="hidden m-6 p-4 bg-green-100 text-green-700 text-center font-bold rounded-lg border border-green-200">
-                ¡Cotización enviada con éxito al histórico!
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white shadow-2xl rounded-xl p-8 w-full max-w-2xl">
+        <div class="flex flex-col items-center mb-8 border-b pb-4">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Logo_Freddo.png" alt="Freddo Logo" class="h-16 mb-4">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-blue-900 uppercase tracking-wider">Comercio Exterior</h2>
+                <p class="text-sm font-semibold text-blue-500">Gestión de Cotizaciones Internacionales</p>
             </div>
         </div>
+
+        <form id="comexForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Ref. Exportación</label>
+                <input type="text" name="referencia" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: EXPO-2026-001" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Destino</label>
+                <input type="text" name="destino" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Santiago, Chile" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Modalidad</label>
+                <select name="modalidad" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm">
+                    <option value="Marítimo">Marítimo</option>
+                    <option value="Terrestre">Terrestre</option>
+                    <option value="Aéreo">Aéreo</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Incoterm</label>
+                <input type="text" name="incoterm" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" placeholder="Ej: FOB, CFR, FCA">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Tipo Contenedor / Unidad</label>
+                <select name="contenedor" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" required>
+                    <option value="" disabled selected>Seleccione opción...</option>
+                    <option value="20 pies ST">20 pies (Standard)</option>
+                    <option value="40 pies ST">40 pies (Standard)</option>
+                    <option value="40 HC">40 HC (High Cube)</option>
+                    <option value="20 RF">20 RF (Reefer)</option>
+                    <option value="40 RF">40 RF (Reefer)</option>
+                    <option value="Sider">Sider (Camión)</option>
+                    <option value="Aéreo">Carga Aérea</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nombre Marítima/Carrier</label>
+                <input type="text" name="carrier" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" placeholder="Ej: MSC / Maersk" required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Transit Time (Días)</label>
+                <input type="number" name="transit_time" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" placeholder="0">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Flete Internacional (USD)</label>
+                <input type="number" step="0.01" name="flete" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" placeholder="0.00" required>
+            </div>
+            
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700">Gastos Locales (USD)</label>
+                <input type="number" step="0.01" name="gastos_locales" class="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm" placeholder="0.00" required>
+            </div>
+
+            <div class="md:col-span-2 mt-4">
+                <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-800 transition duration-300 shadow-lg">
+                    GUARDAR EN HISTÓRICO
+                </button>
+            </div>
+        </form>
+        <p id="msg" class="mt-4 text-center text-green-600 font-bold hidden border border-green-200 bg-green-50 p-2 rounded">¡Cotización guardada exitosamente en el Excel!</p>
     </div>
 
     <script>
-        // Reemplaza esto con tu URL de Google Apps Script
-        const scriptURL = 'TU_URL_DE_APPS_SCRIPT_AQUI';
+        // Recuerda colocar aquí la URL que obtienes al "Implementar" en Google Apps Script
+        const scriptURL = 'ACA_VA_TU_URL_DE_APPS_SCRIPT';
         const form = document.getElementById('comexForm');
-        const btn = document.getElementById('submitBtn');
         const msg = document.getElementById('msg');
+        const btn = document.getElementById('submitBtn');
 
         form.addEventListener('submit', e => {
             e.preventDefault();
             btn.disabled = true;
-            btn.innerText = 'PROCESANDO...';
+            btn.innerText = 'Enviando Datos...';
             
             fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(response => {
                     msg.classList.remove('hidden');
                     form.reset();
                     btn.disabled = false;
-                    btn.innerText = 'REGISTRAR EN BASE DE DATOS';
+                    btn.innerText = 'GUARDAR EN HISTÓRICO';
                     setTimeout(() => msg.classList.add('hidden'), 5000);
                 })
                 .catch(error => {
-                    alert('Hubo un error: ' + error.message);
+                    alert('Error al guardar: ' + error.message);
                     btn.disabled = false;
-                    btn.innerText = 'REGISTRAR EN BASE DE DATOS';
+                    btn.innerText = 'GUARDAR EN HISTÓRICO';
                 });
         });
     </script>
