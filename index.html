@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Dashboard Operativo</title>
+    <title>Freddo Comex - Dashboard Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -15,8 +15,8 @@
             <p class="text-sm text-gray-500 font-medium mt-1">Gestión de Cotizaciones y Análisis de Costos</p>
         </div>
         <div class="hidden md:block text-right">
-            <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                ● Sistema Online
+            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                v2.0 con Filtros
             </span>
         </div>
     </div>
@@ -32,7 +32,7 @@
                 <form id="comexForm" class="space-y-3">
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase">Referencia</label>
-                        <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm transition" placeholder="Ej: EXP-24-001" required>
+                        <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: EXP-24-001" required>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -46,9 +46,7 @@
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Vía</label>
                             <select name="modalidad" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none">
-                                <option value="Marítimo">Marítimo</option>
-                                <option value="Terrestre">Terrestre</option>
-                                <option value="Aéreo">Aéreo</option>
+                                <option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option>
                             </select>
                         </div>
                     </div>
@@ -62,12 +60,9 @@
                             <label class="text-xs font-bold text-gray-500 uppercase">Equipo</label>
                             <select name="contenedor" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" required>
                                 <option value="" disabled selected>Tipo...</option>
-                                <option value="20 pies ST">20' ST</option>
-                                <option value="40 pies ST">40' ST</option>
-                                <option value="40 HC">40' HC</option>
-                                <option value="20 RF">20' RF</option>
-                                <option value="40 RF">40' RF</option>
-                                <option value="Sider">Sider</option>
+                                <option value="20 pies ST">20' ST</option><option value="40 pies ST">40' ST</option>
+                                <option value="40 HC">40' HC</option><option value="20 RF">20' RF</option>
+                                <option value="40 RF">40' RF</option><option value="Sider">Sider</option>
                             </select>
                         </div>
                     </div>
@@ -92,230 +87,210 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md active:scale-95 mt-4">
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md mt-4">
                         GUARDAR DATOS
                     </button>
                 </form>
-                
-                <div id="loadingMsg" class="hidden mt-3 text-center text-sm text-blue-600 font-semibold animate-pulse">
-                    Enviando datos a Google Sheets...
-                </div>
-                <div id="successMsg" class="hidden mt-3 text-center text-sm text-green-600 font-bold bg-green-50 p-2 rounded border border-green-200">
-                    ✅ ¡Datos Guardados y Dashboard Actualizado!
-                </div>
+                <div id="statusMsg" class="hidden mt-3 text-center text-sm font-bold"></div>
             </div>
         </div>
 
         <div class="w-full lg:w-2/3 space-y-4">
             
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
+                <label class="font-bold text-blue-900 mr-2">🔎 Filtrar Dashboard por Destino:</label>
+                <select id="filterCountry" onchange="applyFilter()" class="flex-1 max-w-xs border-blue-300 border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="ALL">🌎 Todos los Destinos (Vista Global)</option>
+                    </select>
+            </div>
+
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-white p-4 rounded-xl shadow border-b-4 border-blue-500">
                     <p class="text-xs text-gray-400 uppercase font-bold">Cotizaciones</p>
-                    <p id="kpiCount" class="text-2xl font-bold text-gray-800">Cargando...</p>
+                    <p id="kpiCount" class="text-2xl font-bold text-gray-800">0</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow border-b-4 border-green-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Promedio Flete</p>
-                    <p id="kpiCost" class="text-2xl font-bold text-gray-800">-</p>
+                    <p class="text-xs text-gray-400 uppercase font-bold">Costo Promedio</p>
+                    <p id="kpiCost" class="text-2xl font-bold text-gray-800">$0</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow border-b-4 border-indigo-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Promedio TT</p>
+                    <p class="text-xs text-gray-400 uppercase font-bold">Tiempo Promedio</p>
                     <p id="kpiTime" class="text-2xl font-bold text-gray-800">-</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow border-b-4 border-orange-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Destino Top</p>
+                    <p class="text-xs text-gray-400 uppercase font-bold" id="labelTop">Destino Top</p>
                     <p id="kpiDest" class="text-lg font-bold text-gray-800 truncate">-</p>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-80">
-                <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase">💰 Comparativa: Costo Total (Flete + Gastos)</h3>
-                <div class="h-64 w-full">
-                    <canvas id="costChart"></canvas>
-                </div>
+            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-72">
+                <h3 id="titleCost" class="text-sm font-bold text-gray-700 mb-2 uppercase">💰 Comparativa de Costos</h3>
+                <div class="h-56 w-full"><canvas id="costChart"></canvas></div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-80">
-                <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase">⏱️ Análisis: Transit Time (Días)</h3>
-                <div class="h-64 w-full">
-                    <canvas id="timeChart"></canvas>
-                </div>
+            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-72">
+                <h3 id="titleTime" class="text-sm font-bold text-gray-700 mb-2 uppercase">⏱️ Comparativa de Tiempos</h3>
+                <div class="h-56 w-full"><canvas id="timeChart"></canvas></div>
             </div>
         </div>
     </div>
 
     <script>
-        // =========================================================================
-        // TU LINK DE GOOGLE APPS SCRIPT
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec';
-        // =========================================================================
+        // ============================================
+        // TU URL DE APPS SCRIPT
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec'; 
+        // ============================================
 
+        let rawData = []; // Guardamos los datos puros aquí
         let chartCostInstance = null;
         let chartTimeInstance = null;
 
-        // 1. CARGAR DATOS AL ABRIR LA PÁGINA
-        window.onload = function() {
-            loadDashboard();
-        };
+        // Carga inicial
+        window.onload = loadDashboard;
 
-        // 2. ENVIAR FORMULARIO
-        const form = document.getElementById('comexForm');
-        form.addEventListener('submit', e => {
+        // Enviar Formulario
+        document.getElementById('comexForm').addEventListener('submit', e => {
             e.preventDefault();
-            
-            // UI Feedback
             const btn = document.getElementById('submitBtn');
-            const loadMsg = document.getElementById('loadingMsg');
-            const successMsg = document.getElementById('successMsg');
+            const msg = document.getElementById('statusMsg');
             
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
-            loadMsg.classList.remove('hidden');
-            successMsg.classList.add('hidden');
-
-            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-                .then(response => {
-                    // Éxito al guardar
-                    loadMsg.classList.add('hidden');
-                    successMsg.classList.remove('hidden');
-                    form.reset();
-                    
-                    // Actualizar Dashboard Automáticamente
-                    loadDashboard();
-
-                    // Restaurar botón después de 3 seg
-                    setTimeout(() => {
-                        successMsg.classList.add('hidden');
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-50');
-                    }, 3000);
+            btn.disabled = true; btn.innerText = "Guardando...";
+            
+            fetch(scriptURL, { method: 'POST', body: new FormData(e.target)})
+                .then(() => {
+                    msg.innerText = "✅ Guardado"; msg.className = "mt-3 text-center text-sm font-bold text-green-600"; msg.classList.remove('hidden');
+                    e.target.reset();
+                    loadDashboard(); // Recargar datos
+                    setTimeout(() => { btn.disabled = false; btn.innerText = "GUARDAR DATOS"; msg.classList.add('hidden'); }, 3000);
                 })
-                .catch(error => {
-                    alert('Error de conexión con Google Sheets: ' + error.message);
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50');
-                    loadMsg.classList.add('hidden');
-                });
+                .catch(err => alert("Error: " + err));
         });
 
-        // 3. FUNCIÓN PARA OBTENER DATOS Y DIBUJAR GRÁFICOS
+        // Cargar Datos
         async function loadDashboard() {
             try {
                 const response = await fetch(scriptURL);
                 const data = await response.json();
-                
-                console.log("Datos recibidos:", data); // Para depurar en consola
-                if(data.length > 0) {
-                    processData(data);
-                } else {
-                    document.getElementById('kpiCount').innerText = "0";
-                }
-            } catch (error) {
-                console.error("Error cargando dashboard:", error);
-            }
+                rawData = data; // Guardamos en memoria global
+                updateFilterDropdown(data); // Llenar el select
+                applyFilter(); // Procesar vista
+            } catch (error) { console.error(error); }
         }
 
-        // 4. PROCESAMIENTO DE DATOS
-        function processData(rows) {
-            // Estructura esperada de fila:
-            // [Fecha, Ref, Destino, Modalidad, Incoterm, Contenedor, Carrier, TT, Flete, Gastos]
-            // Índices: Destino=2, TT=7, Flete=8, Gastos=9
+        // Llenar el Dropdown de Filtros dinámicamente
+        function updateFilterDropdown(rows) {
+            const select = document.getElementById('filterCountry');
+            const currentVal = select.value;
+            // Obtener países únicos (columna 2)
+            const countries = [...new Set(rows.map(r => r[2]))].sort();
+            
+            // Mantener la opción "ALL" y agregar países
+            select.innerHTML = '<option value="ALL">🌎 Todos los Destinos (Vista Global)</option>';
+            countries.forEach(c => {
+                if(c) {
+                    const option = document.createElement('option');
+                    option.value = c; option.innerText = c;
+                    select.appendChild(option);
+                }
+            });
+            select.value = currentVal; // Mantener selección si existía
+        }
 
+        // Función del Filtro (Mágica)
+        function applyFilter() {
+            const selectedCountry = document.getElementById('filterCountry').value;
+            let filteredRows = rawData;
+            let groupByCol = 2; // Por defecto: Agrupar por Destino (Col 2)
+            let labelX = "Destino";
+
+            // Si hay un país seleccionado, filtramos y cambiamos el agrupamiento
+            if (selectedCountry !== "ALL") {
+                filteredRows = rawData.filter(r => r[2] === selectedCountry);
+                groupByCol = 6; // Cambiamos a Agrupar por Carrier (Col 6)
+                labelX = "Naviera / Carrier";
+                
+                // Actualizar Títulos
+                document.getElementById('titleCost').innerText = `💰 Costo por Naviera (${selectedCountry})`;
+                document.getElementById('titleTime').innerText = `⏱️ Transit Time por Naviera (${selectedCountry})`;
+                document.getElementById('labelTop').innerText = "Naviera Top";
+            } else {
+                // Vista Global
+                document.getElementById('titleCost').innerText = "💰 Comparativa Costos (Por País)";
+                document.getElementById('titleTime').innerText = "⏱️ Comparativa Tiempos (Por País)";
+                document.getElementById('labelTop').innerText = "Destino Top";
+            }
+
+            processAndRender(filteredRows, groupByCol);
+        }
+
+        function processAndRender(rows, groupIndex) {
             const stats = {};
-            let globalCost = 0;
-            let globalTime = 0;
-            let countTime = 0;
-            let destCounts = {};
+            let totalCost = 0, totalTime = 0, countTime = 0;
+            let counts = {};
 
             rows.forEach(row => {
-                // Limpieza de datos
-                let dest = row[2] ? row[2].trim() : "Desconocido";
-                let tt = parseFloat(row[7]) || 0;
-                let flete = parseFloat(row[8]) || 0;
-                let gastos = parseFloat(row[9]) || 0;
-                let totalRow = flete + gastos;
+                let key = row[groupIndex] ? row[groupIndex] : "N/A"; // Agrupador (País o Carrier)
+                let cost = (parseFloat(row[8])||0) + (parseFloat(row[9])||0);
+                let time = parseFloat(row[7])||0;
 
-                // Agrupación por Destino
-                if (!stats[dest]) {
-                    stats[dest] = { sumCost: 0, sumTime: 0, count: 0 };
-                }
-                stats[dest].sumCost += totalRow;
-                stats[dest].sumTime += tt;
-                stats[dest].count++;
+                if (!stats[key]) stats[key] = { cost: 0, time: 0, count: 0 };
+                stats[key].cost += cost;
+                stats[key].time += time;
+                stats[key].count++;
 
-                // Globales
-                globalCost += totalRow;
-                if(tt > 0) { globalTime += tt; countTime++; }
-                destCounts[dest] = (destCounts[dest] || 0) + 1;
+                totalCost += cost;
+                if(time > 0) { totalTime += time; countTime++; }
+                counts[key] = (counts[key] || 0) + 1;
             });
 
-            // Preparar Arrays para Gráficos
-            const labels = Object.keys(stats);
-            const avgCosts = labels.map(d => (stats[d].sumCost / stats[d].count).toFixed(2));
-            const avgTimes = labels.map(d => (stats[d].sumTime / stats[d].count).toFixed(1));
-
-            // Actualizar KPIs HTML
+            // KPIs
             document.getElementById('kpiCount').innerText = rows.length;
-            document.getElementById('kpiCost').innerText = "$" + (globalCost / rows.length).toFixed(0);
-            document.getElementById('kpiTime').innerText = countTime ? (globalTime / countTime).toFixed(1) + " días" : "-";
+            document.getElementById('kpiCost').innerText = rows.length ? `$${(totalCost/rows.length).toFixed(0)}` : "0";
+            document.getElementById('kpiTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + " d" : "-";
             
-            // Destino Top
-            let topDest = Object.keys(destCounts).reduce((a, b) => destCounts[a] > destCounts[b] ? a : b, '-');
-            document.getElementById('kpiDest').innerText = topDest;
+            // "Top" (País más frecuente o Naviera más usada)
+            let topKey = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '-');
+            document.getElementById('kpiDest').innerText = topKey;
 
-            // Renderizar Gráficos
-            renderCharts(labels, avgCosts, avgTimes);
+            // Datos Gráficos
+            const labels = Object.keys(stats);
+            const dataCost = labels.map(k => (stats[k].cost / stats[k].count).toFixed(2));
+            const dataTime = labels.map(k => (stats[k].time / stats[k].count).toFixed(1));
+
+            renderCharts(labels, dataCost, dataTime);
         }
 
-        function renderCharts(labels, costData, timeData) {
-            // Gráfico de Costos
-            const ctx1 = document.getElementById('costChart').getContext('2d');
-            if (chartCostInstance) chartCostInstance.destroy();
-            
-            chartCostInstance = new Chart(ctx1, {
+        function renderCharts(labels, costs, times) {
+            // Destruir gráficos anteriores si existen
+            if(chartCostInstance) chartCostInstance.destroy();
+            if(chartTimeInstance) chartTimeInstance.destroy();
+
+            // Gráfico Costos
+            chartCostInstance = new Chart(document.getElementById('costChart'), {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Costo Promedio (USD)',
-                        data: costData,
-                        backgroundColor: '#1e3a8a', // Azul Freddo Oscuro
-                        borderRadius: 6,
+                        label: 'Costo Total Promedio (USD)',
+                        data: costs,
+                        backgroundColor: '#1e40af', borderRadius: 4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
             });
 
-            // Gráfico de Tiempos
-            const ctx2 = document.getElementById('timeChart').getContext('2d');
-            if (chartTimeInstance) chartTimeInstance.destroy();
-
-            chartTimeInstance = new Chart(ctx2, {
-                type: 'line',
+            // Gráfico Tiempos
+            chartTimeInstance = new Chart(document.getElementById('timeChart'), {
+                type: 'bar', // Cambié a barra para comparar navieras mejor
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Días Promedio',
-                        data: timeData,
-                        borderColor: '#10b981', // Verde
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#10b981',
-                        fill: true,
-                        tension: 0.3
+                        label: 'Días de Tránsito',
+                        data: times,
+                        backgroundColor: '#10b981', borderRadius: 4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
             });
         }
     </script>
