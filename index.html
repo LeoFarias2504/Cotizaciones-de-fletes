@@ -165,8 +165,8 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN (Pega tu URL aquí)
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec';
+        // CONFIGURACIÓN (Tu link actualizado)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwiJc8SlJ0IAduewZ2B6BRg94Ww6tCuAvP3u94-dFRUTnhnd1cQxs1w1f3udSABs_ct0g/exec';
         // ==========================================
 
         let rawData = [];
@@ -235,11 +235,12 @@
         function populateFilter() {
             const select = document.getElementById('filterCountry');
             const current = select.value;
-            const countries = [...new Set(rawData.map(r => r[2]))].sort();
+            // Filtramos valores nulos o vacíos para que no rompa el select
+            const countries = [...new Set(rawData.map(r => r[2]).filter(Boolean))].sort();
             
             select.innerHTML = '<option value="ALL">🌎 Vista Global</option>';
             countries.forEach(c => {
-                if(c) select.innerHTML += `<option value="${c}">${c}</option>`;
+                select.innerHTML += `<option value="${c}">${c}</option>`;
             });
             select.value = current;
         }
@@ -262,6 +263,7 @@
                 // Si filtramos por país, agrupamos por Carrier (Col 6), si no, por País (Col 2)
                 let key = (country === "ALL") ? r[2] : r[6]; 
                 
+                // Aseguramos que los valores sean números para evitar NaN
                 let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 let tt = parseFloat(r[7])||0;
 
@@ -280,7 +282,7 @@
             document.getElementById('kpiAvgTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + "d" : "-";
             
             // Encontrar el Top
-            let topKey = Object.keys(stats).reduce((a, b) => stats[a].count > stats[b].count ? a : b, '-');
+            let topKey = Object.keys(stats).length ? Object.keys(stats).reduce((a, b) => stats[a].count > stats[b].count ? a : b) : '-';
             document.getElementById('kpiTop').innerText = topKey;
 
             // B) Renderizar Gráficos
@@ -298,17 +300,17 @@
             tbody.innerHTML = "";
             // Mostramos los últimos 50 registros, invertidos (más nuevos primero)
             rows.slice().reverse().slice(0, 50).forEach(r => {
-                const date = new Date(r[0]).toLocaleDateString();
+                const date = r[0] ? new Date(r[0]).toLocaleDateString() : '-';
                 const total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
                 
                 const tr = `
                     <tr class="bg-white border-b hover:bg-gray-50">
                         <td class="px-4 py-2 font-medium">${date}</td>
-                        <td class="px-4 py-2 text-xs">${r[1]}</td>
-                        <td class="px-4 py-2">${r[2]}</td>
-                        <td class="px-4 py-2 text-xs text-blue-600 font-bold">${r[3]}</td>
-                        <td class="px-4 py-2 text-xs">${r[5]}</td>
-                        <td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]}</td>
+                        <td class="px-4 py-2 text-xs">${r[1] || ''}</td>
+                        <td class="px-4 py-2">${r[2] || ''}</td>
+                        <td class="px-4 py-2 text-xs text-blue-600 font-bold">${r[3] || ''}</td>
+                        <td class="px-4 py-2 text-xs">${r[5] || ''}</td>
+                        <td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6] || ''}</td>
                         <td class="px-4 py-2 text-right font-bold text-green-700">$${total.toFixed(2)}</td>
                     </tr>
                 `;
