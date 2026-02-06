@@ -3,294 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Dashboard Pro</title>
+    <title>Freddo Comex - Sistema de Gestión Logística</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen p-4 font-sans text-gray-800">
+<body class="bg-gray-100 min-h-screen p-4 font-sans text-slate-800">
 
-    <div class="mb-6 bg-white p-5 rounded-xl shadow-md border-l-8 border-blue-900 flex justify-between items-center">
+    <div class="mb-6 bg-white p-5 rounded-xl shadow border-l-8 border-blue-900 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold text-blue-900 tracking-tight">FREDDO <span class="text-blue-500">COMEX</span></h1>
-            <p class="text-sm text-gray-500 font-medium mt-1">Gestión de Cotizaciones y Análisis de Costos</p>
+            <h1 class="text-2xl font-bold text-blue-900 uppercase tracking-tight">
+                <i class="fa-solid fa-ship mr-2"></i>Freddo <span class="text-blue-500">Logistics</span>
+            </h1>
+            <p class="text-xs text-gray-500 font-bold mt-1 uppercase">Control de Costos y Tiempos de Tránsito</p>
         </div>
-        <div class="hidden md:block text-right">
-            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                v2.0 con Filtros
-            </span>
+        <div class="text-right">
+            <div class="text-xs font-bold bg-gray-200 px-3 py-1 rounded text-gray-600">
+                <i class="fa-solid fa-user-tie mr-1"></i> Perfil: Pasante Comex
+            </div>
         </div>
     </div>
 
     <div class="flex flex-col lg:flex-row gap-6">
         
-        <div class="w-full lg:w-1/3 space-y-4">
-            <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-600">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center border-b pb-2">
-                    📥 Nueva Carga
-                </h2>
-                
-                <form id="comexForm" class="space-y-3">
+        <div class="w-full lg:w-1/3 h-fit bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6">
+            <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase border-b pb-2">
+                <i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización
+            </h2>
+            
+            <form id="comexForm" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Referencia Expo</label>
+                    <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" placeholder="Ej: PO-4509 / EXP-001" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase">Referencia</label>
-                        <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: EXP-24-001" required>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Destino</label>
+                        <input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="País" required>
+                        <datalist id="destinosList">
+                            <option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Europa">
+                        </datalist>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Destino</label>
-                            <input type="text" name="destino" list="destinosList" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none focus:ring-blue-500" placeholder="País" required>
-                            <datalist id="destinosList">
-                                <option value="Uruguay"><option value="Chile"><option value="Brasil"><option value="USA"><option value="Colombia"><option value="Perú"><option value="Mexico">
-                            </datalist>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Vía</label>
-                            <select name="modalidad" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none">
-                                <option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label>
-                            <input type="text" name="incoterm" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="FOB/CFR">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Equipo</label>
-                            <select name="contenedor" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" required>
-                                <option value="" disabled selected>Tipo...</option>
-                                <option value="20 pies ST">20' ST</option><option value="40 pies ST">40' ST</option>
-                                <option value="40 HC">40' HC</option><option value="20 RF">20' RF</option>
-                                <option value="40 RF">40' RF</option><option value="Sider">Sider</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase">Naviera / Carrier</label>
-                        <input type="text" name="carrier" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="Ej: Maersk" required>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label>
+                        <select id="modalidadSelect" name="modalidad" onchange="updateEquipment()" class="w-full border p-2 rounded text-sm bg-blue-50 font-semibold text-blue-900 outline-none">
+                            <option value="Marítimo">Marítimo</option>
+                            <option value="Terrestre">Terrestre</option>
+                            <option value="Aéreo">Aéreo</option>
+                        </select>
                     </div>
+                </div>
 
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label>
+                        <input type="text" name="incoterm" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="FCA/CIP/FOB" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase">Equipo / Carga</label>
+                        <select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-gray-50 outline-none" required>
+                            </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Proveedor Logístico</label>
+                    <input type="text" name="carrier" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="Naviera, Transportista o Forwarder" required>
+                </div>
+
+                <div class="bg-gray-50 p-3 rounded border border-gray-200">
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-2">Estructura de Costos</p>
                     <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Días TT</label>
-                            <input type="number" name="transit_time" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0">
+                            <label class="text-[10px] font-bold text-gray-500">Transit Time</label>
+                            <input type="number" name="transit_time" class="w-full border p-1 rounded text-sm" placeholder="Días">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Flete $</label>
-                            <input type="number" step="0.01" name="flete" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0.00" required>
+                            <label class="text-[10px] font-bold text-gray-500">Flete USD</label>
+                            <input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-gray-700" placeholder="0.00" required>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Gastos $</label>
-                            <input type="number" step="0.01" name="gastos_locales" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm outline-none" placeholder="0.00" required>
+                            <label class="text-[10px] font-bold text-gray-500">Gastos Loc. USD</label>
+                            <input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm" placeholder="0.00" required>
                         </div>
                     </div>
+                </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-md mt-4">
-                        GUARDAR DATOS
-                    </button>
-                </form>
-                <div id="statusMsg" class="hidden mt-3 text-center text-sm font-bold"></div>
-            </div>
+                <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow">
+                    <i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE
+                </button>
+                <p id="statusMsg" class="hidden text-center text-xs font-bold text-green-600 mt-2">✅ Registro Exitoso</p>
+            </form>
         </div>
 
-        <div class="w-full lg:w-2/3 space-y-4">
+        <div class="w-full lg:w-2/3 space-y-5">
             
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 flex items-center justify-between">
-                <label class="font-bold text-blue-900 mr-2">🔎 Filtrar Dashboard por Destino:</label>
-                <select id="filterCountry" onchange="applyFilter()" class="flex-1 max-w-xs border-blue-300 border p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="ALL">🌎 Todos los Destinos (Vista Global)</option>
-                    </select>
+            <div class="bg-white p-3 rounded-xl shadow flex items-center justify-between border-l-4 border-orange-500">
+                <span class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtrar Análisis por Destino:</span>
+                <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded p-1 text-sm outline-none">
+                    <option value="ALL">🌎 Vista Global</option>
+                </select>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-blue-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Cotizaciones</p>
-                    <p id="kpiCount" class="text-2xl font-bold text-gray-800">0</p>
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <p class="text-xs text-gray-400 font-bold uppercase">Embarques</p>
+                    <p id="kpiCount" class="text-xl font-bold text-blue-900">-</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-green-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Costo Promedio</p>
-                    <p id="kpiCost" class="text-2xl font-bold text-gray-800">$0</p>
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <p class="text-xs text-gray-400 font-bold uppercase">Costo Promedio</p>
+                    <p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-indigo-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold">Tiempo Promedio</p>
-                    <p id="kpiTime" class="text-2xl font-bold text-gray-800">-</p>
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <p class="text-xs text-gray-400 font-bold uppercase">TT Promedio</p>
+                    <p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p>
                 </div>
-                <div class="bg-white p-4 rounded-xl shadow border-b-4 border-orange-500">
-                    <p class="text-xs text-gray-400 uppercase font-bold" id="labelTop">Destino Top</p>
-                    <p id="kpiDest" class="text-lg font-bold text-gray-800 truncate">-</p>
+                <div class="bg-white p-4 rounded-xl shadow text-center">
+                    <p class="text-xs text-gray-400 font-bold uppercase">Opción Top</p>
+                    <p id="kpiTop" class="text-sm font-bold text-gray-800 truncate">-</p>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-72">
-                <h3 id="titleCost" class="text-sm font-bold text-gray-700 mb-2 uppercase">💰 Comparativa de Costos</h3>
-                <div class="h-56 w-full"><canvas id="costChart"></canvas></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-64">
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Comparativa Costos (USD)</h3>
+                    <div class="h-48"><canvas id="costChart"></canvas></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Comparativa Tiempos (Días)</h3>
+                    <div class="h-48"><canvas id="timeChart"></canvas></div>
+                </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl shadow-lg border border-gray-100 h-72">
-                <h3 id="titleTime" class="text-sm font-bold text-gray-700 mb-2 uppercase">⏱️ Comparativa de Tiempos</h3>
-                <div class="h-56 w-full"><canvas id="timeChart"></canvas></div>
+            <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
+                <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico de Cotizaciones (Detalle)</h3>
+                    <span class="text-[10px] text-gray-400">Últimos registros</span>
+                </div>
+                <div class="overflow-x-auto max-h-60 overflow-y-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-2">Fecha</th>
+                                <th class="px-4 py-2">Ref</th>
+                                <th class="px-4 py-2">Destino</th>
+                                <th class="px-4 py-2">Modo</th>
+                                <th class="px-4 py-2">Equipo</th>
+                                <th class="px-4 py-2">Prov.</th>
+                                <th class="px-4 py-2 text-right">Total USD</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="text-gray-600">
+                            </tbody>
+                    </table>
+                </div>
             </div>
+
         </div>
     </div>
 
     <script>
-        // ============================================
-        // TU URL DE APPS SCRIPT
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec'; 
-        // ============================================
+        // ==========================================
+        // CONFIGURACIÓN (Pega tu URL aquí)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzO_yunLQP4ktYvvasT1p90QRcKX_64bW2huZCh7uS3lvtFGS9uioTenHAvFMARIaTB/exec';
+        // ==========================================
 
-        let rawData = []; // Guardamos los datos puros aquí
-        let chartCostInstance = null;
-        let chartTimeInstance = null;
+        let rawData = [];
+        let chartCost = null;
+        let chartTime = null;
 
-        // Carga inicial
-        window.onload = loadDashboard;
+        // 1. LÓGICA DE EQUIPAMIENTO (Context-Aware)
+        const equipmentOptions = {
+            "Marítimo": ["20' Standard", "40' Standard", "40' High Cube", "20' Reefer", "40' Reefer"],
+            "Terrestre": ["Camión Completo (FTL)", "Consolidado (LTL)", "Sider (Lonas)", "Furgón Refrigerado"],
+            "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"]
+        };
 
-        // Enviar Formulario
-        document.getElementById('comexForm').addEventListener('submit', e => {
+        function updateEquipment() {
+            const mode = document.getElementById('modalidadSelect').value;
+            const select = document.getElementById('equipoSelect');
+            select.innerHTML = ""; // Limpiar
+            
+            equipmentOptions[mode].forEach(opt => {
+                let el = document.createElement("option");
+                el.value = opt;
+                el.innerText = opt;
+                select.appendChild(el);
+            });
+        }
+
+        // Inicializar
+        window.onload = () => {
+            updateEquipment(); // Cargar opciones por defecto
+            loadDashboard();   // Cargar datos
+        };
+
+        // 2. ENVIAR DATOS
+        const form = document.getElementById('comexForm');
+        form.addEventListener('submit', e => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const msg = document.getElementById('statusMsg');
-            
-            btn.disabled = true; btn.innerText = "Guardando...";
-            
-            fetch(scriptURL, { method: 'POST', body: new FormData(e.target)})
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
                 .then(() => {
-                    msg.innerText = "✅ Guardado"; msg.className = "mt-3 text-center text-sm font-bold text-green-600"; msg.classList.remove('hidden');
-                    e.target.reset();
-                    loadDashboard(); // Recargar datos
-                    setTimeout(() => { btn.disabled = false; btn.innerText = "GUARDAR DATOS"; msg.classList.add('hidden'); }, 3000);
+                    msg.classList.remove('hidden');
+                    form.reset();
+                    updateEquipment(); // Restaurar selects
+                    loadDashboard(); // Refrescar tablas y gráficos
+                    setTimeout(() => { 
+                        msg.classList.add('hidden'); 
+                        btn.disabled = false; 
+                        btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; 
+                    }, 2000);
                 })
                 .catch(err => alert("Error: " + err));
         });
 
-        // Cargar Datos
+        // 3. CARGAR Y PROCESAR DATOS
         async function loadDashboard() {
             try {
-                const response = await fetch(scriptURL);
-                const data = await response.json();
-                rawData = data; // Guardamos en memoria global
-                updateFilterDropdown(data); // Llenar el select
-                applyFilter(); // Procesar vista
-            } catch (error) { console.error(error); }
+                const res = await fetch(scriptURL);
+                rawData = await res.json();
+                populateFilter();
+                applyFilter();
+            } catch (e) { console.error(e); }
         }
 
-        // Llenar el Dropdown de Filtros dinámicamente
-        function updateFilterDropdown(rows) {
+        function populateFilter() {
             const select = document.getElementById('filterCountry');
-            const currentVal = select.value;
-            // Obtener países únicos (columna 2)
-            const countries = [...new Set(rows.map(r => r[2]))].sort();
+            const current = select.value;
+            const countries = [...new Set(rawData.map(r => r[2]))].sort();
             
-            // Mantener la opción "ALL" y agregar países
-            select.innerHTML = '<option value="ALL">🌎 Todos los Destinos (Vista Global)</option>';
+            select.innerHTML = '<option value="ALL">🌎 Vista Global</option>';
             countries.forEach(c => {
-                if(c) {
-                    const option = document.createElement('option');
-                    option.value = c; option.innerText = c;
-                    select.appendChild(option);
-                }
+                if(c) select.innerHTML += `<option value="${c}">${c}</option>`;
             });
-            select.value = currentVal; // Mantener selección si existía
+            select.value = current;
         }
 
-        // Función del Filtro (Mágica)
+        // 4. EL CEREBRO DE LA APP (Filtros y Renderizado)
         function applyFilter() {
-            const selectedCountry = document.getElementById('filterCountry').value;
-            let filteredRows = rawData;
-            let groupByCol = 2; // Por defecto: Agrupar por Destino (Col 2)
-            let labelX = "Destino";
-
-            // Si hay un país seleccionado, filtramos y cambiamos el agrupamiento
-            if (selectedCountry !== "ALL") {
-                filteredRows = rawData.filter(r => r[2] === selectedCountry);
-                groupByCol = 6; // Cambiamos a Agrupar por Carrier (Col 6)
-                labelX = "Naviera / Carrier";
-                
-                // Actualizar Títulos
-                document.getElementById('titleCost').innerText = `💰 Costo por Naviera (${selectedCountry})`;
-                document.getElementById('titleTime').innerText = `⏱️ Transit Time por Naviera (${selectedCountry})`;
-                document.getElementById('labelTop').innerText = "Naviera Top";
-            } else {
-                // Vista Global
-                document.getElementById('titleCost').innerText = "💰 Comparativa Costos (Por País)";
-                document.getElementById('titleTime').innerText = "⏱️ Comparativa Tiempos (Por País)";
-                document.getElementById('labelTop').innerText = "Destino Top";
+            const country = document.getElementById('filterCountry').value;
+            let data = rawData;
+            
+            // Si hay filtro, mostramos solo ese país
+            if (country !== "ALL") {
+                data = rawData.filter(r => r[2] === country);
             }
 
-            processAndRender(filteredRows, groupByCol);
-        }
-
-        function processAndRender(rows, groupIndex) {
+            // A) Calcular KPIs y Agrupaciones
             const stats = {};
             let totalCost = 0, totalTime = 0, countTime = 0;
-            let counts = {};
 
-            rows.forEach(row => {
-                let key = row[groupIndex] ? row[groupIndex] : "N/A"; // Agrupador (País o Carrier)
-                let cost = (parseFloat(row[8])||0) + (parseFloat(row[9])||0);
-                let time = parseFloat(row[7])||0;
+            data.forEach(r => {
+                // Si filtramos por país, agrupamos por Carrier (Col 6), si no, por País (Col 2)
+                let key = (country === "ALL") ? r[2] : r[6]; 
+                
+                let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
+                let tt = parseFloat(r[7])||0;
 
-                if (!stats[key]) stats[key] = { cost: 0, time: 0, count: 0 };
-                stats[key].cost += cost;
-                stats[key].time += time;
+                if(!stats[key]) stats[key] = { costSum: 0, timeSum: 0, count: 0 };
+                stats[key].costSum += cost;
+                stats[key].timeSum += tt;
                 stats[key].count++;
 
                 totalCost += cost;
-                if(time > 0) { totalTime += time; countTime++; }
-                counts[key] = (counts[key] || 0) + 1;
+                if(tt>0) { totalTime += tt; countTime++; }
             });
 
-            // KPIs
-            document.getElementById('kpiCount').innerText = rows.length;
-            document.getElementById('kpiCost').innerText = rows.length ? `$${(totalCost/rows.length).toFixed(0)}` : "0";
-            document.getElementById('kpiTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + " d" : "-";
+            // Actualizar KPIs HTML
+            document.getElementById('kpiCount').innerText = data.length;
+            document.getElementById('kpiAvgCost').innerText = data.length ? `$${(totalCost/data.length).toFixed(0)}` : "0";
+            document.getElementById('kpiAvgTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + "d" : "-";
             
-            // "Top" (País más frecuente o Naviera más usada)
-            let topKey = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b, '-');
-            document.getElementById('kpiDest').innerText = topKey;
+            // Encontrar el Top
+            let topKey = Object.keys(stats).reduce((a, b) => stats[a].count > stats[b].count ? a : b, '-');
+            document.getElementById('kpiTop').innerText = topKey;
 
-            // Datos Gráficos
+            // B) Renderizar Gráficos
             const labels = Object.keys(stats);
-            const dataCost = labels.map(k => (stats[k].cost / stats[k].count).toFixed(2));
-            const dataTime = labels.map(k => (stats[k].time / stats[k].count).toFixed(1));
+            const costs = labels.map(k => (stats[k].costSum / stats[k].count).toFixed(0));
+            const times = labels.map(k => (stats[k].timeSum / stats[k].count).toFixed(1));
+            renderCharts(labels, costs, times, country !== "ALL");
 
-            renderCharts(labels, dataCost, dataTime);
+            // C) Renderizar Tabla de Histórico
+            renderTable(data);
         }
 
-        function renderCharts(labels, costs, times) {
-            // Destruir gráficos anteriores si existen
-            if(chartCostInstance) chartCostInstance.destroy();
-            if(chartTimeInstance) chartTimeInstance.destroy();
+        function renderTable(rows) {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = "";
+            // Mostramos los últimos 50 registros, invertidos (más nuevos primero)
+            rows.slice().reverse().slice(0, 50).forEach(r => {
+                const date = new Date(r[0]).toLocaleDateString();
+                const total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
+                
+                const tr = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-2 font-medium">${date}</td>
+                        <td class="px-4 py-2 text-xs">${r[1]}</td>
+                        <td class="px-4 py-2">${r[2]}</td>
+                        <td class="px-4 py-2 text-xs text-blue-600 font-bold">${r[3]}</td>
+                        <td class="px-4 py-2 text-xs">${r[5]}</td>
+                        <td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]}</td>
+                        <td class="px-4 py-2 text-right font-bold text-green-700">$${total.toFixed(2)}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+        }
 
-            // Gráfico Costos
-            chartCostInstance = new Chart(document.getElementById('costChart'), {
+        function renderCharts(labels, costs, times, isByCarrier) {
+            if(chartCost) chartCost.destroy();
+            if(chartTime) chartTime.destroy();
+
+            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+
+            chartCost = new Chart(document.getElementById('costChart'), {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Costo Total Promedio (USD)',
+                        label: 'Costo Promedio (USD)',
                         data: costs,
-                        backgroundColor: '#1e40af', borderRadius: 4
+                        backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a', // Naranja si es carrier, Azul si es país
+                        borderRadius: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+                options: commonOptions
             });
 
-            // Gráfico Tiempos
-            chartTimeInstance = new Chart(document.getElementById('timeChart'), {
-                type: 'bar', // Cambié a barra para comparar navieras mejor
+            chartTime = new Chart(document.getElementById('timeChart'), {
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Días de Tránsito',
+                        label: 'TT Promedio (Días)',
                         data: times,
-                        backgroundColor: '#10b981', borderRadius: 4
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.3
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+                options: commonOptions
             });
         }
     </script>
