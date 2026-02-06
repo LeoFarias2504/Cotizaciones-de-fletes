@@ -6,6 +6,7 @@
     <title>Freddo Comex - Sistema de Gestión Logística</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 min-h-screen p-4 font-sans text-slate-800">
@@ -141,7 +142,7 @@
                     <h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico (Detalle)</h3>
                     
                     <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow flex items-center">
-                        <i class="fa-solid fa-file-excel mr-2"></i> Descargar Reporte
+                        <i class="fa-solid fa-file-excel mr-2"></i> Descargar Excel (.xlsx)
                     </button>
                 </div>
                 <div class="overflow-x-auto max-h-60 overflow-y-auto">
@@ -173,7 +174,7 @@
         // ==========================================
 
         let rawData = [];
-        let filteredData = []; // Variable para guardar lo que se va a exportar
+        let filteredData = []; 
         let chartCost = null;
         let chartTime = null;
 
@@ -232,7 +233,6 @@
 
         function applyFilter() {
             const country = document.getElementById('filterCountry').value;
-            // ACTUALIZAMOS LA VARIABLE GLOBAL PARA LA EXPORTACIÓN
             filteredData = (country === "ALL") ? rawData : rawData.filter(r => r[2] === country);
 
             const stats = {};
@@ -286,26 +286,8 @@
             });
         }
 
-        function renderCharts(labels, costs, times, isByCarrier) {
-            if(chartCost) chartCost.destroy();
-            if(chartTime) chartTime.destroy();
-            const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-
-            chartCost = new Chart(document.getElementById('costChart'), {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Costo Promedio (USD)', data: costs, backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a', borderRadius: 4 }] },
-                options: commonOptions
-            });
-
-            chartTime = new Chart(document.getElementById('timeChart'), {
-                type: 'line',
-                data: { labels: labels, datasets: [{ label: 'TT Promedio (Días)', data: times, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true, tension: 0.3 }] },
-                options: commonOptions
-            });
-        }
-
         // ==========================================
-        // FUNCIÓN DE EXPORTACIÓN A EXCEL (CSV)
+        // FUNCIÓN DE EXCEL CORREGIDA (XLSX REAL)
         // ==========================================
         function downloadExcel() {
             if (!filteredData || filteredData.length === 0) {
@@ -313,40 +295,34 @@
                 return;
             }
 
-            // Encabezados
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Fecha,Referencia,Destino,Modalidad,Incoterm,Equipo,Carrier,Transit Time,Flete USD,Gastos Locales USD,Costo Total USD\n";
+            // 1. Preparar datos limpios para Excel
+            const excelData = filteredData.map(row => ({
+                "Fecha": row[0] ? new Date(row[0]).toLocaleDateString() : '',
+                "Referencia": row[1],
+                "Destino": row[2],
+                "Modalidad": row[3],
+                "Incoterm": row[4],
+                "Equipo": row[5],
+                "Carrier": row[6],
+                "Transit Time (Días)": parseFloat(row[7]) || 0,
+                "Flete (USD)": parseFloat(row[8]) || 0,
+                "Gastos Locales (USD)": parseFloat(row[9]) || 0,
+                "Costo Total (USD)": (parseFloat(row[8])||0) + (parseFloat(row[9])||0)
+            }));
 
-            // Filas
-            filteredData.forEach(row => {
-                // Preparar datos limpios (sin comas que rompan el CSV)
-                const date = row[0] ? new Date(row[0]).toLocaleDateString() : '';
-                const ref = (row[1] || '').replace(/,/g, " ");
-                const dest = (row[2] || '').replace(/,/g, " ");
-                const mod = (row[3] || '');
-                const inc = (row[4] || '');
-                const equip = (row[5] || '');
-                const carr = (row[6] || '').replace(/,/g, " ");
-                const tt = row[7] || 0;
-                const flete = parseFloat(row[8]) || 0;
-                const gastos = parseFloat(row[9]) || 0;
-                const total = flete + gastos;
-
-                // Armar fila
-                const rowString = `${date},${ref},${dest},${mod},${inc},${equip},${carr},${tt},${flete},${gastos},${total}`;
-                csvContent += rowString + "\n";
-            });
-
-            // Crear enlace de descarga y hacer click
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            const fileName = "Reporte_Freddo_" + document.getElementById('filterCountry').value + ".csv";
+            // 2. Crear hoja de cálculo
+            const ws = XLSX.utils.json_to_sheet(excelData);
             
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Ajustar anchos de columna (opcional pero estético)
+            ws['!cols'] = [{wch:12}, {wch:15}, {wch:12}, {wch:10}, {wch:8}, {wch:15}, {wch:15}, {wch:10}, {wch:12}, {wch:15}, {wch:15}];
+
+            // 3. Crear libro y agregar hoja
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte Comex");
+
+            // 4. Descargar archivo .xlsx
+            const countryName = document.getElementById('filterCountry').value;
+            XLSX.writeFile(wb, `Reporte_Freddo_${countryName}.xlsx`);
         }
     </script>
 </body>
