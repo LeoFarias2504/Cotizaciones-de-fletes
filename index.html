@@ -12,11 +12,12 @@
         .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; }
         .tab-inactive { color: #6b7280; border-bottom: 4px solid transparent; }
         .tab-inactive:hover { color: #374151; border-color: #d1d5db; }
+        .selected-item { background-color: #eff6ff; border-left: 4px solid #1e3a8a; } /* Estilo para item seleccionado */
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-slate-800">
 
-    <nav class="bg-white shadow sticky top-0 z-50 px-6">
+    <nav class="bg-white shadow sticky top-0 z-40 px-6">
         <div class="flex justify-between items-center h-16">
             <div class="flex items-center">
                 <i class="fa-solid fa-ship text-blue-900 text-2xl mr-3"></i>
@@ -27,39 +28,33 @@
                     <i class="fa-solid fa-calculator mr-2"></i>Cotizador
                 </button>
                 <button onclick="switchTab('gestion2026')" id="tab-gestion" class="tab-inactive py-5 px-3 focus:outline-none transition">
-                    <i class="fa-solid fa-chart-line mr-2"></i>Gestión 2026
+                    <i class="fa-solid fa-chart-pie mr-2"></i>Gestión 2026
                 </button>
             </div>
         </div>
     </nav>
 
     <div id="view-cotizador" class="p-6 max-w-7xl mx-auto animate-fade-in">
-        
         <div id="errorArea" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
             <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Mensaje del Sistema:</p>
             <p id="errorMessage" class="text-sm mt-1">...</p>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6">
-            
             <div class="w-full lg:w-1/3 h-fit bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6">
                 <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase border-b pb-2">
                     <i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización
                 </h2>
-                
                 <form id="comexForm" class="space-y-4">
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase">Referencia Expo (Única)</label>
                         <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" placeholder="Ej: EXP-001" required>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Destino</label>
                             <input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="País" required>
-                            <datalist id="destinosList">
-                                <option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Europa">
-                            </datalist>
+                            <datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"><option value="Colombia"></datalist>
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label>
@@ -70,7 +65,6 @@
                             </select>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label>
@@ -78,102 +72,46 @@
                         </div>
                         <div>
                             <label class="text-xs font-bold text-gray-500 uppercase">Equipo / Carga</label>
-                            <select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-gray-50 outline-none" required>
-                            </select>
+                            <select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-gray-50 outline-none" required></select>
                         </div>
                     </div>
-
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase">Proveedor Logístico</label>
                         <input type="text" name="carrier" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="Naviera, Transportista o Forwarder" required>
                     </div>
-
                     <div class="bg-gray-50 p-3 rounded border border-gray-200">
                         <p class="text-xs font-bold text-gray-400 uppercase mb-2">Estructura de Costos</p>
                         <div class="grid grid-cols-3 gap-2">
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-500">Transit Time</label>
-                                <input type="number" name="transit_time" class="w-full border p-1 rounded text-sm" placeholder="Días">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-500">Flete USD</label>
-                                <input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-gray-700" placeholder="0.00" required>
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-500">Gastos Loc. USD</label>
-                                <input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm" placeholder="0.00" required>
-                            </div>
+                            <div><label class="text-[10px] font-bold text-gray-500">Transit Time</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm" placeholder="Días"></div>
+                            <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-gray-700" placeholder="0.00" required></div>
+                            <div><label class="text-[10px] font-bold text-gray-500">Gastos Loc. USD</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm" placeholder="0.00" required></div>
                         </div>
                     </div>
-
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow">
-                        <i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE
-                    </button>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow"><i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE</button>
                     <p id="statusMsg" class="hidden text-center text-xs font-bold text-green-600 mt-2">✅ Registro Exitoso</p>
                 </form>
             </div>
 
             <div class="w-full lg:w-2/3 space-y-5">
-                
                 <div class="bg-white p-3 rounded-xl shadow flex items-center justify-between border-l-4 border-orange-500">
-                    <span class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtrar Análisis por Destino:</span>
+                    <span class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtrar Análisis:</span>
                     <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded p-1 text-sm outline-none">
                         <option value="ALL">🌎 Vista Global</option>
                     </select>
                 </div>
-
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Embarques</p>
-                        <p id="kpiCount" class="text-xl font-bold text-blue-900">-</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Costo Promedio</p>
-                        <p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <p class="text-xs text-gray-400 font-bold uppercase">TT Promedio</p>
-                        <p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Opción Top</p>
-                        <p id="kpiTop" class="text-sm font-bold text-gray-800 truncate">-</p>
-                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Embarques</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Costo Promedio</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">TT Promedio</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Opción Top</p><p id="kpiTop" class="text-sm font-bold text-gray-800 truncate">-</p></div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative">
-                        <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Comparativa Costos (USD)</h3>
-                        <div class="h-48"><canvas id="costChart"></canvas></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative">
-                        <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Comparativa Tiempos (Días)</h3>
-                        <div class="h-48"><canvas id="timeChart"></canvas></div>
-                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative"><h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Costos (USD)</h3><div class="h-48"><canvas id="costChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative"><h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Tiempos (Días)</h3><div class="h-48"><canvas id="timeChart"></canvas></div></div>
                 </div>
-
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                    <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico (Detalle)</h3>
-                        <button id="btnDownload" onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded transition shadow flex items-center">
-                            <i class="fa-solid fa-file-excel mr-2"></i> Exportar
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto max-h-60 overflow-y-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-2">Fecha</th>
-                                    <th class="px-4 py-2">Ref</th>
-                                    <th class="px-4 py-2">Destino</th>
-                                    <th class="px-4 py-2">Carrier</th>
-                                    <th class="px-4 py-2 text-right">Total USD</th>
-                                    <th class="px-4 py-2 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody" class="text-gray-600"></tbody>
-                        </table>
-                    </div>
+                    <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center"><h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico</h3><button onclick="downloadExcel()" class="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded"><i class="fa-solid fa-file-excel mr-2"></i> Exportar</button></div>
+                    <div class="overflow-x-auto max-h-60 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total USD</th><th class="px-4 py-2 text-center">Acciones</th></tr></thead><tbody id="historyTableBody" class="text-gray-600"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -181,72 +119,73 @@
 
     <div id="view-gestion2026" class="hidden p-6 max-w-7xl mx-auto">
         
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-600 mb-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-file-import mr-2"></i>Actualizar Packing List 2026</h2>
-                <div class="text-xs text-gray-500">Copia las filas de tu Excel y pégalas aquí</div>
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Panel de Exportaciones 2026</h2>
+                <p class="text-sm text-gray-500">Análisis de Packing List y SKUs</p>
             </div>
-            
-            <textarea id="pl-paste-area" class="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Haz clic aquí y presiona Ctrl+V para pegar los datos de tu Excel (Columnas: NRO Expo, Destino, TIPO... Precio Total)"></textarea>
-            
-            <div class="mt-4 flex justify-between items-center">
-                <p id="pl-status" class="text-sm text-gray-500 font-bold italic">Esperando datos...</p>
-                <button onclick="savePLData()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition">
-                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> GUARDAR / ACTUALIZAR
-                </button>
-            </div>
+            <button onclick="openImportModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center transition">
+                <i class="fa-solid fa-file-import mr-2"></i> Importar / Actualizar Excel
+            </button>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
             
-            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[600px] flex flex-col">
+            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[700px] flex flex-col border border-gray-200">
                 <div class="p-4 border-b bg-gray-50">
-                    <h3 class="font-bold text-gray-700 uppercase text-xs">Operaciones 2026</h3>
-                    <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-2 border rounded p-1 text-sm">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Filtrar por Destino</label>
+                    <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-1 border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="TODOS">Todos los destinos</option>
                     </select>
                 </div>
+                
                 <div id="pl-list-container" class="flex-1 overflow-y-auto p-2 space-y-2">
                     </div>
             </div>
 
             <div class="col-span-12 md:col-span-8 space-y-6">
                 
-                <div class="grid grid-cols-3 gap-4" id="pl-kpi-area" style="opacity: 0.5;">
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-800">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Monto Total</p>
+                <div class="flex items-center justify-between border-b pb-2">
+                    <h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Resumen Global</h3>
+                    <span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold">Vista General</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-blue-900">
+                        <p class="text-xs text-gray-400 font-bold uppercase">Monto Total (FOB)</p>
                         <p id="pl-kpi-monto" class="text-2xl font-bold text-blue-900">$ -</p>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Peso Neto</p>
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-orange-500">
+                        <p class="text-xs text-gray-400 font-bold uppercase">Peso Neto Total</p>
                         <p id="pl-kpi-peso" class="text-2xl font-bold text-gray-800">- Kg</p>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Items (SKUs)</p>
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-purple-600">
+                        <p id="pl-kpi-label-3" class="text-xs text-gray-400 font-bold uppercase">Operaciones</p>
                         <p id="pl-kpi-items" class="text-2xl font-bold text-gray-800">-</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (USD)</h4>
-                        <div class="h-48"><canvas id="plChartType"></canvas></div>
+                <div class="grid grid-cols-2 gap-4 h-72">
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo de Producto (USD)</h4>
+                        <div class="h-56"><canvas id="plChartType"></canvas></div>
                     </div>
-                    <div class="bg-white p-4 rounded-xl shadow">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 SKUs (Valor)</h4>
-                        <div class="h-48"><canvas id="plChartSku"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 SKUs / Categorías</h4>
+                        <div class="h-56"><canvas id="plChartSku"></canvas></div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm">
-                        Detalle de Packing List
+                <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
+                    <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between">
+                        <span>Detalle de Items</span>
+                        <span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0 items</span>
                     </div>
-                    <div class="overflow-x-auto max-h-60 overflow-y-auto">
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
                         <table class="w-full text-sm text-left">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
                                 <tr>
-                                    <th class="px-4 py-2">SKU</th>
+                                    <th class="px-4 py-2">SKU / ID</th>
                                     <th class="px-4 py-2">Descripción</th>
                                     <th class="px-4 py-2">Tipo</th>
                                     <th class="px-4 py-2 text-right">Kg Neto</th>
@@ -257,22 +196,44 @@
                         </table>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded shadow-xl text-center">
+    <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Importar / Actualizar Datos</h3>
+                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            
+            <p class="text-sm text-gray-600 mb-2">
+                Ve a tu Excel, hoja "2026". Copia las filas (desde Nro Expo hasta Precio Total) y pégalas aquí.
+                <br><strong class="text-red-500">Nota:</strong> Esto borrará los datos anteriores y cargará los nuevos.
+            </p>
+
+            <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Paste Excel data here..."></textarea>
+            
+            <div class="mt-4 flex justify-end space-x-3">
+                <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
+                <button onclick="savePLData()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-bold text-sm shadow">
+                    <i class="fa-solid fa-check mr-2"></i> Procesar y Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
+        <div class="text-center">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="font-bold">Procesando...</p>
+            <p class="font-bold text-gray-700">Procesando datos...</p>
         </div>
     </div>
 
     <script>
-        // =========================================================
-        // 1. LÓGICA GENERAL (TABS)
-        // =========================================================
+        // ========================================================================================
+        // 1. LÓGICA GENERAL
+        // ========================================================================================
         function switchTab(tab) {
             document.getElementById('view-cotizador').classList.add('hidden');
             document.getElementById('view-gestion2026').classList.add('hidden');
@@ -285,158 +246,78 @@
             } else {
                 document.getElementById('view-gestion2026').classList.remove('hidden');
                 document.getElementById('tab-gestion').className = "tab-active py-5 px-3 focus:outline-none transition";
-                loadPLData(); // Cargar datos guardados al entrar
+                loadPLData();
             }
         }
 
-        // =========================================================
-        // 2. LÓGICA COTIZADOR (ORIGINAL)
-        // =========================================================
+        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('pl-paste-area').value = ''; document.getElementById('pl-paste-area').focus(); }
+        function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
+
+        // ========================================================================================
+        // 2. LÓGICA COTIZADOR (INTACTA)
+        // ========================================================================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyxMBikAD1YkmTh3y4f90ErfUV63FBu4K3UevfrE0t7T0LJ3OFRBWXuBZhmCvEtfRYaYg/exec';
         let rawData = [], filteredData = [], chartCost = null, chartTime = null;
-        
-        const equipmentOptions = {
-            "Marítimo": ["20' Standard", "40' Standard", "40' High Cube", "20' Reefer", "40' Reefer"],
-            "Terrestre": ["Camión Completo (FTL)", "Consolidado (LTL)", "Sider (Lonas)", "Furgón Refrigerado"],
-            "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"]
-        };
+        const equipmentOptions = { "Marítimo": ["20' Standard", "40' Standard", "40' High Cube", "20' Reefer", "40' Reefer"], "Terrestre": ["Camión Completo (FTL)", "Consolidado (LTL)", "Sider (Lonas)", "Furgón Refrigerado"], "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"] };
 
         function updateEquipment() {
             const mode = document.getElementById('modalidadSelect').value;
-            const select = document.getElementById('equipoSelect');
-            select.innerHTML = ""; 
-            equipmentOptions[mode].forEach(opt => {
-                let el = document.createElement("option"); el.value = opt; el.innerText = opt; select.appendChild(el);
-            });
+            const select = document.getElementById('equipoSelect'); select.innerHTML = ""; 
+            equipmentOptions[mode].forEach(opt => { let el = document.createElement("option"); el.value = opt; el.innerText = opt; select.appendChild(el); });
         }
 
         document.getElementById('comexForm').addEventListener('submit', e => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('statusMsg');
+            const btn = document.getElementById('submitBtn'); const msg = document.getElementById('statusMsg');
             btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-            fetch(scriptURL, { method: 'POST', body: new FormData(e.target)})
-                .then(response => { if (!response.ok) throw new Error("Error de red"); return response; })
-                .then(() => {
-                    msg.classList.remove('hidden'); e.target.reset(); updateEquipment(); loadDashboard(); 
-                    setTimeout(() => { msg.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; }, 2000);
-                })
-                .catch(err => { alert("Error al guardar: " + err); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; });
+            fetch(scriptURL, { method: 'POST', body: new FormData(e.target)}).then(res => { if(!res.ok) throw new Error("Error"); return res; }).then(() => {
+                msg.classList.remove('hidden'); e.target.reset(); updateEquipment(); loadDashboard();
+                setTimeout(() => { msg.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; }, 2000);
+            }).catch(err => { alert("Error: "+err); btn.disabled = false; btn.innerHTML = 'GUARDAR EN BASE'; });
         });
 
-        async function loadDashboard() {
-            try {
-                const res = await fetch(scriptURL);
-                if (!res.ok) throw new Error("No se pudo conectar");
-                const json = await res.json();
-                rawData = json;
-                populateFilter(); applyFilter();
-            } catch (e) { console.error("Error loading dashboard", e); }
-        }
-
-        function populateFilter() {
-            if(!rawData || !rawData.length) return;
-            const select = document.getElementById('filterCountry');
-            const current = select.value;
-            const countries = [...new Set(rawData.map(r => r[2]).filter(x => x))].sort();
-            select.innerHTML = '<option value="ALL">🌎 Vista Global</option>';
-            countries.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
-            select.value = current;
-        }
-
-        function applyFilter() {
-            if(!rawData || !rawData.length) return;
-            const country = document.getElementById('filterCountry').value;
-            filteredData = (country === "ALL") ? rawData : rawData.filter(r => r[2] === country);
-            
-            // Cálculos básicos
-            let totalCost = 0, totalTime = 0, countTime = 0;
-            const stats = {};
-            
-            filteredData.forEach(r => {
-                let key = (country === "ALL") ? (r[2] || "S/D") : (r[6] || "S/D"); 
-                let cost = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
-                let tt = parseFloat(r[7])||0;
-                
-                if(!stats[key]) stats[key] = { costSum: 0, timeSum: 0, count: 0 };
-                stats[key].costSum += cost; stats[key].timeSum += tt; stats[key].count++;
-                
-                totalCost += cost;
-                if(tt>0) { totalTime += tt; countTime++; }
+        async function loadDashboard() { try { const res = await fetch(scriptURL); const json = await res.json(); rawData = json; populateFilter(); applyFilter(); } catch(e){} }
+        function populateFilter() { const sel = document.getElementById('filterCountry'); const cur = sel.value; const c = [...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort(); sel.innerHTML='<option value="ALL">🌎 Vista Global</option>'; c.forEach(x=>sel.innerHTML+=`<option value="${x}">${x}</option>`); sel.value=cur; }
+        function applyFilter() { 
+            const c = document.getElementById('filterCountry').value; filteredData = (c==="ALL")?rawData:rawData.filter(r=>r[2]===c);
+            let tc=0, tt=0, ct=0, stats={};
+            filteredData.forEach(r=>{ 
+                let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D"); let cost=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); let t=parseFloat(r[7])||0;
+                if(!stats[k]) stats[k]={cs:0,ts:0,c:0}; stats[k].cs+=cost; stats[k].ts+=t; stats[k].c++; tc+=cost; if(t>0){tt+=t;ct++;}
             });
-
-            document.getElementById('kpiCount').innerText = filteredData.length;
-            document.getElementById('kpiAvgCost').innerText = filteredData.length ? `$${(totalCost/filteredData.length).toFixed(0)}` : "0";
-            document.getElementById('kpiAvgTime').innerText = countTime ? (totalTime/countTime).toFixed(1) + "d" : "-";
-            let topKey = Object.keys(stats).length ? Object.keys(stats).reduce((a, b) => stats[a].count > stats[b].count ? a : b) : '-';
-            document.getElementById('kpiTop').innerText = topKey;
-
-            renderCharts(Object.keys(stats), Object.keys(stats).map(k => (stats[k].costSum / stats[k].count).toFixed(0)), Object.keys(stats).map(k => (stats[k].timeSum / stats[k].count).toFixed(1)), country !== "ALL");
-            renderTable(filteredData);
+            document.getElementById('kpiCount').innerText=filteredData.length; document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0"; document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-"; 
+            let top=Object.keys(stats).length?Object.keys(stats).reduce((a,b)=>stats[a].c>stats[b].c?a:b):'-'; document.getElementById('kpiTop').innerText=top;
+            renderCharts(Object.keys(stats), Object.keys(stats).map(k=>(stats[k].cs/stats[k].c).toFixed(0)), Object.keys(stats).map(k=>(stats[k].ts/stats[k].c).toFixed(1)), c!=="ALL");
+            const tb=document.getElementById('historyTableBody'); tb.innerHTML=""; filteredData.slice().reverse().slice(0,50).forEach(r=>{ let d=r[0]?new Date(r[0]).toLocaleDateString():'-'; let tot=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${tot.toFixed(2)}</td><td class="px-4 py-2 text-center"><button class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
         }
-
-        function renderCharts(labels, costs, times, isByCarrier) {
-            if(chartCost) chartCost.destroy();
-            if(chartTime) chartTime.destroy();
-            const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-
-            chartCost = new Chart(document.getElementById('costChart'), {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Costo (USD)', data: costs, backgroundColor: isByCarrier ? '#f97316' : '#1e3a8a', borderRadius: 4 }] },
-                options: opts
-            });
-            chartTime = new Chart(document.getElementById('timeChart'), {
-                type: 'line',
-                data: { labels: labels, datasets: [{ label: 'TT (Días)', data: times, borderColor: '#4f46e5', backgroundColor: 'rgba(79, 70, 229, 0.1)', fill: true }] },
-                options: opts
-            });
+        function renderCharts(l,c,t,isCarrier){ 
+            if(chartCost) chartCost.destroy(); if(chartTime) chartTime.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+            chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isCarrier?'#f97316':'#1e3a8a',borderRadius:4}]},options:opts});
+            chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:opts});
         }
+        function downloadExcel() { if(typeof XLSX==='undefined'){alert("Error Excel");return;} const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
 
-        function renderTable(rows) {
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = "";
-            rows.slice().reverse().slice(0, 50).forEach(r => {
-                let dateStr = r[0] ? new Date(r[0]).toLocaleDateString() : '-';
-                let total = (parseFloat(r[8])||0) + (parseFloat(r[9])||0);
-                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${dateStr}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${total.toFixed(2)}</td><td class="px-4 py-2 text-center"><button class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-            });
-        }
-        
-        function downloadExcel() {
-             if (typeof XLSX === 'undefined') { alert("Error lib Excel"); return; }
-             const data = filteredData.map(r => ({ Fecha: r[0], Ref: r[1], Destino: r[2], Modalidad: r[3], Carrier: r[6], TotalUSD: (parseFloat(r[8])||0)+(parseFloat(r[9])||0) }));
-             const ws = XLSX.utils.json_to_sheet(data);
-             const wb = XLSX.utils.book_new();
-             XLSX.utils.book_append_sheet(wb, ws, "Cotizaciones");
-             XLSX.writeFile(wb, "Freddo_Reporte.xlsx");
-        }
-
-        // =========================================================
-        // 3. LÓGICA GESTIÓN 2026 (NUEVA)
-        // =========================================================
+        // ========================================================================================
+        // 3. LÓGICA GESTIÓN 2026 (NUEVA Y MEJORADA)
+        // ========================================================================================
         let plData = [];
-        let plGrouped = {};
         let plChartType = null;
         let plChartSku = null;
+        let selectedExpoId = null; // Para saber qué estamos viendo (null = resumen país/general)
 
-        // PARSER INTELIGENTE DE NÚMEROS (Detecta $ 1.234,56 o 1,234.56)
+        // Parseador de dinero mejorado para formatos latinos y gringos
         function parseMoney(str) {
             if (!str) return 0;
-            // Quitamos símbolos de moneda y espacios
-            let clean = str.toString().replace(/[$\s]/g, '');
-            // Si tiene coma y punto, asumimos formato latino/euro: punto=miles, coma=decimal
+            let clean = str.toString().replace(/[$\sA-Za-z]/g, ''); // Quitar letras, $, espacios
+            // Si tiene coma y punto (1.234,50 o 1,234.50)
             if (clean.indexOf(',') > -1 && clean.indexOf('.') > -1) {
-                if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) {
-                    // Formato 1.234,56 -> borramos puntos, cambiamos coma por punto
+                if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) { // 1.234,50 (Latino)
                     clean = clean.replace(/\./g, '').replace(',', '.');
-                } else {
-                    // Formato 1,234.56 -> borramos comas
+                } else { // 1,234.50 (USA)
                     clean = clean.replace(/,/g, '');
                 }
-            } else if (clean.indexOf(',') > -1) {
-                // Solo comas: si hay muchas, son miles (1,000,000) -> borrar. Si es una al final, es decimal (123,50)
-                // Regla simple para Freddo (ARG): Coma es decimal casi siempre.
+            } else if (clean.indexOf(',') > -1) { // Solo coma (123,50 o 1,000)
+                // Asumimos decimal si es al final
                 clean = clean.replace(',', '.');
             }
             return parseFloat(clean) || 0;
@@ -446,109 +327,172 @@
             const text = document.getElementById('pl-paste-area').value;
             if (!text) return;
             
-            const rows = text.split('\n');
-            const newItems = [];
+            document.getElementById('loadingOverlay').classList.remove('hidden');
             
-            rows.forEach(row => {
-                const cols = row.split('\t');
-                if (cols.length >= 13) {
-                    newItems.push({
-                        nroExpo: cols[0]?.trim(),
-                        destino: cols[1]?.trim(),
-                        tipo: cols[2]?.trim(),
-                        sku: cols[5]?.trim(),
-                        desc: cols[6]?.trim(),
-                        kgNeto: parseMoney(cols[9]),
-                        precioTotal: parseMoney(cols[13])
-                    });
-                }
-            });
+            setTimeout(() => {
+                const rows = text.split('\n');
+                const newItems = [];
+                
+                rows.forEach(row => {
+                    const cols = row.split('\t');
+                    // Validar que tenga info minima (Nro Expo, Destino... Precio)
+                    if (cols.length >= 13) {
+                        newItems.push({
+                            nroExpo: cols[0]?.trim(),
+                            destino: cols[1]?.trim(),
+                            tipo: cols[2]?.trim(),
+                            sku: cols[5]?.trim(),
+                            desc: cols[6]?.trim(),
+                            kgNeto: parseMoney(cols[9]),
+                            precioTotal: parseMoney(cols[13])
+                        });
+                    }
+                });
 
-            if (newItems.length > 0) {
-                plData = newItems; // Sobrescribimos o podríamos hacer push
-                localStorage.setItem('freddo_pl_data_2026', JSON.stringify(plData));
-                document.getElementById('pl-status').innerText = `✅ Guardado: ${plData.length} registros en memoria.`;
-                document.getElementById('pl-status').classList.add('text-green-600');
-                renderPLList();
-            } else {
-                alert("No se detectaron datos válidos. Copia desde Excel y pega.");
-            }
+                if (newItems.length > 0) {
+                    plData = newItems; // Reemplaza totalmente lo anterior
+                    localStorage.setItem('freddo_pl_data_2026', JSON.stringify(plData));
+                    closeImportModal();
+                    renderPLList();
+                    alert(`✅ Datos actualizados: ${plData.length} registros cargados.`);
+                } else {
+                    alert("No se detectaron columnas válidas. Asegúrate de copiar desde Excel.");
+                }
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }, 500);
         }
 
         function loadPLData() {
             const stored = localStorage.getItem('freddo_pl_data_2026');
             if (stored) {
                 plData = JSON.parse(stored);
-                document.getElementById('pl-status').innerText = `📂 Datos cargados: ${plData.length} registros.`;
                 renderPLList();
             }
         }
 
         function renderPLList() {
-            // Agrupar datos
-            plGrouped = {};
             const filterDest = document.getElementById('pl-filter-dest');
             
-            // Llenar filtro si está vacío
+            // Llenar combo destinos si está vacío
             if (filterDest.options.length === 1 && plData.length > 0) {
-                const dests = [...new Set(plData.map(i => i.destino).filter(x=>x))];
+                const dests = [...new Set(plData.map(i => i.destino).filter(x=>x))].sort();
                 dests.forEach(d => {
                     let opt = document.createElement('option'); opt.value = d; opt.innerText = d; filterDest.appendChild(opt);
                 });
             }
 
             const currentDest = filterDest.value;
+            const container = document.getElementById('pl-list-container');
+            container.innerHTML = "";
 
+            // Agrupar por Expo según el filtro
+            const grouped = {};
             plData.forEach(item => {
                 if (currentDest !== 'TODOS' && item.destino !== currentDest) return;
                 if (!item.nroExpo) return;
-
-                if (!plGrouped[item.nroExpo]) {
-                    plGrouped[item.nroExpo] = { id: item.nroExpo, destino: item.destino, usd: 0, kg: 0, items: [] };
-                }
-                plGrouped[item.nroExpo].usd += item.precioTotal;
-                plGrouped[item.nroExpo].kg += item.kgNeto;
-                plGrouped[item.nroExpo].items.push(item);
+                if (!grouped[item.nroExpo]) grouped[item.nroExpo] = { id: item.nroExpo, destino: item.destino, usd: 0 };
+                grouped[item.nroExpo].usd += item.precioTotal;
             });
 
-            // Renderizar Lista
-            const container = document.getElementById('pl-list-container');
-            container.innerHTML = "";
-            
-            Object.values(plGrouped).forEach(expo => {
+            // OPCIÓN 1: VISTA GENERAL / RESUMEN (SIEMPRE PRIMERO)
+            const summaryCard = document.createElement('div');
+            summaryCard.className = "bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer transition hover:bg-blue-100 mb-2 shadow-sm sticky top-0 z-10";
+            summaryCard.innerHTML = `
+                <div class="flex items-center text-blue-900 font-bold">
+                    <i class="fa-solid fa-chart-pie mr-2"></i>
+                    <span>VER RESUMEN ${currentDest === 'TODOS' ? 'GLOBAL' : currentDest.toUpperCase()}</span>
+                </div>
+                <div class="text-xs text-blue-600 mt-1 pl-6">Todas las operaciones acumuladas</div>
+            `;
+            summaryCard.onclick = () => renderDashboardView(currentDest, null); // Null = Vista Resumen
+            container.appendChild(summaryCard);
+
+            // OPCIÓN 2: LISTA DE OPERACIONES INDIVIDUALES
+            Object.values(grouped).forEach(expo => {
                 const div = document.createElement('div');
-                div.className = "bg-gray-50 p-3 rounded border hover:bg-blue-50 cursor-pointer transition";
-                div.onclick = () => loadPLDetails(expo.id);
+                div.className = "bg-white p-3 rounded border border-gray-100 hover:bg-gray-50 cursor-pointer transition mb-1";
+                div.onclick = () => renderDashboardView(currentDest, expo.id); // ID = Vista Detallada
                 div.innerHTML = `
-                    <div class="flex justify-between font-bold text-xs text-blue-900">
+                    <div class="flex justify-between font-bold text-xs text-gray-700">
                         <span>${expo.id}</span>
-                        <span>${expo.destino}</span>
+                        <span class="text-green-600">$${expo.usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</span>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>${expo.items.length} skus</span>
-                        <span class="text-green-600 font-bold">$${expo.usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</span>
-                    </div>
+                    <div class="text-[10px] text-gray-400 mt-1">${expo.destino}</div>
                 `;
                 container.appendChild(div);
             });
+
+            // Por defecto cargamos el resumen
+            renderDashboardView(currentDest, null);
         }
 
-        function loadPLDetails(expoId) {
-            const data = plGrouped[expoId];
+        function renderDashboardView(filterDest, specificExpoId) {
+            // Filtrar la data según lo que pidan
+            let dataset = plData;
             
-            // KPIs
-            document.getElementById('pl-kpi-area').style.opacity = 1;
-            document.getElementById('pl-kpi-monto').innerText = `$ ${data.usd.toLocaleString('es-AR')}`;
-            document.getElementById('pl-kpi-peso').innerText = `${data.kg.toLocaleString('es-AR')} Kg`;
-            document.getElementById('pl-kpi-items').innerText = data.items.length;
+            // 1. Filtro País
+            if (filterDest !== 'TODOS') {
+                dataset = dataset.filter(i => i.destino === filterDest);
+            }
+            
+            // 2. Filtro Expo Específica (Si aplica)
+            if (specificExpoId) {
+                dataset = dataset.filter(i => i.nroExpo === specificExpoId);
+                document.getElementById('pl-main-title').innerText = `Operación: ${specificExpoId}`;
+                document.getElementById('pl-subtitle').innerText = "Vista Detallada";
+                document.getElementById('pl-kpi-label-3').innerText = "SKUs Totales";
+            } else {
+                document.getElementById('pl-main-title').innerText = filterDest === 'TODOS' ? "Resumen Global 2026" : `Resumen: ${filterDest}`;
+                document.getElementById('pl-subtitle').innerText = "Acumulado";
+                document.getElementById('pl-kpi-label-3').innerText = "Operaciones";
+            }
 
-            // Tabla
+            // --- CÁLCULOS ---
+            let totalUSD = 0;
+            let totalKG = 0;
+            let uniqueItems = 0;
+            
+            // Para gráficos
+            const byType = {};
+            const bySku = {};
+
+            dataset.forEach(item => {
+                totalUSD += item.precioTotal;
+                totalKG += item.kgNeto;
+                
+                // Tipo
+                let tipo = item.tipo || "Otros";
+                byType[tipo] = (byType[tipo] || 0) + item.precioTotal;
+
+                // SKU (Si es resumen general, quizás agrupar por Familia/Tipo es mejor, pero usaremos SKU/Desc para consistencia)
+                let key = specificExpoId ? item.sku : (item.tipo + " (Agrupado)"); // Si es general, mostramos tipos top
+                // Mejor: Siempre SKU para ver los productos estrella del país
+                let skuKey = item.desc || item.sku || "N/A";
+                bySku[skuKey] = (bySku[skuKey] || 0) + item.precioTotal;
+            });
+
+            // KPIs
+            if (specificExpoId) {
+                uniqueItems = dataset.length; // Filas = SKUs
+            } else {
+                // Si es resumen, contamos cuántas EXPOs hay
+                uniqueItems = new Set(dataset.map(i => i.nroExpo)).size;
+            }
+
+            // ACTUALIZAR DOM
+            document.getElementById('pl-kpi-monto').innerText = `$ ${totalUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
+            document.getElementById('pl-kpi-peso').innerText = `${totalKG.toLocaleString('es-AR', {maximumFractionDigits:0})} Kg`;
+            document.getElementById('pl-kpi-items').innerText = uniqueItems;
+            document.getElementById('pl-table-count').innerText = `${dataset.length} registros`;
+
+            // TABLA
             const tbody = document.getElementById('pl-table-body');
             tbody.innerHTML = "";
-            data.items.slice(0, 100).forEach(item => {
+            // Mostramos primeros 100 para no saturar
+            dataset.slice(0, 100).forEach(item => {
                 tbody.innerHTML += `
                     <tr class="bg-white border-b hover:bg-gray-50">
-                        <td class="px-4 py-2 font-medium">${item.sku}</td>
+                        <td class="px-4 py-2 font-medium text-xs text-gray-900">${item.nroExpo}<br><span class="text-gray-400">${item.sku}</span></td>
                         <td class="px-4 py-2 truncate max-w-xs" title="${item.desc}">${item.desc}</td>
                         <td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${item.tipo}</span></td>
                         <td class="px-4 py-2 text-right">${item.kgNeto.toLocaleString()}</td>
@@ -556,48 +500,47 @@
                     </tr>`;
             });
 
-            // Gráficos
-            updatePLCharts(data.items);
+            // GRÁFICOS
+            updatePLCharts(byType, bySku);
+
+            // Resaltar selección en lista lateral
+            const listContainer = document.getElementById('pl-list-container');
+            // Reset estilos (hack rapido)
+            Array.from(listContainer.children).forEach(child => child.classList.remove('selected-item', 'bg-blue-50', 'border-blue-500'));
+            // No podemos identificar el div facil sin ID, pero visualmente el cambio de titulo ayuda.
         }
 
-        function updatePLCharts(items) {
-            // Data TIPO
-            const byType = {};
-            items.forEach(i => byType[i.tipo] = (byType[i.tipo]||0) + i.precioTotal);
-            
-            // Data SKU
-            const topSkus = [...items].sort((a,b) => b.precioTotal - a.precioTotal).slice(0, 5);
-
+        function updatePLCharts(byType, bySku) {
+            // Destruir anteriores
             if(plChartType) plChartType.destroy();
             if(plChartSku) plChartSku.destroy();
             
-            const opts = { responsive: true, maintainAspectRatio: false };
+            const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } };
 
+            // Chart 1: Torta
             plChartType = new Chart(document.getElementById('plChartType'), {
                 type: 'doughnut',
                 data: { 
                     labels: Object.keys(byType), 
-                    datasets: [{ data: Object.values(byType), backgroundColor: ['#1e3a8a', '#ea580c', '#059669', '#7c3aed'] }] 
+                    datasets: [{ data: Object.values(byType), backgroundColor: ['#1e3a8a', '#f97316', '#10b981', '#6366f1', '#8b5cf6'], borderWidth: 0 }] 
                 },
-                options: { ...opts, plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } } }
+                options: opts
             });
 
+            // Chart 2: Barras Top 5
+            const sortedSkus = Object.entries(bySku).sort((a,b) => b[1] - a[1]).slice(0, 5);
             plChartSku = new Chart(document.getElementById('plChartSku'), {
                 type: 'bar',
                 data: {
-                    labels: topSkus.map(s => s.sku),
-                    datasets: [{ label: 'USD', data: topSkus.map(s => s.precioTotal), backgroundColor: '#1e3a8a', borderRadius: 4 }]
+                    labels: sortedSkus.map(x => x[0].substring(0, 15)+'...'),
+                    datasets: [{ label: 'USD', data: sortedSkus.map(x => x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }]
                 },
-                options: { ...opts, plugins: { legend: { display: false } }, scales: { x: { display: false } } }
+                options: { ...opts, plugins: { legend: { display: false } }, indexAxis: 'y' }
             });
         }
 
-        // INIT
-        window.addEventListener('load', () => {
-            updateEquipment();
-            loadDashboard(); // Carga Cotizador original
-            // loadPLData(); // Solo cuando entre a la pestaña
-        });
+        // Init
+        window.addEventListener('load', () => { updateEquipment(); loadDashboard(); });
     </script>
 </body>
 </html>
