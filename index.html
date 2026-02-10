@@ -14,7 +14,6 @@
         .tab-inactive:hover { color: #374151; border-color: #d1d5db; }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Scrollbar fina */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -216,7 +215,7 @@
                         <div class="h-56"><canvas id="plChartType"></canvas></div>
                     </div>
                     <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 SKUs / Categorías</h4>
+                        <h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (Valor)</h4>
                         <div class="h-56"><canvas id="plChartSku"></canvas></div>
                     </div>
                 </div>
@@ -251,14 +250,11 @@
                 <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Importar / Actualizar Datos</h3>
                 <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
             </div>
-            
             <p class="text-sm text-gray-600 mb-2">
                 Ve a tu Excel, hoja "2026". Copia las filas (desde Nro Expo hasta Precio Total) y pégalas aquí.
                 <br><strong class="text-red-500">Nota:</strong> Esto borrará los datos anteriores y cargará los nuevos.
             </p>
-
             <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Paste Excel data here..."></textarea>
-            
             <div class="mt-4 flex justify-end space-x-3">
                 <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
                 <button onclick="savePLData()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-bold text-sm shadow">
@@ -284,7 +280,6 @@
             document.getElementById('view-gestion2026').classList.add('hidden');
             document.getElementById('tab-cotizador').className = "tab-inactive py-5 px-3 focus:outline-none transition";
             document.getElementById('tab-gestion').className = "tab-inactive py-5 px-3 focus:outline-none transition";
-
             if (tab === 'cotizador') {
                 document.getElementById('view-cotizador').classList.remove('hidden');
                 document.getElementById('tab-cotizador').className = "tab-active py-5 px-3 focus:outline-none transition";
@@ -294,12 +289,11 @@
                 loadPLData();
             }
         }
-
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('pl-paste-area').value = ''; document.getElementById('pl-paste-area').focus(); }
         function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
 
         // ========================================================================================
-        // 2. LÓGICA COTIZADOR (INTACTA)
+        // 2. LÓGICA COTIZADOR
         // ========================================================================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycbyxMBikAD1YkmTh3y4f90ErfUV63FBu4K3UevfrE0t7T0LJ3OFRBWXuBZhmCvEtfRYaYg/exec';
         let rawData = [], filteredData = [], chartCost = null, chartTime = null;
@@ -343,13 +337,12 @@
         function downloadExcel() { if(typeof XLSX==='undefined'){alert("Error Excel");return;} const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
 
         // ========================================================================================
-        // 3. LÓGICA GESTIÓN 2026 (NUEVA Y MEJORADA)
+        // 3. LÓGICA GESTIÓN 2026
         // ========================================================================================
         let plData = [];
         let plChartType = null;
         let plChartSku = null;
 
-        // Parseador de dinero mejorado
         function parseMoney(str) {
             if (!str) return 0;
             let clean = str.toString().replace(/[$\sA-Za-z]/g, '');
@@ -359,32 +352,21 @@
             return parseFloat(clean) || 0;
         }
 
-        // Parseador de fechas simple
-        function parseDate(str) {
-            if(!str) return new Date(0); // Fecha muy vieja
-            // Intenta detectar formato DD/MM/YYYY o YYYY-MM-DD
-            return new Date(str); 
-        }
-
         function savePLData() {
             const text = document.getElementById('pl-paste-area').value;
             if (!text) return;
-            
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            
             setTimeout(() => {
                 const rows = text.split('\n');
                 const newItems = [];
-                
                 rows.forEach(row => {
                     const cols = row.split('\t');
-                    // CAPTURA: Col 0:Ref, 1:Dest, 2:Tipo, 3:F.Ofi, 4:ETD, 5:SKU, 6:Desc ... 9:Neto ... 13:Precio
                     if (cols.length >= 13) {
                         newItems.push({
                             nroExpo: cols[0]?.trim(),
                             destino: cols[1]?.trim(),
                             tipo: cols[2]?.trim(),
-                            fecha: cols[4]?.trim() || cols[3]?.trim(), // Intenta ETD, sino Fecha Ofi
+                            fecha: cols[4]?.trim() || cols[3]?.trim(),
                             sku: cols[5]?.trim(),
                             desc: cols[6]?.trim(),
                             kgNeto: parseMoney(cols[9]),
@@ -392,38 +374,28 @@
                         });
                     }
                 });
-
                 if (newItems.length > 0) {
                     plData = newItems; 
                     localStorage.setItem('freddo_pl_data_2026', JSON.stringify(plData));
                     closeImportModal();
                     renderPLList();
                     alert(`✅ Datos actualizados: ${plData.length} registros cargados.`);
-                } else {
-                    alert("No se detectaron columnas válidas. Asegúrate de copiar desde Excel.");
-                }
+                } else { alert("No se detectaron columnas válidas."); }
                 document.getElementById('loadingOverlay').classList.add('hidden');
             }, 500);
         }
 
         function loadPLData() {
             const stored = localStorage.getItem('freddo_pl_data_2026');
-            if (stored) {
-                plData = JSON.parse(stored);
-                renderPLList();
-            }
+            if (stored) { plData = JSON.parse(stored); renderPLList(); }
         }
 
         function renderPLList() {
             const filterDest = document.getElementById('pl-filter-dest');
-            
             if (filterDest.options.length === 1 && plData.length > 0) {
                 const dests = [...new Set(plData.map(i => i.destino).filter(x=>x))].sort();
-                dests.forEach(d => {
-                    let opt = document.createElement('option'); opt.value = d; opt.innerText = d; filterDest.appendChild(opt);
-                });
+                dests.forEach(d => { let opt = document.createElement('option'); opt.value = d; opt.innerText = d; filterDest.appendChild(opt); });
             }
-
             const currentDest = filterDest.value;
             const container = document.getElementById('pl-list-container');
             container.innerHTML = "";
@@ -436,14 +408,12 @@
                 grouped[item.nroExpo].usd += item.precioTotal;
             });
 
-            // OPCIÓN 1: VISTA GENERAL
             const summaryCard = document.createElement('div');
             summaryCard.className = "bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer transition hover:bg-blue-100 mb-2 shadow-sm sticky top-0 z-10";
             summaryCard.innerHTML = `<div class="flex items-center text-blue-900 font-bold"><i class="fa-solid fa-chart-pie mr-2"></i><span>VER RESUMEN ${currentDest === 'TODOS' ? 'GLOBAL' : currentDest.toUpperCase()}</span></div>`;
             summaryCard.onclick = () => renderDashboardView(currentDest, null); 
             container.appendChild(summaryCard);
 
-            // OPCIÓN 2: LISTA
             Object.values(grouped).forEach(expo => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-3 rounded border border-gray-100 hover:bg-gray-50 cursor-pointer transition mb-1";
@@ -451,41 +421,56 @@
                 div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${expo.id}</span><span class="text-green-600">$${expo.usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${expo.destino}</div>`;
                 container.appendChild(div);
             });
-
             renderDashboardView(currentDest, null);
+        }
+
+        function cleanProductName(desc) {
+            if (!desc) return "OTROS";
+            let clean = desc.toUpperCase();
+            // Limpieza MUY suave: solo prefijos irrelevantes, NO el sabor.
+            clean = clean.replace(/^F-\s*/, ''); // Quita F- al inicio
+            clean = clean.replace(/^HELADO\s+/, ''); // Quita HELADO al inicio
+            clean = clean.replace(/^PINTA\s+/, ''); // Quita PINTA
+            return clean.trim();
         }
 
         function renderDashboardView(filterDest, specificExpoId) {
             let dataset = plData;
-            
-            if (filterDest !== 'TODOS') {
-                dataset = dataset.filter(i => i.destino === filterDest);
-            }
-            
+            if (filterDest !== 'TODOS') dataset = dataset.filter(i => i.destino === filterDest);
             if (specificExpoId) {
                 dataset = dataset.filter(i => i.nroExpo === specificExpoId);
                 document.getElementById('pl-main-title').innerText = `Operación: ${specificExpoId}`;
                 document.getElementById('pl-subtitle').innerText = "Vista Detallada";
-                document.getElementById('pl-kpi-label-3').innerText = "SKUs Totales";
+                document.getElementById('chart-sku-title').innerText = "Top 5 SKUs (Detalle)";
             } else {
                 document.getElementById('pl-main-title').innerText = filterDest === 'TODOS' ? "Resumen Global 2026" : `Resumen: ${filterDest}`;
                 document.getElementById('pl-subtitle').innerText = "Acumulado";
-                document.getElementById('pl-kpi-label-3').innerText = "Operaciones";
+                document.getElementById('chart-sku-title').innerText = "Top 5 Variantes (Acumulado)";
             }
 
             let totalUSD = 0, totalKG = 0, uniqueItems = 0;
-            const byType = {}, bySku = {};
+            const byType = {}, byProduct = {};
 
             dataset.forEach(item => {
                 totalUSD += item.precioTotal;
                 totalKG += item.kgNeto;
+                
                 let tipo = item.tipo || "Otros";
                 byType[tipo] = (byType[tipo] || 0) + item.precioTotal;
-                let skuKey = item.desc || item.sku || "N/A";
-                bySku[skuKey] = (bySku[skuKey] || 0) + item.precioTotal;
+                
+                let key;
+                if (specificExpoId) {
+                    key = item.sku || item.desc || "N/A";
+                } else {
+                    // AQUÍ ESTÁ EL CAMBIO CLAVE: Usamos la función cleanProductName
+                    // Esto agrupa "Frutilla" con "frutilla " pero respeta "Granizado" vs "Tentacion"
+                    key = cleanProductName(item.desc) || (item.sku || "N/A");
+                }
+                
+                byProduct[key] = (byProduct[key] || 0) + item.precioTotal;
             });
 
-            if (specificExpoId) { uniqueItems = dataset.length; } else { uniqueItems = new Set(dataset.map(i => i.nroExpo)).size; }
+            if (specificExpoId) uniqueItems = dataset.length; else uniqueItems = new Set(dataset.map(i => i.nroExpo)).size;
 
             document.getElementById('pl-kpi-monto').innerText = `$ ${totalUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('pl-kpi-peso').innerText = `${totalKG.toLocaleString('es-AR', {maximumFractionDigits:0})} Kg`;
@@ -498,10 +483,10 @@
                 tbody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-medium text-xs text-gray-900">${item.nroExpo}<br><span class="text-gray-400">${item.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${item.desc}">${item.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${item.tipo}</span></td><td class="px-4 py-2 text-right">${item.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${item.precioTotal.toLocaleString()}</td></tr>`;
             });
 
-            updatePLCharts(byType, bySku);
+            updatePLCharts(byType, byProduct);
         }
 
-        function updatePLCharts(byType, bySku) {
+        function updatePLCharts(byType, byProduct) {
             if(plChartType) plChartType.destroy();
             if(plChartSku) plChartSku.destroy();
             const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } };
@@ -512,17 +497,15 @@
                 options: opts
             });
 
-            const sortedSkus = Object.entries(bySku).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            const sortedProds = Object.entries(byProduct).sort((a,b) => b[1] - a[1]).slice(0, 5);
             plChartSku = new Chart(document.getElementById('plChartSku'), {
                 type: 'bar',
-                data: { labels: sortedSkus.map(x => x[0].substring(0, 15)+'...'), datasets: [{ label: 'USD', data: sortedSkus.map(x => x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] },
+                data: { labels: sortedProds.map(x => x[0].substring(0, 20)+'...'), datasets: [{ label: 'USD', data: sortedProds.map(x => x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] },
                 options: { ...opts, plugins: { legend: { display: false } }, indexAxis: 'y' }
             });
         }
 
-        // ========================================================================================
-        // 4. NUEVO: MOTOR DE BÚSQUEDA SKU
-        // ========================================================================================
+        // 4. BUSCADOR
         function searchSKU() {
             const term = document.getElementById('skuInput').value.toLowerCase();
             const sortMode = document.getElementById('skuSort').value;
@@ -530,61 +513,25 @@
             const tbody = document.getElementById('sku-results-body');
             const status = document.getElementById('search-status');
 
-            if (term.length < 2) {
-                resultPanel.classList.add('hidden');
-                status.innerText = "Escribe para buscar...";
-                return;
-            }
-
+            if (term.length < 2) { resultPanel.classList.add('hidden'); status.innerText = "Escribe para buscar..."; return; }
             resultPanel.classList.remove('hidden');
             
-            // FILTRAR
-            let matches = plData.filter(item => 
-                (item.sku && item.sku.toLowerCase().includes(term)) || 
-                (item.desc && item.desc.toLowerCase().includes(term))
-            );
-
+            let matches = plData.filter(item => (item.sku && item.sku.toLowerCase().includes(term)) || (item.desc && item.desc.toLowerCase().includes(term)));
             status.innerText = `Encontrados: ${matches.length}`;
 
-            // ORDENAR
-            if (sortMode === 'newest') {
-                matches.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            } else if (sortMode === 'oldest') {
-                matches.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-            } else if (sortMode === 'expensive') {
-                matches.sort((a, b) => b.precioTotal - a.precioTotal);
-            }
+            if (sortMode === 'newest') matches.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            else if (sortMode === 'oldest') matches.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            else if (sortMode === 'expensive') matches.sort((a, b) => b.precioTotal - a.precioTotal);
 
-            // RENDERIZAR
             tbody.innerHTML = "";
-            if (matches.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">No se encontraron productos con ese SKU/Descripción</td></tr>`;
-            } else {
-                matches.slice(0, 50).forEach(item => { // Limitar a 50 resultados para velocidad
-                    tbody.innerHTML += `
-                        <tr class="bg-white border-b hover:bg-blue-50 transition">
-                            <td class="px-4 py-2 font-mono text-xs text-gray-500">${item.fecha || '-'}</td>
-                            <td class="px-4 py-2 font-bold text-blue-900">${item.nroExpo}</td>
-                            <td class="px-4 py-2 text-xs bg-gray-100 rounded">${item.destino}</td>
-                            <td class="px-4 py-2 font-mono">${item.sku}</td>
-                            <td class="px-4 py-2 text-xs">${item.desc}</td>
-                            <td class="px-4 py-2 text-right">${item.kgNeto}</td>
-                            <td class="px-4 py-2 text-right font-bold text-green-600">$${item.precioTotal.toLocaleString()}</td>
-                        </tr>
-                    `;
-                });
-            }
+            if (matches.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
+            else matches.slice(0, 50).forEach(item => {
+                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 transition"><td class="px-4 py-2 font-mono text-xs text-gray-500">${item.fecha || '-'}</td><td class="px-4 py-2 font-bold text-blue-900">${item.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${item.destino}</td><td class="px-4 py-2 font-mono">${item.sku}</td><td class="px-4 py-2 text-xs">${item.desc}</td><td class="px-4 py-2 text-right">${item.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${item.precioTotal.toLocaleString()}</td></tr>`;
+            });
         }
+        function closeSearch() { document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
 
-        function closeSearch() {
-            document.getElementById('search-results-panel').classList.add('hidden');
-            document.getElementById('skuInput').value = "";
-        }
-
-        // Init
         window.addEventListener('load', () => { updateEquipment(); loadDashboard(); });
     </script>
 </body>
 </html>
-
-```
