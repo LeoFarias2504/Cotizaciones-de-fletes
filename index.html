@@ -25,6 +25,9 @@
         .clickable-row:hover { background-color: #bfdbfe !important; }
         .expo-card { transition: all 0.2s; border-left: 4px solid transparent; }
         .expo-card:hover { border-left-color: #2563eb; background-color: #f0f9ff; }
+        /* Headers Ordenables */
+        .sortable-header { cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        .sortable-header:hover { background-color: #e5e7eb; color: #1e3a8a; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800">
@@ -146,17 +149,31 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
                     <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (USD)</h4><div class="h-56"><canvas id="plChartType"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Sabores (USD)</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (USD)</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
                     <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (KG)</h4><div class="h-56"><canvas id="plChartTypeKg"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Sabores (KG)</h4><div class="h-56"><canvas id="plChartSkuKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (KG)</h4><div class="h-56"><canvas id="plChartSkuKg"></canvas></div></div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
                     <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between"><span>Detalle Items</span><span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0</span></div>
-                    <div class="overflow-x-auto max-h-80 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">SKU</th><th class="px-4 py-2">Descripción</th><th class="px-4 py-2">Tipo</th><th class="px-4 py-2 text-right">Kg Neto</th><th class="px-4 py-2 text-right">Valor USD</th></tr></thead><tbody id="pl-table-body" class="text-gray-600"></tbody></table></div>
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('fecha')">Fecha <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('sku')">SKU <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('desc')">Descripción <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('tipo')">Tipo <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                    <th class="px-4 py-2 sortable-header text-right" onclick="sortTable('kgNeto')">Kg Neto <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                    <th class="px-4 py-2 sortable-header text-right" onclick="sortTable('precioTotal')">Valor USD <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="pl-table-body" class="text-gray-600"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,6 +219,10 @@
         // --- GESTIÓN 2026 ---
         let plData=[],currentFilteredData=[],plChartType=null,plChartSku=null,plChartTypeKg=null,plChartSkuKg=null;
         
+        // Variables para el ordenamiento
+        let sortColumn = null;
+        let sortDirection = 1; // 1 = Asc, -1 = Desc
+
         function parseMoney(s){if(!s)return 0;let c=s.toString().replace(/[$\sA-Za-z]/g,'');if(c.indexOf(',')>-1&&c.indexOf('.')>-1){if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');}}else if(c.indexOf(',')>-1){c=c.replace(',','.');}return parseFloat(c)||0;}
         function formatDate(d){if(!d||d.trim()==='')return'-';if(d.includes('-')&&d.length===10){const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}if(d.includes('T'))return d.split('T')[0];return d;}
         function parseDateSort(d){if(!d)return 0;if(d.includes('-'))return new Date(d).getTime();if(d.includes('/')){const p=d.split('/');return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();}return 0;}
@@ -234,7 +255,11 @@
             let ds=plData; if(fd!=='TODOS')ds=ds.filter(i=>i.destino===fd);
             if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
             else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
+            
+            // Reset sort when changing view
+            sortColumn = null; sortDirection = 1;
             currentFilteredData=ds; 
+            
             let tu=0,tk=0,ui=0;const bt={},bp={},btk={},bpk={};
             ds.forEach(i=>{
                 tu+=i.precioTotal; tk+=i.kgNeto; 
@@ -245,9 +270,67 @@
             });
             ui=sid?ds.length:new Set(ds.map(i=>i.nroExpo)).size;
             document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`;document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`;document.getElementById('pl-kpi-items').innerText=ui;document.getElementById('pl-table-count').innerText=ds.length;
-            const tb=document.getElementById('pl-table-body');tb.innerHTML="";
-            ds.slice(0,100).forEach(i=>{tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50 transition"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td><td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-blue-100 text-blue-800 px-2 rounded">${i.tipo}</span></td><td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td></tr>`;});
+            
+            renderTableRows(); // Llamamos a la función separada
             updatePLCharts(bt,bp,btk,bpk);
+        }
+
+        // --- NUEVA FUNCIÓN PARA ORDENAR ---
+        function sortTable(column) {
+            // Si clic en la misma columna, invierte el orden
+            if (sortColumn === column) {
+                sortDirection *= -1;
+            } else {
+                sortColumn = column;
+                sortDirection = 1;
+            }
+
+            // Actualizar iconos
+            document.querySelectorAll('.sortable-header i').forEach(icon => {
+                icon.className = 'fa-solid fa-sort ml-1 text-gray-400'; // Reset
+            });
+            const activeHeader = document.querySelector(`.sortable-header[onclick="sortTable('${column}')"] i`);
+            if (activeHeader) {
+                activeHeader.className = sortDirection === 1 ? 'fa-solid fa-sort-up ml-1 text-blue-600' : 'fa-solid fa-sort-down ml-1 text-blue-600';
+            }
+
+            // Ordenar datos
+            currentFilteredData.sort((a, b) => {
+                let valA = a[column];
+                let valB = b[column];
+
+                // Casos especiales
+                if (column === 'fecha') {
+                    return sortDirection * (parseDateSort(valA) - parseDateSort(valB));
+                }
+                if (column === 'kgNeto' || column === 'precioTotal') {
+                    return sortDirection * (valA - valB);
+                }
+                // String default
+                valA = String(valA || "").toLowerCase();
+                valB = String(valB || "").toLowerCase();
+                if (valA < valB) return -1 * sortDirection;
+                if (valA > valB) return 1 * sortDirection;
+                return 0;
+            });
+
+            renderTableRows(); // Re-renderizar solo filas
+        }
+
+        // --- NUEVA FUNCIÓN PARA RENDERIZAR TABLA ---
+        function renderTableRows() {
+            const tb = document.getElementById('pl-table-body');
+            tb.innerHTML = "";
+            currentFilteredData.slice(0, 100).forEach(i => {
+                tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50 transition">
+                    <td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td>
+                    <td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td>
+                    <td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td>
+                    <td class="px-4 py-2 text-xs"><span class="bg-blue-100 text-blue-800 px-2 rounded">${i.tipo}</span></td>
+                    <td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td>
+                    <td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td>
+                </tr>`;
+            });
         }
 
         function updatePLCharts(bt,bp,btk,bpk){
