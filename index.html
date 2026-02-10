@@ -91,8 +91,7 @@
 
     <div id="view-gestion2026" class="hidden p-6 max-w-screen-2xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <div><h2 class="text-2xl font-bold text-gray-800">Gestion COMEX</h2><p class="text-sm text-gray-500">Gestion de operaciones
-            </p></div>
+            <div><h2 class="text-2xl font-bold text-gray-800">Panel 2026 (Nube)</h2><p class="text-sm text-gray-500">Gestión de Stock, Trazabilidad y Packing List</p></div>
             <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar Excel</button>
         </div>
 
@@ -126,7 +125,7 @@
         </div>
 
         <div class="grid grid-cols-12 gap-6">
-            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[750px] flex flex-col border border-gray-200">
+            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[900px] flex flex-col border border-gray-200">
                 <div class="p-4 border-b bg-gray-50">
                     <label class="text-xs font-bold text-gray-500 uppercase">Filtrar Destino</label>
                     <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-1 border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select>
@@ -138,15 +137,23 @@
                     <div><h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Cargando...</h3><span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-xs">...</span></div>
                     <button onclick="downloadPLExcel()" class="bg-green-50 hover:bg-green-100 text-green-700 text-sm font-bold px-4 py-2 rounded border border-green-200 transition"><i class="fa-solid fa-file-excel mr-2"></i> Descargar</button>
                 </div>
+
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-white p-5 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold uppercase">Monto Total</p><p id="pl-kpi-monto" class="text-2xl font-bold text-blue-900">-</p></div>
                     <div class="bg-white p-5 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold uppercase">Peso Neto</p><p id="pl-kpi-peso" class="text-2xl font-bold text-gray-800">-</p></div>
                     <div class="bg-white p-5 rounded-xl shadow border-l-4 border-purple-600"><p id="pl-kpi-label-3" class="text-xs text-gray-400 font-bold uppercase">Items</p><p id="pl-kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
                     <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (USD)</h4><div class="h-56"><canvas id="plChartType"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (USD)</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (KG)</h4><div class="h-56"><canvas id="plChartTypeKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (KG)</h4><div class="h-56"><canvas id="plChartSkuKg"></canvas></div></div>
+                </div>
+
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
                     <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between"><span>Detalle Items</span><span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0</span></div>
                     <div class="overflow-x-auto max-h-80 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">SKU</th><th class="px-4 py-2">Descripción</th><th class="px-4 py-2">Tipo</th><th class="px-4 py-2 text-right">Kg Neto</th><th class="px-4 py-2 text-right">Valor USD</th></tr></thead><tbody id="pl-table-body" class="text-gray-600"></tbody></table></div>
@@ -158,10 +165,7 @@
     <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-2">Actualizar Base de Datos</h3>
-            <p class="text-sm text-gray-600 mb-4">
-                Pega los datos del Excel (Hoja 2026).
-                <br><span class="text-red-500 font-bold">IMPORTANTE:</span> Copia desde la columna "NRO EXPO" hasta "PRECIO TOTAL".
-            </p>
+            <p class="text-sm text-gray-600 mb-4">Pega los datos del Excel (Hoja 2026). <br><span class="text-red-500 font-bold">IMPORTANTE:</span> Copia desde "NRO EXPO" hasta "PRECIO TOTAL".</p>
             <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:border-blue-500 outline-none" placeholder="Pega aquí..."></textarea>
             <div class="mt-4 flex justify-end space-x-3">
                 <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
@@ -177,8 +181,6 @@
 
     <script>
         // ==========================================
-        // URL EXACTA QUE PASASTE
-        // ==========================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
         // ==========================================
 
@@ -190,47 +192,30 @@
         let rawData=[],filteredData=[],chartCost=null,chartTime=null;
         const eqOpts={"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
         function updateEquipment(){const m=document.getElementById('modalidadSelect').value;const s=document.getElementById('equipoSelect');s.innerHTML="";eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e);});}
-        
         document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();const b=document.getElementById('submitBtn');b.disabled=true;b.innerHTML='Guardando...';fetch(scriptURL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{if(d.result==="error"){alert("Error Apps Script: "+d.message);}else{document.getElementById('statusMsg').classList.remove('hidden');e.target.reset();loadDashboard();setTimeout(()=>{document.getElementById('statusMsg').classList.add('hidden');b.disabled=false;b.innerHTML='GUARDAR';},2000);}}).catch(err=>{alert("Error de Red: "+err);b.disabled=false;b.innerHTML='GUARDAR';});});
-        
         async function loadDashboard(){try{const r=await fetch(scriptURL);const j=await r.json();rawData=j||[];populateFilter();applyFilter();}catch(e){console.log("No data cotizador");}}
         function populateFilter(){const s=document.getElementById('filterCountry');if(!rawData||rawData.length===0)return;const cur=s.value;const c=[...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort();s.innerHTML='<option value="ALL">🌎 Global</option>';c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`);s.value=cur;}
-        function applyFilter(){
-            const c=document.getElementById('filterCountry').value;filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c);
-            let tc=0,tt=0,ct=0,st={};
-            if(filteredData.length>0){
-                filteredData.forEach(r=>{let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);let t=parseFloat(r[7])||0;if(!st[k])st[k]={cs:0,ts:0,c:0};st[k].cs+=co;st[k].ts+=t;st[k].c++;tc+=co;if(t>0){tt+=t;ct++;}});
-                document.getElementById('kpiCount').innerText=filteredData.length;document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';document.getElementById('kpiTop').innerText=top;renderCharts(Object.keys(st),Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)),Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)),c!=="ALL");
-            }
-            const tb=document.getElementById('historyTableBody');tb.innerHTML="";
-            if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{let d=r[0]?new Date(r[0]).toLocaleDateString():'-';tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;});
-        }
+        function applyFilter(){const c=document.getElementById('filterCountry').value;filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c);let tc=0,tt=0,ct=0,st={};if(filteredData.length>0){filteredData.forEach(r=>{let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);let t=parseFloat(r[7])||0;if(!st[k])st[k]={cs:0,ts:0,c:0};st[k].cs+=co;st[k].ts+=t;st[k].c++;tc+=co;if(t>0){tt+=t;ct++;}});document.getElementById('kpiCount').innerText=filteredData.length;document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';document.getElementById('kpiTop').innerText=top;renderCharts(Object.keys(st),Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)),Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)),c!=="ALL");}const tb=document.getElementById('historyTableBody');tb.innerHTML="";if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{let d=r[0]?new Date(r[0]).toLocaleDateString():'-';tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;});}
         function renderCharts(l,c,t,isC){if(chartCost)chartCost.destroy();if(chartTime)chartTime.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isC?'#f97316':'#1e3a8a',borderRadius:4}]},options:o});chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:o});}
         function downloadExcel(){if(!filteredData.length){alert("Nada para exportar");return;}const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones");XLSX.writeFile(wb,"Reporte.xlsx");}
 
         // --- GESTIÓN 2026 ---
-        let plData=[],currentFilteredData=[],plChartType=null,plChartSku=null;
+        let plData=[],currentFilteredData=[],plChartType=null,plChartSku=null,plChartTypeKg=null,plChartSkuKg=null;
         
         function parseMoney(s){if(!s)return 0;let c=s.toString().replace(/[$\sA-Za-z]/g,'');if(c.indexOf(',')>-1&&c.indexOf('.')>-1){if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');}}else if(c.indexOf(',')>-1){c=c.replace(',','.');}return parseFloat(c)||0;}
         function formatDate(d){if(!d||d.trim()==='')return'-';if(d.includes('-')&&d.length===10){const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}if(d.includes('T'))return d.split('T')[0];return d;}
         function parseDateSort(d){if(!d)return 0;if(d.includes('-'))return new Date(d).getTime();if(d.includes('/')){const p=d.split('/');return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();}return 0;}
 
         function savePLData(){
-            const t=document.getElementById('pl-paste-area').value;if(!t)return;
-            document.getElementById('loadingOverlay').classList.remove('hidden');
+            const t=document.getElementById('pl-paste-area').value;if(!t)return;document.getElementById('loadingOverlay').classList.remove('hidden');
             const r=t.split('\n');const n=[];
-            // PARSEO DEL EXCEL (Columnas 0 a 13)
             r.forEach(row=>{const c=row.split('\t');if(c.length>=13){let d=c[4]?.trim()||c[3]?.trim()||'';n.push({nroExpo:c[0]?.trim(),destino:c[1]?.trim(),tipo:c[2]?.trim(),fecha:d,sku:c[5]?.trim(),desc:c[6]?.trim(),kgNeto:parseMoney(c[9]),precioTotal:parseMoney(c[13])});}});
             if(n.length>0){const fd=new FormData();fd.append('action','save_pl');fd.append('data',JSON.stringify(n));fetch(scriptURL,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{document.getElementById('loadingOverlay').classList.add('hidden');closeImportModal();loadPLData();alert(`✅ Base Actualizada: ${d.count} registros.`);}).catch(e=>{alert("Error Nube: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});}else{alert("Datos inválidos. Copia desde el Excel.");document.getElementById('loadingOverlay').classList.add('hidden');}
         }
 
         function loadPLData(){
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            fetch(scriptURL+'?action=get_pl').then(r=>r.json()).then(d=>{
-                plData=d||[];
-                document.getElementById('db-status').innerText = `Registros: ${plData.length}`;
-                renderPLList(); document.getElementById('loadingOverlay').classList.add('hidden');
-            }).catch(e=>{console.log("Error PL: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});
+            fetch(scriptURL+'?action=get_pl').then(r=>r.json()).then(d=>{plData=d||[];document.getElementById('db-status').innerText=`Registros: ${plData.length}`;renderPLList();document.getElementById('loadingOverlay').classList.add('hidden');}).catch(e=>{console.log("Error PL: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});
         }
 
         function renderPLList(){
@@ -238,7 +223,6 @@
             if(fd.options.length===1&&plData.length>0){const d=[...new Set(plData.map(i=>i.destino).filter(x=>x))].sort();d.forEach(o=>{let e=document.createElement('option');e.value=o;e.innerText=o;fd.appendChild(e);});}
             const cd=fd.value;const c=document.getElementById('pl-list-container');c.innerHTML="";
             const g={};plData.forEach(i=>{if(cd!=='TODOS'&&i.destino!==cd)return;if(!i.nroExpo)return;if(!g[i.nroExpo])g[i.nroExpo]={id:i.nroExpo,d:i.destino,u:0};g[i.nroExpo].u+=i.precioTotal;});
-            
             const sc=document.createElement('div');sc.className="expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10 flex items-center justify-between";sc.innerHTML=`<div class="font-bold text-blue-900 flex items-center"><i class="fa-solid fa-earth-americas mr-2"></i><span>RESUMEN ${cd==='TODOS'?'GLOBAL':cd.toUpperCase()}</span></div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;sc.onclick=()=>renderDash(cd,null);c.appendChild(sc);
             Object.values(g).forEach(e=>{const d=document.createElement('div');d.className="expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";d.onclick=()=>renderDash(cd,e.id);d.innerHTML=`<div class="flex justify-between font-bold text-xs text-gray-700"><span>${e.id}</span><span class="text-green-600">$${e.u.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${e.d}</div>`;c.appendChild(d);});
             renderDash(cd,null);
@@ -248,74 +232,51 @@
 
         function renderDash(fd, sid){
             let ds=plData; if(fd!=='TODOS')ds=ds.filter(i=>i.destino===fd);
-            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 Productos";}
-            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Productos";}
-            
+            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
+            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
             currentFilteredData=ds; 
-            
-            let tu=0,tk=0,ui=0;const bt={},bp={};
+            let tu=0,tk=0,ui=0;const bt={},bp={},btk={},bpk={};
             ds.forEach(i=>{
                 tu+=i.precioTotal; tk+=i.kgNeto; 
-                let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; 
-                // AQUI ESTABA LA LOGICA ANTERIOR (MEZCLABA SKU Y DESC)
-                // AHORA: SIEMPRE DESCRIPCION (SI EXISTE), SINO SKU.
+                let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; btk[t]=(btk[t]||0)+i.kgNeto;
                 let k = i.desc || i.sku || "N/A";
-                // SI ES GLOBAL, LIMPIAMOS UN POCO EL NOMBRE PARA AGRUPAR
                 if(!sid) k = cleanName(i.desc) || (i.sku || "N/A");
-                
-                bp[k]=(bp[k]||0)+i.precioTotal;
+                bp[k]=(bp[k]||0)+i.precioTotal; bpk[k]=(bpk[k]||0)+i.kgNeto;
             });
             ui=sid?ds.length:new Set(ds.map(i=>i.nroExpo)).size;
-            
             document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`;document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`;document.getElementById('pl-kpi-items').innerText=ui;document.getElementById('pl-table-count').innerText=ds.length;
-            
             const tb=document.getElementById('pl-table-body');tb.innerHTML="";
-            // TABLA CORREGIDA
-            ds.slice(0,100).forEach(i=>{tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50 transition">
-                <td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td>
-                <td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td>
-                <td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td>
-                <td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${i.tipo}</span></td>
-                <td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td>
-                <td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td>
-            </tr>`;});
-            
-            updatePLCharts(bt,bp);
+            ds.slice(0,100).forEach(i=>{tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50 transition"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td><td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-blue-100 text-blue-800 px-2 rounded">${i.tipo}</span></td><td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td></tr>`;});
+            updatePLCharts(bt,bp,btk,bpk);
         }
 
-        function updatePLCharts(bt,bp){
-            if(plChartType)plChartType.destroy();if(plChartSku)plChartSku.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
+        function updatePLCharts(bt,bp,btk,bpk){
+            if(plChartType)plChartType.destroy();if(plChartSku)plChartSku.destroy();if(plChartTypeKg)plChartTypeKg.destroy();if(plChartSkuKg)plChartSkuKg.destroy();
+            const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
             plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
             const sp=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,5);
             plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,25)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
+            // KG Charts
+            plChartTypeKg=new Chart(document.getElementById('plChartTypeKg'),{type:'doughnut',data:{labels:Object.keys(btk),datasets:[{data:Object.values(btk),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
+            const spk=Object.entries(bpk).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            plChartSkuKg=new Chart(document.getElementById('plChartSkuKg'),{type:'bar',data:{labels:spk.map(x=>x[0].substring(0,25)+'...'),datasets:[{label:'KG',data:spk.map(x=>x[1]),backgroundColor:'#f97316',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
         }
 
         function selectExpoFromSearch(eid,dest){closeSearch();const s=document.getElementById('pl-filter-dest');if(s.querySelector(`option[value="${dest}"]`))s.value=dest;else s.value='TODOS';renderPLList();renderDash(s.value==='TODOS'?'TODOS':dest,eid);}
-        
         function searchSKU(){
             const t=document.getElementById('skuInput').value.toLowerCase();const sm=document.getElementById('skuSort').value;const p=document.getElementById('search-results-panel');const b=document.getElementById('sku-results-body');
             if(t.length<2){p.classList.add('hidden');return;}p.classList.remove('hidden');
             let m=plData.filter(i=>(String(i.sku).toLowerCase().includes(t))||(String(i.desc).toLowerCase().includes(t))||(String(i.nroExpo).toLowerCase().includes(t)));
             if(sm==='newest')m.sort((a,b)=>parseDateSort(b.fecha)-parseDateSort(a.fecha));else if(sm==='oldest')m.sort((a,b)=>parseDateSort(a.fecha)-parseDateSort(b.fecha));else m.sort((a,b)=>b.precioTotal-a.precioTotal);
             b.innerHTML="";if(m.length===0)b.innerHTML=`<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
-            else m.slice(0,50).forEach(i=>{b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')">
-                <td class="px-4 py-2 font-mono text-xs text-gray-600">${formatDate(i.fecha)}</td>
-                <td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td>
-                <td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td>
-                <td class="px-4 py-2 font-mono text-xs">${i.sku}</td>
-                <td class="px-4 py-2 text-xs truncate max-w-xs">${i.desc}</td>
-                <td class="px-4 py-2 text-xs bg-blue-50">${i.tipo}</td>
-                <td class="px-4 py-2 text-right font-bold text-green-600 text-xs">${i.kgNeto}</td>
-            </tr>`;});
+            else m.slice(0,50).forEach(i=>{b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')"><td class="px-4 py-2 font-mono text-xs text-gray-600">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td><td class="px-4 py-2 font-mono">${i.sku}</td><td class="px-4 py-2 text-xs truncate max-w-xs">${i.desc}</td><td class="px-4 py-2 text-xs bg-blue-50">${i.tipo}</td><td class="px-4 py-2 text-right font-bold text-green-600 text-xs">${i.kgNeto}</td></tr>`;});
         }
         function closeSearch(){document.getElementById('search-results-panel').classList.add('hidden');document.getElementById('skuInput').value="";}
-        
         function downloadPLExcel(){
             if(!currentFilteredData||currentFilteredData.length===0){alert("Sin datos");return;}
             const e=currentFilteredData.map(i=>({"Operacion":i.nroExpo,"Destino":i.destino,"Fecha":formatDate(i.fecha),"Tipo":i.tipo,"SKU":i.sku,"Desc":i.desc,"Kg":i.kgNeto,"USD":i.precioTotal}));
             const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(e),"Reporte");XLSX.writeFile(wb,`Reporte_Freddo.xlsx`);
         }
-
         window.addEventListener('load',()=>{updateEquipment();loadDashboard();});
     </script>
 </body>
