@@ -4,402 +4,284 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freddo Comex - Sistema Integral</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; background-color: #eff6ff; }
         .tab-inactive { color: #6b7280; border-bottom: 4px solid transparent; }
-        .tab-inactive:hover { color: #374151; border-color: #d1d5db; }
+        .tab-inactive:hover { color: #374151; background-color: #f9fafb; }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Scrollbar fina */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        /* Interacción */
-        .clickable-row { cursor: pointer; transition: background-color 0.15s ease; }
-        .clickable-row:hover { background-color: #e0f2fe; }
-        .expo-card { transition: border-color 0.2s, background-color 0.2s; }
-        .expo-card:hover { border-color: #3b82f6; background-color: #f0f9ff; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        /* Tablas */
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .clickable-row:hover { background-color: #bfdbfe !important; }
+        /* Cards */
+        .expo-card { transition: all 0.2s; border-left: 4px solid transparent; }
+        .expo-card:hover { border-left-color: #2563eb; background-color: #f0f9ff; }
+        .expo-card.active { border-left-color: #1e3a8a; background-color: #eff6ff; border-color: #bfdbfe; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-slate-800">
+<body class="min-h-screen text-slate-800">
 
-    <nav class="bg-white shadow sticky top-0 z-40 px-6">
-        <div class="flex justify-between items-center h-16">
+    <nav class="bg-white shadow-md sticky top-0 z-50 px-6">
+        <div class="flex justify-between items-center h-16 max-w-screen-2xl mx-auto">
             <div class="flex items-center">
                 <i class="fa-solid fa-ship text-blue-900 text-2xl mr-3"></i>
                 <span class="text-xl font-bold text-gray-800 tracking-tight">FREDDO <span class="text-blue-600">COMEX</span></span>
             </div>
-            <div class="flex space-x-8">
-                <button onclick="switchTab('cotizador')" id="tab-cotizador" class="tab-active py-5 px-3 focus:outline-none transition">
-                    <i class="fa-solid fa-calculator mr-2"></i>Cotizador
-                </button>
-                <button onclick="switchTab('gestion2026')" id="tab-gestion" class="tab-inactive py-5 px-3 focus:outline-none transition">
-                    <i class="fa-solid fa-chart-pie mr-2"></i>Gestión 2026
-                </button>
+            <div class="flex space-x-4">
+                <button onclick="switchTab('cotizador')" id="tab-cotizador" class="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
+                <button onclick="switchTab('gestion2026')" id="tab-gestion" class="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none"><i class="fa-solid fa-chart-pie mr-2"></i>Gestión 2026</button>
             </div>
         </div>
     </nav>
 
-    <div id="view-cotizador" class="p-6 max-w-7xl mx-auto animate-fade-in">
-        <div id="errorArea" class="hidden mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow">
-            <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Mensaje del Sistema:</p>
-            <p id="errorMessage" class="text-sm mt-1">...</p>
-        </div>
-
+    <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto animate-fade-in">
         <div class="flex flex-col lg:flex-row gap-6">
-            <div class="w-full lg:w-1/3 h-fit bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6">
-                <h2 class="text-sm font-bold text-gray-700 mb-4 uppercase border-b pb-2">
-                    <i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización
-                </h2>
+            <div class="w-full lg:w-1/3 bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6 h-fit">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2 text-blue-600"></i>Nueva Cotización</h2>
                 <form id="comexForm" class="space-y-4">
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase">Referencia Expo (Única)</label>
-                        <input type="text" name="referencia" class="w-full border border-gray-300 bg-gray-50 p-2 rounded text-sm focus:ring-2 focus:ring-blue-900 outline-none" placeholder="Ej: EXP-001" required>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded bg-gray-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="Ej: EXP-001"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Modalidad</label><select id="modalidadSelect" name="modalidad" onchange="updateEquipment()" class="w-full border p-2 rounded text-sm bg-white"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Destino</label>
-                            <input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="País" required>
-                            <datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"><option value="Colombia"></datalist>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label>
-                            <select id="modalidadSelect" name="modalidad" onchange="updateEquipment()" class="w-full border p-2 rounded text-sm bg-blue-50 font-semibold text-blue-900 outline-none">
-                                <option value="Marítimo">Marítimo</option>
-                                <option value="Terrestre">Terrestre</option>
-                                <option value="Aéreo">Aéreo</option>
-                            </select>
-                        </div>
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Incoterm</label><input type="text" name="incoterm" class="w-full border p-2 rounded text-sm" required></div>
+                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Equipo</label><select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-white" required></select></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label>
-                            <input type="text" name="incoterm" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="FCA/CIP/FOB" required>
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500 uppercase">Equipo / Carga</label>
-                            <select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-gray-50 outline-none" required></select>
-                        </div>
+                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Carrier</label><input type="text" name="carrier" class="w-full border p-2 rounded text-sm" required></div>
+                    <div class="bg-gray-50 p-3 rounded border border-gray-200 grid grid-cols-3 gap-2">
+                        <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center"></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center" required></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center" required></div>
                     </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase">Proveedor Logístico</label>
-                        <input type="text" name="carrier" class="w-full border p-2 rounded text-sm bg-gray-50" placeholder="Naviera, Transportista o Forwarder" required>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200">
-                        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Estructura de Costos</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div><label class="text-[10px] font-bold text-gray-500">Transit Time</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm" placeholder="Días"></div>
-                            <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-gray-700" placeholder="0.00" required></div>
-                            <div><label class="text-[10px] font-bold text-gray-500">Gastos Loc. USD</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm" placeholder="0.00" required></div>
-                        </div>
-                    </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow"><i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE</button>
-                    <p id="statusMsg" class="hidden text-center text-xs font-bold text-green-600 mt-2">✅ Registro Exitoso</p>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded transition shadow-lg"><i class="fa-solid fa-save mr-2"></i> GUARDAR</button>
+                    <p id="statusMsg" class="hidden text-center text-xs font-bold text-green-600 mt-2">✅ Guardado correctamente</p>
                 </form>
             </div>
 
-            <div class="w-full lg:w-2/3 space-y-5">
-                <div class="bg-white p-3 rounded-xl shadow flex items-center justify-between border-l-4 border-orange-500">
-                    <span class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtrar Análisis:</span>
-                    <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded p-1 text-sm outline-none">
-                        <option value="ALL">🌎 Vista Global</option>
-                    </select>
+            <div class="w-full lg:w-2/3 space-y-6">
+                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
+                    <span class="font-bold text-gray-700"><i class="fa-solid fa-filter mr-2"></i>Filtro Histórico:</span>
+                    <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Todos los Destinos</option></select>
                 </div>
+                
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Embarques</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Costo Promedio</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">TT Promedio</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center"><p class="text-xs text-gray-400 font-bold uppercase">Opción Top</p><p id="kpiTop" class="text-sm font-bold text-gray-800 truncate">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900"><p class="text-xs text-gray-400 font-bold uppercase">Total Ops</p><p id="kpiCount" class="text-2xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600"><p class="text-xs text-gray-400 font-bold uppercase">Costo Prom.</p><p id="kpiAvgCost" class="text-2xl font-bold text-green-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600"><p class="text-xs text-gray-400 font-bold uppercase">TT Prom.</p><p id="kpiAvgTime" class="text-2xl font-bold text-indigo-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500"><p class="text-xs text-gray-400 font-bold uppercase">Top Carrier</p><p id="kpiTop" class="text-sm font-bold text-gray-800 mt-1 truncate">-</p></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative"><h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Costos (USD)</h3><div class="h-48"><canvas id="costChart"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100 relative"><h3 class="text-xs font-bold text-gray-500 uppercase mb-2 text-center">Tiempos (Días)</h3><div class="h-48"><canvas id="timeChart"></canvas></div></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow h-64 border border-gray-100"><h3 class="text-xs font-bold text-gray-500 text-center mb-2">Costos por Operación</h3><div class="h-52"><canvas id="costChart"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow h-64 border border-gray-100"><h3 class="text-xs font-bold text-gray-500 text-center mb-2">Tiempos de Tránsito</h3><div class="h-52"><canvas id="timeChart"></canvas></div></div>
                 </div>
+
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                    <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center"><h3 class="text-xs font-bold text-gray-600 uppercase"><i class="fa-solid fa-list mr-2"></i>Histórico</h3><button onclick="downloadExcel()" class="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded"><i class="fa-solid fa-file-excel mr-2"></i> Exportar</button></div>
-                    <div class="overflow-x-auto max-h-60 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total USD</th><th class="px-4 py-2 text-center">Acciones</th></tr></thead><tbody id="historyTableBody" class="text-gray-600"></tbody></table></div>
+                    <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-list mr-2"></i>Historial Reciente</h3>
+                        <button onclick="downloadExcel()" class="text-green-600 hover:text-green-800 text-sm font-bold"><i class="fa-solid fa-download mr-1"></i> Excel</button>
+                    </div>
+                    <div class="overflow-x-auto max-h-60 overflow-y-auto">
+                        <table class="w-full text-sm text-left"><thead class="text-xs text-gray-500 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead><tbody id="historyTableBody" class="text-gray-600"></tbody></table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="view-gestion2026" class="hidden p-6 max-w-7xl mx-auto">
-        
+    <div id="view-gestion2026" class="hidden p-6 max-w-screen-2xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Panel 2026 (Nube)</h2>
-                <p class="text-sm text-gray-500">Análisis de Packing List y Trazabilidad (Drive)</p>
-            </div>
-            <button onclick="openImportModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center transition">
-                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar / Actualizar
-            </button>
+            <div><h2 class="text-2xl font-bold text-gray-800">Panel de Control 2026</h2><p class="text-sm text-gray-500">Gestión de Stock, Trazabilidad y Packing List</p></div>
+            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar Excel</button>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow border border-gray-200 mb-6 flex flex-col md:flex-row gap-4 items-center animate-fade-in relative z-20">
-            <div class="flex items-center gap-2 w-full md:w-1/3">
+        <div class="bg-white p-4 rounded-xl shadow border border-gray-200 mb-4 flex flex-col md:flex-row gap-4 items-center relative z-30">
+            <div class="flex items-center gap-3 w-full md:w-1/2 bg-gray-50 px-3 py-2 rounded-lg border focus-within:border-blue-500 focus-within:bg-white transition">
                 <i class="fa-solid fa-search text-gray-400"></i>
-                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar SKU, Descripción u Operación..." class="w-full border-b border-gray-300 p-2 outline-none focus:border-blue-600 text-sm bg-transparent">
+                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar Operación, SKU o Descripción..." class="w-full bg-transparent outline-none text-sm">
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto">
-                <label class="text-xs font-bold text-gray-500">ORDENAR:</label>
-                <select id="skuSort" onchange="searchSKU()" class="border rounded p-1 text-sm bg-gray-50 outline-none">
-                    <option value="newest">📅 Más Recientes</option>
-                    <option value="oldest">📅 Más Viejos</option>
-                    <option value="expensive">💰 Mayor Valor</option>
-                </select>
+                <select id="skuSort" onchange="searchSKU()" class="border rounded px-3 py-2 text-sm bg-white outline-none cursor-pointer hover:border-gray-400"><option value="newest">📅 Más Recientes</option><option value="oldest">📅 Más Viejos</option><option value="expensive">💰 Mayor Valor</option></select>
             </div>
-            <div class="text-xs text-gray-400 ml-auto" id="search-status">Escribe para buscar...</div>
         </div>
 
-        <div id="search-results-panel" class="hidden bg-white rounded-xl shadow-lg border-l-4 border-blue-500 mb-6 overflow-hidden animate-fade-in relative z-10">
-            <div class="bg-blue-50 px-4 py-2 border-b border-blue-100 flex justify-between items-center">
-                <h3 class="font-bold text-blue-900 text-sm"><i class="fa-solid fa-list-check mr-2"></i>Resultados (Haz clic para ver)</h3>
-                <button onclick="closeSearch()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="overflow-x-auto max-h-64 overflow-y-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-gray-600 uppercase bg-gray-100 sticky top-0">
-                        <tr>
-                            <th class="px-4 py-2">Fecha (ETD)</th>
-                            <th class="px-4 py-2">Operación</th>
-                            <th class="px-4 py-2">Destino</th>
-                            <th class="px-4 py-2">SKU</th>
-                            <th class="px-4 py-2">Descripción</th>
-                            <th class="px-4 py-2 text-right">Cant.</th>
-                            <th class="px-4 py-2 text-right">Total USD</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sku-results-body" class="text-gray-700"></tbody>
-                </table>
-            </div>
+        <div id="search-results-panel" class="hidden bg-white rounded-xl shadow-2xl border border-blue-200 mb-6 overflow-hidden relative z-20 max-h-96 overflow-y-auto">
+            <div class="bg-blue-50 px-4 py-2 border-b border-blue-100 flex justify-between items-center sticky top-0"><h3 class="font-bold text-blue-900 text-sm">Resultados de Búsqueda</h3><button onclick="closeSearch()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button></div>
+            <table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 uppercase bg-gray-100"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Operación</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">SKU</th><th class="px-4 py-2">Desc.</th><th class="px-4 py-2 text-right">Cant.</th><th class="px-4 py-2 text-right">Total USD</th></tr></thead><tbody id="sku-results-body" class="text-gray-700"></tbody></table>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
-            
-            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[700px] flex flex-col border border-gray-200">
+            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[750px] flex flex-col border border-gray-200">
                 <div class="p-4 border-b bg-gray-50">
-                    <label class="text-xs font-bold text-gray-500 uppercase">Filtrar por Destino</label>
-                    <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-1 border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="TODOS">Todos los destinos</option>
-                    </select>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Filtrar Destino</label>
+                    <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-1 border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select>
                 </div>
-                
-                <div id="pl-list-container" class="flex-1 overflow-y-auto p-2 space-y-2">
-                    </div>
+                <div id="pl-list-container" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
 
             <div class="col-span-12 md:col-span-8 space-y-6">
-                
                 <div class="flex items-center justify-between border-b pb-2">
-                    <div>
-                        <h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Resumen Global</h3>
-                        <span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold">Vista General</span>
-                    </div>
-                    <button onclick="downloadPLExcel()" class="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-bold px-4 py-2 rounded flex items-center transition shadow-sm border border-green-300">
-                        <i class="fa-solid fa-file-excel mr-2 text-green-600"></i> Descargar Reporte
-                    </button>
+                    <div><h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Cargando...</h3><span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-xs">...</span></div>
+                    <button onclick="downloadPLExcel()" class="bg-green-50 hover:bg-green-100 text-green-700 text-sm font-bold px-4 py-2 rounded border border-green-200 transition"><i class="fa-solid fa-file-excel mr-2"></i> Descargar</button>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-blue-900">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Monto Total (FOB)</p>
-                        <p id="pl-kpi-monto" class="text-2xl font-bold text-blue-900">$ -</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-orange-500">
-                        <p class="text-xs text-gray-400 font-bold uppercase">Peso Neto Total</p>
-                        <p id="pl-kpi-peso" class="text-2xl font-bold text-gray-800">- Kg</p>
-                    </div>
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-purple-600">
-                        <p id="pl-kpi-label-3" class="text-xs text-gray-400 font-bold uppercase">Operaciones</p>
-                        <p id="pl-kpi-items" class="text-2xl font-bold text-gray-800">-</p>
-                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold uppercase">Monto Total</p><p id="pl-kpi-monto" class="text-2xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold uppercase">Peso Neto</p><p id="pl-kpi-peso" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-purple-600"><p id="pl-kpi-label-3" class="text-xs text-gray-400 font-bold uppercase">Items</p><p id="pl-kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 h-72">
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo de Producto (USD)</h4>
-                        <div class="h-56"><canvas id="plChartType"></canvas></div>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100">
-                        <h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes (Valor)</h4>
-                        <div class="h-56"><canvas id="plChartSku"></canvas></div>
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (USD)</h4><div class="h-56"><canvas id="plChartType"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Variantes</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
                 </div>
 
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                    <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between">
-                        <span>Detalle de Items</span>
-                        <span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0 items</span>
-                    </div>
-                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-2">Fecha</th>
-                                    <th class="px-4 py-2">SKU / ID</th>
-                                    <th class="px-4 py-2">Descripción</th>
-                                    <th class="px-4 py-2">Tipo</th>
-                                    <th class="px-4 py-2 text-right">Kg Neto</th>
-                                    <th class="px-4 py-2 text-right">Valor USD</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pl-table-body" class="text-gray-600"></tbody>
-                        </table>
-                    </div>
+                    <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between"><span>Detalle Items</span><span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0</span></div>
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">SKU</th><th class="px-4 py-2">Descripción</th><th class="px-4 py-2">Tipo</th><th class="px-4 py-2 text-right">Kg Neto</th><th class="px-4 py-2 text-right">Valor USD</th></tr></thead><tbody id="pl-table-body" class="text-gray-600"></tbody></table></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
+    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Actualizar Base de Datos (Nube)</h3>
-                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
-            </div>
-            <p class="text-sm text-gray-600 mb-2">
-                Pega aquí los datos de tu Excel. Esto <strong>reemplazará</strong> los datos actuales para <strong>todo el equipo</strong>.
-            </p>
-            <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Paste Excel data here..."></textarea>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Actualizar Base de Datos</h3>
+            <p class="text-sm text-gray-600 mb-4">Pega los datos del Excel (Hoja 2026). Esto actualizará la información para <b>todo el equipo</b>.</p>
+            <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:border-blue-500 outline-none" placeholder="Pegar aquí..."></textarea>
             <div class="mt-4 flex justify-end space-x-3">
                 <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
-                <button onclick="savePLData()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-bold text-sm shadow">
-                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar en Nube
-                </button>
+                <button onclick="savePLData()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm shadow">Guardar</button>
             </div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
-        <div class="text-center">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="font-bold text-gray-700">Sincronizando...</p>
-        </div>
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 flex-col">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
+        <p class="font-bold text-gray-700 text-lg">Procesando...</p>
     </div>
 
     <script>
         // =======================================================================================
-        // 🚨 CONFIGURACIÓN: PEGA AQUÍ TU URL DE APPS SCRIPT
+        // 🚨 PEGA TU URL DE APPS SCRIPT AQUÍ ABAJO ENTRE LAS COMILLAS
         // =======================================================================================
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzaFwFQvUmAjbPkefdrjB7YC2a9vwpXYnn6NCwDqIl8s0OPjCOWjpwILd8Lq8yIxkjvjA/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec'; 
         // =======================================================================================
 
-        function switchTab(tab) {
-            document.getElementById('view-cotizador').classList.add('hidden');
-            document.getElementById('view-gestion2026').classList.add('hidden');
-            document.getElementById('tab-cotizador').className = "tab-inactive py-5 px-3 focus:outline-none transition";
-            document.getElementById('tab-gestion').className = "tab-inactive py-5 px-3 focus:outline-none transition";
-            if (tab === 'cotizador') {
-                document.getElementById('view-cotizador').classList.remove('hidden');
-                document.getElementById('tab-cotizador').className = "tab-active py-5 px-3 focus:outline-none transition";
-            } else {
-                document.getElementById('view-gestion2026').classList.remove('hidden');
-                document.getElementById('tab-gestion').className = "tab-active py-5 px-3 focus:outline-none transition";
-                loadPLData();
-            }
-        }
-        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('pl-paste-area').value = ''; document.getElementById('pl-paste-area').focus(); }
-        function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
+        function switchTab(t){document.getElementById('view-cotizador').classList.add('hidden');document.getElementById('view-gestion2026').classList.add('hidden');document.getElementById('tab-cotizador').className="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none";document.getElementById('tab-gestion').className="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none";if(t==='cotizador'){document.getElementById('view-cotizador').classList.remove('hidden');document.getElementById('tab-cotizador').className="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none";}else{document.getElementById('view-gestion2026').classList.remove('hidden');document.getElementById('tab-gestion').className="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none";loadPLData();}}
+        function openImportModal(){document.getElementById('importModal').classList.remove('hidden');document.getElementById('pl-paste-area').value='';document.getElementById('pl-paste-area').focus();}
+        function closeImportModal(){document.getElementById('importModal').classList.add('hidden');}
 
         // --- COTIZADOR ---
-        let rawData = [], filteredData = [], chartCost = null, chartTime = null;
-        const equipmentOptions = { "Marítimo": ["20' Standard", "40' Standard", "40' High Cube", "20' Reefer", "40' Reefer"], "Terrestre": ["Camión Completo (FTL)", "Consolidado (LTL)", "Sider (Lonas)", "Furgón Refrigerado"], "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"] };
-        function updateEquipment() { const m = document.getElementById('modalidadSelect').value; const s = document.getElementById('equipoSelect'); s.innerHTML=""; equipmentOptions[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e);}); }
-        document.getElementById('comexForm').addEventListener('submit', e => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = 'Guardando...'; fetch(scriptURL, { method: 'POST', body: new FormData(e.target)}).then(r=>r.json()).then(d=>{ document.getElementById('statusMsg').classList.remove('hidden'); e.target.reset(); loadDashboard(); setTimeout(()=>{document.getElementById('statusMsg').classList.add('hidden'); btn.disabled=false; btn.innerHTML='GUARDAR EN BASE';},2000); }); });
-        async function loadDashboard() { try{const r=await fetch(scriptURL); const j=await r.json(); rawData=j; populateFilter(); applyFilter();}catch(e){} }
-        function populateFilter() { const s=document.getElementById('filterCountry'); const cur=s.value; const c=[...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort(); s.innerHTML='<option value="ALL">🌎 Global</option>'; c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`); s.value=cur; }
-        function applyFilter() { const c=document.getElementById('filterCountry').value; filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c); let tc=0, tt=0, ct=0, stats={}; filteredData.forEach(r=>{ let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D"); let cost=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); let t=parseFloat(r[7])||0; if(!stats[k]) stats[k]={cs:0,ts:0,c:0}; stats[k].cs+=cost; stats[k].ts+=t; stats[k].c++; tc+=cost; if(t>0){tt+=t;ct++;} }); document.getElementById('kpiCount').innerText=filteredData.length; document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0"; document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-"; renderCharts(Object.keys(stats), Object.keys(stats).map(k=>(stats[k].cs/stats[k].c).toFixed(0)), Object.keys(stats).map(k=>(stats[k].ts/stats[k].c).toFixed(1)), c!=="ALL"); const tb=document.getElementById('historyTableBody'); tb.innerHTML=""; filteredData.slice().reverse().slice(0,50).forEach(r=>{ let d=r[0]?new Date(r[0]).toLocaleDateString():'-'; tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`; }); }
-        function renderCharts(l,c,t,isCarrier){ if(chartCost) chartCost.destroy(); if(chartTime) chartTime.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}; chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isCarrier?'#f97316':'#1e3a8a',borderRadius:4}]},options:opts}); chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:opts}); }
-        function downloadExcel() { const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
+        let rawData=[],filteredData=[],chartCost=null,chartTime=null;
+        const eqOpts={"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
+        function updateEquipment(){const m=document.getElementById('modalidadSelect').value;const s=document.getElementById('equipoSelect');s.innerHTML="";eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e);});}
+        
+        document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();const b=document.getElementById('submitBtn');b.disabled=true;b.innerHTML='Guardando...';fetch(scriptURL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{if(d.result==="error"){alert(d.message);}else{document.getElementById('statusMsg').classList.remove('hidden');e.target.reset();loadDashboard();setTimeout(()=>{document.getElementById('statusMsg').classList.add('hidden');b.disabled=false;b.innerHTML='GUARDAR';},2000);}}).catch(err=>{alert("Error: "+err);b.disabled=false;b.innerHTML='GUARDAR';});});
+        
+        async function loadDashboard(){try{const r=await fetch(scriptURL);const j=await r.json();rawData=j;populateFilter();applyFilter();}catch(e){console.log("No data yet")}}
+        function populateFilter(){const s=document.getElementById('filterCountry');const cur=s.value;const c=[...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort();s.innerHTML='<option value="ALL">🌎 Global</option>';c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`);s.value=cur;}
+        function applyFilter(){const c=document.getElementById('filterCountry').value;filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c);let tc=0,tt=0,ct=0,st={};filteredData.forEach(r=>{let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);let t=parseFloat(r[7])||0;if(!st[k])st[k]={cs:0,ts:0,c:0};st[k].cs+=co;st[k].ts+=t;st[k].c++;tc+=co;if(t>0){tt+=t;ct++;}});document.getElementById('kpiCount').innerText=filteredData.length;document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';document.getElementById('kpiTop').innerText=top;renderCharts(Object.keys(st),Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)),Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)),c!=="ALL");const tb=document.getElementById('historyTableBody');tb.innerHTML="";filteredData.slice().reverse().slice(0,50).forEach(r=>{let d=r[0]?new Date(r[0]).toLocaleDateString():'-';tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;});}
+        function renderCharts(l,c,t,isC){if(chartCost)chartCost.destroy();if(chartTime)chartTime.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isC?'#f97316':'#1e3a8a',borderRadius:4}]},options:o});chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:o});}
+        function downloadExcel(){const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones");XLSX.writeFile(wb,"Reporte.xlsx");}
 
-        // --- GESTIÓN 2026 (NUBE) ---
-        let plData = [], currentFilteredData = [], plChartType = null, plChartSku = null;
+        // --- GESTIÓN 2026 ---
+        let plData=[],currentFilteredData=[],plChartType=null,plChartSku=null;
+        
+        function parseMoney(s){if(!s)return 0;let c=s.toString().replace(/[$\sA-Za-z]/g,'');if(c.indexOf(',')>-1&&c.indexOf('.')>-1){if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');}}else if(c.indexOf(',')>-1){c=c.replace(',','.');}return parseFloat(c)||0;}
+        function formatDate(d){if(!d||d.trim()==='')return'-';if(d.includes('-')&&d.length===10){const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}if(d.includes('T'))return d.split('T')[0];return d;}
+        function parseDateSort(d){if(!d)return 0;if(d.includes('-'))return new Date(d).getTime();if(d.includes('/')){const p=d.split('/');return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();}return 0;}
 
-        function parseMoney(str) { if(!str) return 0; let c=str.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1){ if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');} }else if(c.indexOf(',')>-1){c=c.replace(',','.');} return parseFloat(c)||0; }
-        function formatDisplayDate(d) { if(!d||d.trim()==='')return'-'; if(d.includes('-')&&d.length===10){const p=d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`;} if(d.includes('T')) return d.split('T')[0]; return d; }
-        function parseDateForSort(d) { if(!d)return 0; if(d.includes('-'))return new Date(d).getTime(); if(d.includes('/')){const p=d.split('/'); return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();} return 0; }
-
-        function savePLData() {
-            const t = document.getElementById('pl-paste-area').value; if(!t) return;
+        function savePLData(){
+            const t=document.getElementById('pl-paste-area').value;if(!t)return;
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            const r = t.split('\n'); const n = [];
-            r.forEach(row => { const c = row.split('\t'); if(c.length>=13) { let d=c[4]?.trim()||c[3]?.trim()||''; n.push({nroExpo:c[0]?.trim(), destino:c[1]?.trim(), tipo:c[2]?.trim(), fecha:d, sku:c[5]?.trim(), desc:c[6]?.trim(), kgNeto:parseMoney(c[9]), precioTotal:parseMoney(c[13])}); } });
-            
-            if(n.length>0) {
-                const formData = new FormData(); formData.append('action', 'save_pl'); formData.append('data', JSON.stringify(n));
-                fetch(scriptURL, { method: 'POST', body: formData }).then(res => res.json()).then(data => { document.getElementById('loadingOverlay').classList.add('hidden'); closeImportModal(); loadPLData(); alert(`✅ Sincronizado: ${data.count} registros.`); }).catch(e => { alert("Error guardando en nube: "+e); document.getElementById('loadingOverlay').classList.add('hidden'); });
-            } else { alert("Datos no válidos"); document.getElementById('loadingOverlay').classList.add('hidden'); }
+            const r=t.split('\n');const n=[];
+            r.forEach(row=>{const c=row.split('\t');if(c.length>=13){let d=c[4]?.trim()||c[3]?.trim()||'';n.push({nroExpo:c[0]?.trim(),destino:c[1]?.trim(),tipo:c[2]?.trim(),fecha:d,sku:c[5]?.trim(),desc:c[6]?.trim(),kgNeto:parseMoney(c[9]),precioTotal:parseMoney(c[13])});}});
+            if(n.length>0){const fd=new FormData();fd.append('action','save_pl');fd.append('data',JSON.stringify(n));fetch(scriptURL,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{document.getElementById('loadingOverlay').classList.add('hidden');closeImportModal();loadPLData();alert(`✅ Sincronizado: ${d.count} registros.`);}).catch(e=>{alert("Error: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});}else{alert("Datos inválidos");document.getElementById('loadingOverlay').classList.add('hidden');}
         }
 
-        function loadPLData() {
+        function loadPLData(){
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            fetch(scriptURL + '?action=get_pl').then(res => res.json()).then(data => { plData = data; renderPLList(); document.getElementById('loadingOverlay').classList.add('hidden'); }).catch(e => { console.log(e); document.getElementById('loadingOverlay').classList.add('hidden'); });
+            fetch(scriptURL+'?action=get_pl').then(r=>r.json()).then(d=>{plData=d;renderPLList();document.getElementById('loadingOverlay').classList.add('hidden');}).catch(e=>{console.log(e);document.getElementById('loadingOverlay').classList.add('hidden');});
         }
 
-        function renderPLList() {
-            const fd = document.getElementById('pl-filter-dest');
-            if(fd.options.length===1 && plData.length>0) { const d=[...new Set(plData.map(i=>i.destino).filter(x=>x))].sort(); d.forEach(o=>{let e=document.createElement('option');e.value=o;e.innerText=o;fd.appendChild(e);}); }
-            const cd = fd.value; const c = document.getElementById('pl-list-container'); c.innerHTML = "";
-            const g = {}; plData.forEach(i=>{ if(cd!=='TODOS'&&i.destino!==cd)return; if(!i.nroExpo)return; if(!g[i.nroExpo])g[i.nroExpo]={id:i.nroExpo,d:i.destino,u:0}; g[i.nroExpo].u+=i.precioTotal; });
+        function renderPLList(){
+            const fd=document.getElementById('pl-filter-dest');
+            if(fd.options.length===1&&plData.length>0){const d=[...new Set(plData.map(i=>i.destino).filter(x=>x))].sort();d.forEach(o=>{let e=document.createElement('option');e.value=o;e.innerText=o;fd.appendChild(e);});}
+            const cd=fd.value;const c=document.getElementById('pl-list-container');c.innerHTML="";
+            const g={};plData.forEach(i=>{if(cd!=='TODOS'&&i.destino!==cd)return;if(!i.nroExpo)return;if(!g[i.nroExpo])g[i.nroExpo]={id:i.nroExpo,d:i.destino,u:0};g[i.nroExpo].u+=i.precioTotal;});
             
-            const sc = document.createElement('div'); sc.className="expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10"; sc.innerHTML=`<div class="flex items-center text-blue-900 font-bold"><i class="fa-solid fa-chart-pie mr-2"></i><span>VER RESUMEN ${cd==='TODOS'?'GLOBAL':cd.toUpperCase()}</span></div>`; sc.onclick=()=>renderDashboardView(cd,null); c.appendChild(sc);
-            
-            Object.values(g).forEach(e=>{ const d=document.createElement('div'); d.className="expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1"; d.onclick=()=>renderDashboardView(cd,e.id); d.innerHTML=`<div class="flex justify-between font-bold text-xs text-gray-700"><span>${e.id}</span><span class="text-green-600">$${e.u.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${e.d}</div>`; c.appendChild(d); });
-            renderDashboardView(cd,null);
+            // Resumen Card
+            const sc=document.createElement('div');sc.className="expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10 flex items-center justify-between";
+            sc.innerHTML=`<div class="font-bold text-blue-900 flex items-center"><i class="fa-solid fa-earth-americas mr-2"></i><span>RESUMEN ${cd==='TODOS'?'GLOBAL':cd.toUpperCase()}</span></div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;
+            sc.onclick=()=>renderDash(cd,null);c.appendChild(sc);
+
+            Object.values(g).forEach(e=>{const d=document.createElement('div');d.className="expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";d.onclick=()=>renderDash(cd,e.id);d.innerHTML=`<div class="flex justify-between font-bold text-xs text-gray-700"><span>${e.id}</span><span class="text-green-600">$${e.u.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${e.d}</div>`;c.appendChild(d);});
+            renderDash(cd,null);
         }
 
-        function cleanProductName(d) { if(!d)return"OTROS"; let c=d.toUpperCase(); c=c.replace(/^F-\s*/,'').replace(/^HELADO\s+/,'').replace(/^PINTA\s+/,''); return c.trim(); }
+        function cleanName(d){if(!d)return"OTROS";let c=d.toUpperCase();c=c.replace(/^F-\s*/,'').replace(/^HELADO\s+/,'').replace(/^PINTA\s+/,'');return c.trim();}
 
-        function renderDashboardView(fd, sid) {
-            let ds = plData; if(fd!=='TODOS') ds=ds.filter(i=>i.destino===fd);
-            if(sid) { ds=ds.filter(i=>i.nroExpo===sid); document.getElementById('pl-main-title').innerText=`Operación: ${sid}`; document.getElementById('pl-subtitle').innerText="Vista Detallada"; document.getElementById('chart-sku-title').innerText="Top 5 SKUs"; }
-            else { document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global":"Resumen: "+fd; document.getElementById('pl-subtitle').innerText="Acumulado"; document.getElementById('chart-sku-title').innerText="Top 5 Variantes"; }
+        function renderDash(fd, sid){
+            let ds=plData; if(fd!=='TODOS')ds=ds.filter(i=>i.destino===fd);
+            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 SKUs";}
+            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Variantes";}
             
-            currentFilteredData = ds;
-            let tu=0, tk=0, ui=0; const bt={}, bp={};
-            ds.forEach(i=>{ tu+=i.precioTotal; tk+=i.kgNeto; let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; let k; if(sid) k=i.sku||i.desc||"N/A"; else k=cleanProductName(i.desc)||(i.sku||"N/A"); bp[k]=(bp[k]||0)+i.precioTotal; });
-            ui = sid ? ds.length : new Set(ds.map(i=>i.nroExpo)).size;
+            currentFilteredData=ds; // For excel
             
-            document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`; document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`; document.getElementById('pl-kpi-items').innerText=ui; document.getElementById('pl-table-count').innerText=`${ds.length} registros`;
+            // Highlight active card
+            const cards = document.querySelectorAll('.expo-card');
+            cards.forEach(card => card.classList.remove('active', 'border-l-4'));
             
-            const tb=document.getElementById('pl-table-body'); tb.innerHTML=""; ds.slice(0,100).forEach(i=>{ tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDisplayDate(i.fecha)}</td><td class="px-4 py-2 font-medium text-xs text-gray-900">${i.nroExpo}<br><span class="text-gray-400">${i.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${i.desc}">${i.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${i.tipo}</span></td><td class="px-4 py-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`; });
+            let tu=0,tk=0,ui=0;const bt={},bp={};
+            ds.forEach(i=>{tu+=i.precioTotal;tk+=i.kgNeto;let t=i.tipo||"Otros";bt[t]=(bt[t]||0)+i.precioTotal;let k;if(sid)k=i.sku||i.desc||"N/A";else k=cleanName(i.desc)||(i.sku||"N/A");bp[k]=(bp[k]||0)+i.precioTotal;});
+            ui=sid?ds.length:new Set(ds.map(i=>i.nroExpo)).size;
+            
+            document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`;document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`;document.getElementById('pl-kpi-items').innerText=ui;document.getElementById('pl-table-count').innerText=ds.length;
+            
+            const tb=document.getElementById('pl-table-body');tb.innerHTML="";
+            ds.slice(0,100).forEach(i=>{tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50 transition"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-medium text-xs text-gray-900">${i.sku}</td><td class="px-4 py-2 truncate max-w-xs" title="${i.desc}">${i.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${i.tipo}</span></td><td class="px-4 py-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`;});
+            
             updatePLCharts(bt,bp);
         }
 
-        function updatePLCharts(bt, bp) {
-            if(plChartType) plChartType.destroy(); if(plChartSku) plChartSku.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
-            plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:opts});
+        function updatePLCharts(bt,bp){
+            if(plChartType)plChartType.destroy();if(plChartSku)plChartSku.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
+            plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
             const sp=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,20)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...opts,plugins:{legend:{display:false}},indexAxis:'y'}});
+            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,20)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
         }
 
-        function selectExpoFromSearch(eid, dest) { closeSearch(); const s=document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value=dest; else s.value='TODOS'; renderPLList(); renderDashboardView(s.value==='TODOS'?'TODOS':dest, eid); }
-        function searchSKU() {
-            const t=document.getElementById('skuInput').value.toLowerCase(); const sm=document.getElementById('skuSort').value; const p=document.getElementById('search-results-panel'); const b=document.getElementById('sku-results-body');
-            if(t.length<2){p.classList.add('hidden');return;} p.classList.remove('hidden');
-            let m=plData.filter(i=>(i.sku&&i.sku.toLowerCase().includes(t))||(i.desc&&i.desc.toLowerCase().includes(t))||(i.nroExpo&&i.nroExpo.toLowerCase().includes(t)));
-            if(sm==='newest') m.sort((a,b)=>parseDateForSort(b.fecha)-parseDateForSort(a.fecha)); else if(sm==='oldest') m.sort((a,b)=>parseDateForSort(a.fecha)-parseDateForSort(b.fecha)); else m.sort((a,b)=>b.precioTotal-a.precioTotal);
-            b.innerHTML=""; if(m.length===0) b.innerHTML=`<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
-            else m.slice(0,50).forEach(i=>{ b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')"><td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDisplayDate(i.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td><td class="px-4 py-2 font-mono">${i.sku}</td><td class="px-4 py-2 text-xs">${i.desc}</td><td class="px-4 py-2 text-right">${i.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${i.precioTotal.toLocaleString()}</td></tr>`; });
-        }
-        function closeSearch(){ document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value=""; }
+        function selectExpoFromSearch(eid,dest){closeSearch();const s=document.getElementById('pl-filter-dest');if(s.querySelector(`option[value="${dest}"]`))s.value=dest;else s.value='TODOS';renderPLList();renderDash(s.value==='TODOS'?'TODOS':dest,eid);}
         
-        function downloadPLExcel() {
-            if(!currentFilteredData || currentFilteredData.length===0){alert("No hay datos");return;}
-            const e=currentFilteredData.map(i=>({"Operación":i.nroExpo,"Destino":i.destino,"Fecha":formatDisplayDate(i.fecha),"Tipo":i.tipo,"SKU":i.sku,"Desc":i.desc,"Kg":i.kgNeto,"USD":i.precioTotal}));
-            const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(e),"Reporte");
-            XLSX.writeFile(wb, `Reporte_Freddo.xlsx`);
+        function searchSKU(){
+            const t=document.getElementById('skuInput').value.toLowerCase();const sm=document.getElementById('skuSort').value;const p=document.getElementById('search-results-panel');const b=document.getElementById('sku-results-body');
+            if(t.length<2){p.classList.add('hidden');return;}p.classList.remove('hidden');
+            let m=plData.filter(i=>(i.sku&&i.sku.toLowerCase().includes(t))||(i.desc&&i.desc.toLowerCase().includes(t))||(i.nroExpo&&i.nroExpo.toLowerCase().includes(t)));
+            if(sm==='newest')m.sort((a,b)=>parseDateSort(b.fecha)-parseDateSort(a.fecha));else if(sm==='oldest')m.sort((a,b)=>parseDateSort(a.fecha)-parseDateSort(b.fecha));else m.sort((a,b)=>b.precioTotal-a.precioTotal);
+            b.innerHTML="";if(m.length===0)b.innerHTML=`<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
+            else m.slice(0,50).forEach(i=>{b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')"><td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td><td class="px-4 py-2 font-mono">${i.sku}</td><td class="px-4 py-2 text-xs">${i.desc}</td><td class="px-4 py-2 text-right">${i.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${i.precioTotal.toLocaleString()}</td></tr>`;});
+        }
+        function closeSearch(){document.getElementById('search-results-panel').classList.add('hidden');document.getElementById('skuInput').value="";}
+        
+        function downloadPLExcel(){
+            if(!currentFilteredData||currentFilteredData.length===0){alert("Sin datos");return;}
+            const e=currentFilteredData.map(i=>({"Operacion":i.nroExpo,"Destino":i.destino,"Fecha":formatDate(i.fecha),"Tipo":i.tipo,"SKU":i.sku,"Desc":i.desc,"Kg":i.kgNeto,"USD":i.precioTotal}));
+            const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(e),"Reporte");XLSX.writeFile(wb,`Reporte_Freddo.xlsx`);
         }
 
-        window.addEventListener('load', () => { updateEquipment(); loadDashboard(); });
+        window.addEventListener('load',()=>{updateEquipment();loadDashboard();});
     </script>
 </body>
 </html>
