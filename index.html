@@ -4,34 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freddo Comex - Sistema Integral</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        /* Estilos Generales */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Tabs */
         .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; }
         .tab-inactive { color: #6b7280; border-bottom: 4px solid transparent; }
         .tab-inactive:hover { color: #374151; border-color: #d1d5db; }
-        
-        /* Animaciones SUAVES (Sin temblores) */
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Scrollbar */
+        /* Scrollbar fina */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        
-        /* Filas Clickeables (Solo color, sin movimiento) */
+        /* Interacción */
         .clickable-row { cursor: pointer; transition: background-color 0.15s ease; }
-        .clickable-row:hover { background-color: #e0f2fe; } /* Azul muy suave */
-        
-        /* Cards de la lista lateral */
+        .clickable-row:hover { background-color: #e0f2fe; }
         .expo-card { transition: border-color 0.2s, background-color 0.2s; }
         .expo-card:hover { border-color: #3b82f6; background-color: #f0f9ff; }
     </style>
@@ -142,11 +135,11 @@
         
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">Panel de Exportaciones 2026</h2>
-                <p class="text-sm text-gray-500">Análisis de Packing List y Trazabilidad</p>
+                <h2 class="text-2xl font-bold text-gray-800">Panel 2026 (Nube)</h2>
+                <p class="text-sm text-gray-500">Análisis de Packing List y Trazabilidad (Drive)</p>
             </div>
             <button onclick="openImportModal()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow flex items-center transition">
-                <i class="fa-solid fa-file-import mr-2"></i> Importar / Actualizar Excel
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar / Actualizar
             </button>
         </div>
 
@@ -269,17 +262,17 @@
     <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Importar / Actualizar Datos</h3>
+                <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-green-600 mr-2"></i>Actualizar Base de Datos (Nube)</h3>
                 <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-times text-xl"></i></button>
             </div>
             <p class="text-sm text-gray-600 mb-2">
-                Ve a tu Excel, hoja "2026". Copia las filas (desde Nro Expo hasta Precio Total) y pégalas aquí.
+                Pega aquí los datos de tu Excel. Esto <strong>reemplazará</strong> los datos actuales para <strong>todo el equipo</strong>.
             </p>
             <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Paste Excel data here..."></textarea>
             <div class="mt-4 flex justify-end space-x-3">
                 <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
                 <button onclick="savePLData()" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-bold text-sm shadow">
-                    <i class="fa-solid fa-check mr-2"></i> Procesar y Guardar
+                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar en Nube
                 </button>
             </div>
         </div>
@@ -288,14 +281,17 @@
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
         <div class="text-center">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-            <p class="font-bold text-gray-700">Procesando datos...</p>
+            <p class="font-bold text-gray-700">Sincronizando...</p>
         </div>
     </div>
 
     <script>
-        // ========================================================================================
-        // 1. LÓGICA GENERAL
-        // ========================================================================================
+        // =======================================================================================
+        // 🚨 CONFIGURACIÓN: PEGA AQUÍ TU URL DE APPS SCRIPT
+        // =======================================================================================
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzaFwFQvUmAjbPkefdrjB7YC2a9vwpXYnn6NCwDqIl8s0OPjCOWjpwILd8Lq8yIxkjvjA/exec';
+        // =======================================================================================
+
         function switchTab(tab) {
             document.getElementById('view-cotizador').classList.add('hidden');
             document.getElementById('view-gestion2026').classList.add('hidden');
@@ -313,325 +309,94 @@
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('pl-paste-area').value = ''; document.getElementById('pl-paste-area').focus(); }
         function closeImportModal() { document.getElementById('importModal').classList.add('hidden'); }
 
-        // ========================================================================================
-        // 2. LÓGICA COTIZADOR
-        // ========================================================================================
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyxMBikAD1YkmTh3y4f90ErfUV63FBu4K3UevfrE0t7T0LJ3OFRBWXuBZhmCvEtfRYaYg/exec';
+        // --- COTIZADOR ---
         let rawData = [], filteredData = [], chartCost = null, chartTime = null;
         const equipmentOptions = { "Marítimo": ["20' Standard", "40' Standard", "40' High Cube", "20' Reefer", "40' Reefer"], "Terrestre": ["Camión Completo (FTL)", "Consolidado (LTL)", "Sider (Lonas)", "Furgón Refrigerado"], "Aéreo": ["Carga General", "Carga Perecedera", "Muestras"] };
+        function updateEquipment() { const m = document.getElementById('modalidadSelect').value; const s = document.getElementById('equipoSelect'); s.innerHTML=""; equipmentOptions[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e);}); }
+        document.getElementById('comexForm').addEventListener('submit', e => { e.preventDefault(); const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerHTML = 'Guardando...'; fetch(scriptURL, { method: 'POST', body: new FormData(e.target)}).then(r=>r.json()).then(d=>{ document.getElementById('statusMsg').classList.remove('hidden'); e.target.reset(); loadDashboard(); setTimeout(()=>{document.getElementById('statusMsg').classList.add('hidden'); btn.disabled=false; btn.innerHTML='GUARDAR EN BASE';},2000); }); });
+        async function loadDashboard() { try{const r=await fetch(scriptURL); const j=await r.json(); rawData=j; populateFilter(); applyFilter();}catch(e){} }
+        function populateFilter() { const s=document.getElementById('filterCountry'); const cur=s.value; const c=[...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort(); s.innerHTML='<option value="ALL">🌎 Global</option>'; c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`); s.value=cur; }
+        function applyFilter() { const c=document.getElementById('filterCountry').value; filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c); let tc=0, tt=0, ct=0, stats={}; filteredData.forEach(r=>{ let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D"); let cost=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); let t=parseFloat(r[7])||0; if(!stats[k]) stats[k]={cs:0,ts:0,c:0}; stats[k].cs+=cost; stats[k].ts+=t; stats[k].c++; tc+=cost; if(t>0){tt+=t;ct++;} }); document.getElementById('kpiCount').innerText=filteredData.length; document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0"; document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-"; renderCharts(Object.keys(stats), Object.keys(stats).map(k=>(stats[k].cs/stats[k].c).toFixed(0)), Object.keys(stats).map(k=>(stats[k].ts/stats[k].c).toFixed(1)), c!=="ALL"); const tb=document.getElementById('historyTableBody'); tb.innerHTML=""; filteredData.slice().reverse().slice(0,50).forEach(r=>{ let d=r[0]?new Date(r[0]).toLocaleDateString():'-'; tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`; }); }
+        function renderCharts(l,c,t,isCarrier){ if(chartCost) chartCost.destroy(); if(chartTime) chartTime.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}; chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isCarrier?'#f97316':'#1e3a8a',borderRadius:4}]},options:opts}); chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:opts}); }
+        function downloadExcel() { const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
 
-        function updateEquipment() {
-            const mode = document.getElementById('modalidadSelect').value;
-            const select = document.getElementById('equipoSelect'); select.innerHTML = ""; 
-            equipmentOptions[mode].forEach(opt => { let el = document.createElement("option"); el.value = opt; el.innerText = opt; select.appendChild(el); });
-        }
+        // --- GESTIÓN 2026 (NUBE) ---
+        let plData = [], currentFilteredData = [], plChartType = null, plChartSku = null;
 
-        document.getElementById('comexForm').addEventListener('submit', e => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn'); const msg = document.getElementById('statusMsg');
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-            fetch(scriptURL, { method: 'POST', body: new FormData(e.target)}).then(res => { if(!res.ok) throw new Error("Error"); return res; }).then(() => {
-                msg.classList.remove('hidden'); e.target.reset(); updateEquipment(); loadDashboard();
-                setTimeout(() => { msg.classList.add('hidden'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> GUARDAR EN BASE'; }, 2000);
-            }).catch(err => { alert("Error: "+err); btn.disabled = false; btn.innerHTML = 'GUARDAR EN BASE'; });
-        });
-
-        async function loadDashboard() { try { const res = await fetch(scriptURL); const json = await res.json(); rawData = json; populateFilter(); applyFilter(); } catch(e){} }
-        function populateFilter() { const sel = document.getElementById('filterCountry'); const cur = sel.value; const c = [...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort(); sel.innerHTML='<option value="ALL">🌎 Vista Global</option>'; c.forEach(x=>sel.innerHTML+=`<option value="${x}">${x}</option>`); sel.value=cur; }
-        function applyFilter() { 
-            const c = document.getElementById('filterCountry').value; filteredData = (c==="ALL")?rawData:rawData.filter(r=>r[2]===c);
-            let tc=0, tt=0, ct=0, stats={};
-            filteredData.forEach(r=>{ 
-                let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D"); let cost=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); let t=parseFloat(r[7])||0;
-                if(!stats[k]) stats[k]={cs:0,ts:0,c:0}; stats[k].cs+=cost; stats[k].ts+=t; stats[k].c++; tc+=cost; if(t>0){tt+=t;ct++;}
-            });
-            document.getElementById('kpiCount').innerText=filteredData.length; document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0"; document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-"; 
-            let top=Object.keys(stats).length?Object.keys(stats).reduce((a,b)=>stats[a].c>stats[b].c?a:b):'-'; document.getElementById('kpiTop').innerText=top;
-            renderCharts(Object.keys(stats), Object.keys(stats).map(k=>(stats[k].cs/stats[k].c).toFixed(0)), Object.keys(stats).map(k=>(stats[k].ts/stats[k].c).toFixed(1)), c!=="ALL");
-            const tb=document.getElementById('historyTableBody'); tb.innerHTML=""; filteredData.slice().reverse().slice(0,50).forEach(r=>{ let d=r[0]?new Date(r[0]).toLocaleDateString():'-'; let tot=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${tot.toFixed(2)}</td><td class="px-4 py-2 text-center"><button class="text-gray-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></td></tr>`; });
-        }
-        function renderCharts(l,c,t,isCarrier){ 
-            if(chartCost) chartCost.destroy(); if(chartTime) chartTime.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
-            chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isCarrier?'#f97316':'#1e3a8a',borderRadius:4}]},options:opts});
-            chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:opts});
-        }
-        function downloadExcel() { if(typeof XLSX==='undefined'){alert("Error Excel");return;} const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
-
-        // ========================================================================================
-        // 3. LÓGICA GESTIÓN 2026
-        // ========================================================================================
-        let plData = [];
-        let currentFilteredData = []; // Variable global para guardar lo que el usuario está viendo
-        let plChartType = null;
-        let plChartSku = null;
-
-        function parseMoney(str) {
-            if (!str) return 0;
-            let clean = str.toString().replace(/[$\sA-Za-z]/g, '');
-            if (clean.indexOf(',') > -1 && clean.indexOf('.') > -1) {
-                if (clean.lastIndexOf(',') > clean.lastIndexOf('.')) { clean = clean.replace(/\./g, '').replace(',', '.'); } else { clean = clean.replace(/,/g, ''); }
-            } else if (clean.indexOf(',') > -1) { clean = clean.replace(',', '.'); }
-            return parseFloat(clean) || 0;
-        }
-
-        // Formato para mostrar
-        function formatDisplayDate(dateStr) {
-            if (!dateStr || dateStr.trim() === '') return '-';
-            if (dateStr.includes('-') && dateStr.split('-').length === 3) {
-                const p = dateStr.split('-');
-                return `${p[2]}/${p[1]}/${p[0]}`;
-            }
-            return dateStr; 
-        }
-
-        // Formato para ordenar (FIXED: Soporta DD/MM/YYYY y YYYY-MM-DD)
-        function parseDateForSort(dateStr) {
-            if (!dateStr) return 0;
-            if (dateStr.includes('-')) return new Date(dateStr).getTime();
-            if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                // Asume DD/MM/YYYY. JS usa MM/DD/YYYY o YYYY-MM-DD
-                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
-            }
-            return 0;
-        }
+        function parseMoney(str) { if(!str) return 0; let c=str.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1){ if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');} }else if(c.indexOf(',')>-1){c=c.replace(',','.');} return parseFloat(c)||0; }
+        function formatDisplayDate(d) { if(!d||d.trim()==='')return'-'; if(d.includes('-')&&d.length===10){const p=d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`;} if(d.includes('T')) return d.split('T')[0]; return d; }
+        function parseDateForSort(d) { if(!d)return 0; if(d.includes('-'))return new Date(d).getTime(); if(d.includes('/')){const p=d.split('/'); return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();} return 0; }
 
         function savePLData() {
-            const text = document.getElementById('pl-paste-area').value;
-            if (!text) return;
+            const t = document.getElementById('pl-paste-area').value; if(!t) return;
             document.getElementById('loadingOverlay').classList.remove('hidden');
-            setTimeout(() => {
-                const rows = text.split('\n');
-                const newItems = [];
-                rows.forEach(row => {
-                    const cols = row.split('\t');
-                    if (cols.length >= 13) {
-                        let rawDate = cols[4]?.trim() || cols[3]?.trim() || '';
-                        newItems.push({
-                            nroExpo: cols[0]?.trim(),
-                            destino: cols[1]?.trim(),
-                            tipo: cols[2]?.trim(),
-                            fecha: rawDate, 
-                            sku: cols[5]?.trim(),
-                            desc: cols[6]?.trim(),
-                            kgNeto: parseMoney(cols[9]),
-                            precioTotal: parseMoney(cols[13])
-                        });
-                    }
-                });
-                if (newItems.length > 0) {
-                    plData = newItems; 
-                    localStorage.setItem('freddo_pl_data_2026', JSON.stringify(plData));
-                    closeImportModal();
-                    renderPLList();
-                    alert(`✅ Datos actualizados: ${plData.length} registros cargados.`);
-                } else { alert("No se detectaron columnas válidas."); }
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }, 500);
+            const r = t.split('\n'); const n = [];
+            r.forEach(row => { const c = row.split('\t'); if(c.length>=13) { let d=c[4]?.trim()||c[3]?.trim()||''; n.push({nroExpo:c[0]?.trim(), destino:c[1]?.trim(), tipo:c[2]?.trim(), fecha:d, sku:c[5]?.trim(), desc:c[6]?.trim(), kgNeto:parseMoney(c[9]), precioTotal:parseMoney(c[13])}); } });
+            
+            if(n.length>0) {
+                const formData = new FormData(); formData.append('action', 'save_pl'); formData.append('data', JSON.stringify(n));
+                fetch(scriptURL, { method: 'POST', body: formData }).then(res => res.json()).then(data => { document.getElementById('loadingOverlay').classList.add('hidden'); closeImportModal(); loadPLData(); alert(`✅ Sincronizado: ${data.count} registros.`); }).catch(e => { alert("Error guardando en nube: "+e); document.getElementById('loadingOverlay').classList.add('hidden'); });
+            } else { alert("Datos no válidos"); document.getElementById('loadingOverlay').classList.add('hidden'); }
         }
 
         function loadPLData() {
-            const stored = localStorage.getItem('freddo_pl_data_2026');
-            if (stored) { plData = JSON.parse(stored); renderPLList(); }
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            fetch(scriptURL + '?action=get_pl').then(res => res.json()).then(data => { plData = data; renderPLList(); document.getElementById('loadingOverlay').classList.add('hidden'); }).catch(e => { console.log(e); document.getElementById('loadingOverlay').classList.add('hidden'); });
         }
 
         function renderPLList() {
-            const filterDest = document.getElementById('pl-filter-dest');
-            if (filterDest.options.length === 1 && plData.length > 0) {
-                const dests = [...new Set(plData.map(i => i.destino).filter(x=>x))].sort();
-                dests.forEach(d => { let opt = document.createElement('option'); opt.value = d; opt.innerText = d; filterDest.appendChild(opt); });
-            }
-            const currentDest = filterDest.value;
-            const container = document.getElementById('pl-list-container');
-            container.innerHTML = "";
-
-            const grouped = {};
-            plData.forEach(item => {
-                if (currentDest !== 'TODOS' && item.destino !== currentDest) return;
-                if (!item.nroExpo) return;
-                if (!grouped[item.nroExpo]) grouped[item.nroExpo] = { id: item.nroExpo, destino: item.destino, usd: 0 };
-                grouped[item.nroExpo].usd += item.precioTotal;
-            });
-
-            const summaryCard = document.createElement('div');
-            summaryCard.className = "expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10";
-            summaryCard.innerHTML = `<div class="flex items-center text-blue-900 font-bold"><i class="fa-solid fa-chart-pie mr-2"></i><span>VER RESUMEN ${currentDest === 'TODOS' ? 'GLOBAL' : currentDest.toUpperCase()}</span></div>`;
-            summaryCard.onclick = () => renderDashboardView(currentDest, null); 
-            container.appendChild(summaryCard);
-
-            Object.values(grouped).forEach(expo => {
-                const div = document.createElement('div');
-                div.className = "expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";
-                div.onclick = () => renderDashboardView(currentDest, expo.id); 
-                div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${expo.id}</span><span class="text-green-600">$${expo.usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${expo.destino}</div>`;
-                container.appendChild(div);
-            });
-            renderDashboardView(currentDest, null);
+            const fd = document.getElementById('pl-filter-dest');
+            if(fd.options.length===1 && plData.length>0) { const d=[...new Set(plData.map(i=>i.destino).filter(x=>x))].sort(); d.forEach(o=>{let e=document.createElement('option');e.value=o;e.innerText=o;fd.appendChild(e);}); }
+            const cd = fd.value; const c = document.getElementById('pl-list-container'); c.innerHTML = "";
+            const g = {}; plData.forEach(i=>{ if(cd!=='TODOS'&&i.destino!==cd)return; if(!i.nroExpo)return; if(!g[i.nroExpo])g[i.nroExpo]={id:i.nroExpo,d:i.destino,u:0}; g[i.nroExpo].u+=i.precioTotal; });
+            
+            const sc = document.createElement('div'); sc.className="expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10"; sc.innerHTML=`<div class="flex items-center text-blue-900 font-bold"><i class="fa-solid fa-chart-pie mr-2"></i><span>VER RESUMEN ${cd==='TODOS'?'GLOBAL':cd.toUpperCase()}</span></div>`; sc.onclick=()=>renderDashboardView(cd,null); c.appendChild(sc);
+            
+            Object.values(g).forEach(e=>{ const d=document.createElement('div'); d.className="expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1"; d.onclick=()=>renderDashboardView(cd,e.id); d.innerHTML=`<div class="flex justify-between font-bold text-xs text-gray-700"><span>${e.id}</span><span class="text-green-600">$${e.u.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${e.d}</div>`; c.appendChild(d); });
+            renderDashboardView(cd,null);
         }
 
-        function cleanProductName(desc) {
-            if (!desc) return "OTROS";
-            let clean = desc.toUpperCase();
-            clean = clean.replace(/^F-\s*/, ''); 
-            clean = clean.replace(/^HELADO\s+/, ''); 
-            clean = clean.replace(/^PINTA\s+/, ''); 
-            return clean.trim();
+        function cleanProductName(d) { if(!d)return"OTROS"; let c=d.toUpperCase(); c=c.replace(/^F-\s*/,'').replace(/^HELADO\s+/,'').replace(/^PINTA\s+/,''); return c.trim(); }
+
+        function renderDashboardView(fd, sid) {
+            let ds = plData; if(fd!=='TODOS') ds=ds.filter(i=>i.destino===fd);
+            if(sid) { ds=ds.filter(i=>i.nroExpo===sid); document.getElementById('pl-main-title').innerText=`Operación: ${sid}`; document.getElementById('pl-subtitle').innerText="Vista Detallada"; document.getElementById('chart-sku-title').innerText="Top 5 SKUs"; }
+            else { document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global":"Resumen: "+fd; document.getElementById('pl-subtitle').innerText="Acumulado"; document.getElementById('chart-sku-title').innerText="Top 5 Variantes"; }
+            
+            currentFilteredData = ds;
+            let tu=0, tk=0, ui=0; const bt={}, bp={};
+            ds.forEach(i=>{ tu+=i.precioTotal; tk+=i.kgNeto; let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; let k; if(sid) k=i.sku||i.desc||"N/A"; else k=cleanProductName(i.desc)||(i.sku||"N/A"); bp[k]=(bp[k]||0)+i.precioTotal; });
+            ui = sid ? ds.length : new Set(ds.map(i=>i.nroExpo)).size;
+            
+            document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`; document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`; document.getElementById('pl-kpi-items').innerText=ui; document.getElementById('pl-table-count').innerText=`${ds.length} registros`;
+            
+            const tb=document.getElementById('pl-table-body'); tb.innerHTML=""; ds.slice(0,100).forEach(i=>{ tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDisplayDate(i.fecha)}</td><td class="px-4 py-2 font-medium text-xs text-gray-900">${i.nroExpo}<br><span class="text-gray-400">${i.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${i.desc}">${i.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${i.tipo}</span></td><td class="px-4 py-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`; });
+            updatePLCharts(bt,bp);
         }
 
-        function renderDashboardView(filterDest, specificExpoId) {
-            let dataset = plData;
-            if (filterDest !== 'TODOS') dataset = dataset.filter(i => i.destino === filterDest);
-            if (specificExpoId) {
-                dataset = dataset.filter(i => i.nroExpo === specificExpoId);
-                document.getElementById('pl-main-title').innerText = `Operación: ${specificExpoId}`;
-                document.getElementById('pl-subtitle').innerText = "Vista Detallada";
-                document.getElementById('chart-sku-title').innerText = "Top 5 SKUs (Detalle)";
-            } else {
-                document.getElementById('pl-main-title').innerText = filterDest === 'TODOS' ? "Resumen Global 2026" : `Resumen: ${filterDest}`;
-                document.getElementById('pl-subtitle').innerText = "Acumulado";
-                document.getElementById('chart-sku-title').innerText = "Top 5 Variantes (Acumulado)";
-            }
-
-            // GUARDAR PARA EXPORTAR
-            currentFilteredData = dataset;
-
-            let totalUSD = 0, totalKG = 0, uniqueItems = 0;
-            const byType = {}, byProduct = {};
-
-            dataset.forEach(item => {
-                totalUSD += item.precioTotal;
-                totalKG += item.kgNeto;
-                
-                let tipo = item.tipo || "Otros";
-                byType[tipo] = (byType[tipo] || 0) + item.precioTotal;
-                
-                let key;
-                if (specificExpoId) {
-                    key = item.sku || item.desc || "N/A";
-                } else {
-                    key = cleanProductName(item.desc) || (item.sku || "N/A");
-                }
-                byProduct[key] = (byProduct[key] || 0) + item.precioTotal;
-            });
-
-            if (specificExpoId) uniqueItems = dataset.length; else uniqueItems = new Set(dataset.map(i => i.nroExpo)).size;
-
-            document.getElementById('pl-kpi-monto').innerText = `$ ${totalUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
-            document.getElementById('pl-kpi-peso').innerText = `${totalKG.toLocaleString('es-AR', {maximumFractionDigits:0})} Kg`;
-            document.getElementById('pl-kpi-items').innerText = uniqueItems;
-            document.getElementById('pl-table-count').innerText = `${dataset.length} registros`;
-
-            const tbody = document.getElementById('pl-table-body');
-            tbody.innerHTML = "";
-            dataset.slice(0, 100).forEach(item => {
-                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDisplayDate(item.fecha)}</td><td class="px-4 py-2 font-medium text-xs text-gray-900">${item.nroExpo}<br><span class="text-gray-400">${item.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${item.desc}">${item.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${item.tipo}</span></td><td class="px-4 py-2 text-right">${item.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${item.precioTotal.toLocaleString()}</td></tr>`;
-            });
-
-            updatePLCharts(byType, byProduct);
+        function updatePLCharts(bt, bp) {
+            if(plChartType) plChartType.destroy(); if(plChartSku) plChartSku.destroy(); const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
+            plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:opts});
+            const sp=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,20)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...opts,plugins:{legend:{display:false}},indexAxis:'y'}});
         }
 
-        function updatePLCharts(byType, byProduct) {
-            if(plChartType) plChartType.destroy();
-            if(plChartSku) plChartSku.destroy();
-            const opts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 10} } } } };
-
-            plChartType = new Chart(document.getElementById('plChartType'), {
-                type: 'doughnut',
-                data: { labels: Object.keys(byType), datasets: [{ data: Object.values(byType), backgroundColor: ['#1e3a8a', '#f97316', '#10b981', '#6366f1', '#8b5cf6'], borderWidth: 0 }] },
-                options: opts
-            });
-
-            const sortedProds = Object.entries(byProduct).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            plChartSku = new Chart(document.getElementById('plChartSku'), {
-                type: 'bar',
-                data: { labels: sortedProds.map(x => x[0].substring(0, 20)+'...'), datasets: [{ label: 'USD', data: sortedProds.map(x => x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] },
-                options: { ...opts, plugins: { legend: { display: false } }, indexAxis: 'y' }
-            });
-        }
-
-        // =========================================================
-        // 4. BUSCADOR INTERACTIVO Y DESCARGA
-        // =========================================================
-        
-        function selectExpoFromSearch(expoId, destino) {
-            closeSearch();
-            const selDest = document.getElementById('pl-filter-dest');
-            // Intentar seleccionar destino, si es "Todos" o existe
-            if(selDest.querySelector(`option[value="${destino}"]`)) {
-                selDest.value = destino;
-            } else {
-                selDest.value = 'TODOS';
-            }
-            renderPLList(); 
-            // Cargar vista especifica
-            renderDashboardView(selDest.value === 'TODOS' ? 'TODOS' : destino, expoId);
-        }
-
+        function selectExpoFromSearch(eid, dest) { closeSearch(); const s=document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value=dest; else s.value='TODOS'; renderPLList(); renderDashboardView(s.value==='TODOS'?'TODOS':dest, eid); }
         function searchSKU() {
-            const term = document.getElementById('skuInput').value.toLowerCase();
-            const sortMode = document.getElementById('skuSort').value;
-            const resultPanel = document.getElementById('search-results-panel');
-            const tbody = document.getElementById('sku-results-body');
-            const status = document.getElementById('search-status');
-
-            if (term.length < 2) { resultPanel.classList.add('hidden'); status.innerText = "Escribe para buscar..."; return; }
-            resultPanel.classList.remove('hidden');
-            
-            // BUSQUEDA AMPLIADA: SKU, Descripcion Y Operacion
-            let matches = plData.filter(item => 
-                (item.sku && item.sku.toLowerCase().includes(term)) || 
-                (item.desc && item.desc.toLowerCase().includes(term)) ||
-                (item.nroExpo && item.nroExpo.toLowerCase().includes(term))
-            );
-            status.innerText = `Encontrados: ${matches.length}`;
-
-            if (sortMode === 'newest') matches.sort((a, b) => parseDateForSort(b.fecha) - parseDateForSort(a.fecha));
-            else if (sortMode === 'oldest') matches.sort((a, b) => parseDateForSort(a.fecha) - parseDateForSort(b.fecha));
-            else if (sortMode === 'expensive') matches.sort((a, b) => b.precioTotal - a.precioTotal);
-
-            tbody.innerHTML = "";
-            if (matches.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
-            else matches.slice(0, 50).forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${item.nroExpo}', '${item.destino}')">
-                        <td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDisplayDate(item.fecha)}</td>
-                        <td class="px-4 py-2 font-bold text-blue-900">${item.nroExpo}</td>
-                        <td class="px-4 py-2 text-xs bg-gray-100 rounded">${item.destino}</td>
-                        <td class="px-4 py-2 font-mono">${item.sku}</td>
-                        <td class="px-4 py-2 text-xs">${item.desc}</td>
-                        <td class="px-4 py-2 text-right">${item.kgNeto}</td>
-                        <td class="px-4 py-2 text-right font-bold text-green-600">$${item.precioTotal.toLocaleString()}</td>
-                    </tr>`;
-            });
+            const t=document.getElementById('skuInput').value.toLowerCase(); const sm=document.getElementById('skuSort').value; const p=document.getElementById('search-results-panel'); const b=document.getElementById('sku-results-body');
+            if(t.length<2){p.classList.add('hidden');return;} p.classList.remove('hidden');
+            let m=plData.filter(i=>(i.sku&&i.sku.toLowerCase().includes(t))||(i.desc&&i.desc.toLowerCase().includes(t))||(i.nroExpo&&i.nroExpo.toLowerCase().includes(t)));
+            if(sm==='newest') m.sort((a,b)=>parseDateForSort(b.fecha)-parseDateForSort(a.fecha)); else if(sm==='oldest') m.sort((a,b)=>parseDateForSort(a.fecha)-parseDateForSort(b.fecha)); else m.sort((a,b)=>b.precioTotal-a.precioTotal);
+            b.innerHTML=""; if(m.length===0) b.innerHTML=`<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
+            else m.slice(0,50).forEach(i=>{ b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')"><td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDisplayDate(i.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td><td class="px-4 py-2 font-mono">${i.sku}</td><td class="px-4 py-2 text-xs">${i.desc}</td><td class="px-4 py-2 text-right">${i.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${i.precioTotal.toLocaleString()}</td></tr>`; });
         }
-        function closeSearch() { document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
-
-        // --- DESCARGA EXCEL CONTEXTUAL ---
+        function closeSearch(){ document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value=""; }
+        
         function downloadPLExcel() {
-            if (!currentFilteredData || currentFilteredData.length === 0) {
-                alert("No hay datos visibles para descargar.");
-                return;
-            }
-            
-            // Preparamos datos limpios para Excel
-            const exportData = currentFilteredData.map(item => ({
-                "Operación": item.nroExpo,
-                "Destino": item.destino,
-                "Fecha (ETD)": formatDisplayDate(item.fecha),
-                "Tipo": item.tipo,
-                "SKU": item.sku,
-                "Descripción": item.desc,
-                "Kg Neto": item.kgNeto,
-                "Total USD": item.precioTotal
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Reporte Freddo");
-            
-            // Nombre del archivo dinámico
-            const title = document.getElementById('pl-main-title').innerText.replace(/ /g, "_");
-            XLSX.writeFile(wb, `Reporte_${title}.xlsx`);
+            if(!currentFilteredData || currentFilteredData.length===0){alert("No hay datos");return;}
+            const e=currentFilteredData.map(i=>({"Operación":i.nroExpo,"Destino":i.destino,"Fecha":formatDisplayDate(i.fecha),"Tipo":i.tipo,"SKU":i.sku,"Desc":i.desc,"Kg":i.kgNeto,"USD":i.precioTotal}));
+            const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(e),"Reporte");
+            XLSX.writeFile(wb, `Reporte_Freddo.xlsx`);
         }
 
         window.addEventListener('load', () => { updateEquipment(); loadDashboard(); });
