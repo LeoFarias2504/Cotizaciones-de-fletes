@@ -9,19 +9,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Estilos Generales */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Tabs */
         .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; }
         .tab-inactive { color: #6b7280; border-bottom: 4px solid transparent; }
         .tab-inactive:hover { color: #374151; border-color: #d1d5db; }
+        
+        /* Animaciones SUAVES (Sin temblores) */
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-        .clickable-row:hover { background-color: #dbeafe; cursor: pointer; transform: scale(1.005); transition: all 0.1s; }
+        
+        /* Filas Clickeables (Solo color, sin movimiento) */
+        .clickable-row { cursor: pointer; transition: background-color 0.15s ease; }
+        .clickable-row:hover { background-color: #e0f2fe; } /* Azul muy suave */
+        
+        /* Cards de la lista lateral */
+        .expo-card { transition: border-color 0.2s, background-color 0.2s; }
+        .expo-card:hover { border-color: #3b82f6; background-color: #f0f9ff; }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans text-slate-800">
+<body class="bg-gray-100 min-h-screen text-slate-800">
 
     <nav class="bg-white shadow sticky top-0 z-40 px-6">
         <div class="flex justify-between items-center h-16">
@@ -138,7 +153,7 @@
         <div class="bg-white p-4 rounded-xl shadow border border-gray-200 mb-6 flex flex-col md:flex-row gap-4 items-center animate-fade-in relative z-20">
             <div class="flex items-center gap-2 w-full md:w-1/3">
                 <i class="fa-solid fa-search text-gray-400"></i>
-                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar SKU o Descripción..." class="w-full border-b border-gray-300 p-2 outline-none focus:border-blue-600 text-sm">
+                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar SKU, Descripción u Operación..." class="w-full border-b border-gray-300 p-2 outline-none focus:border-blue-600 text-sm bg-transparent">
             </div>
             <div class="flex items-center gap-2 w-full md:w-auto">
                 <label class="text-xs font-bold text-gray-500">ORDENAR:</label>
@@ -153,7 +168,7 @@
 
         <div id="search-results-panel" class="hidden bg-white rounded-xl shadow-lg border-l-4 border-blue-500 mb-6 overflow-hidden animate-fade-in relative z-10">
             <div class="bg-blue-50 px-4 py-2 border-b border-blue-100 flex justify-between items-center">
-                <h3 class="font-bold text-blue-900 text-sm"><i class="fa-solid fa-list-check mr-2"></i>Resultados (Haz clic en una fila para ver la Expo)</h3>
+                <h3 class="font-bold text-blue-900 text-sm"><i class="fa-solid fa-list-check mr-2"></i>Resultados (Haz clic para ver)</h3>
                 <button onclick="closeSearch()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
             </div>
             <div class="overflow-x-auto max-h-64 overflow-y-auto">
@@ -191,8 +206,13 @@
             <div class="col-span-12 md:col-span-8 space-y-6">
                 
                 <div class="flex items-center justify-between border-b pb-2">
-                    <h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Resumen Global</h3>
-                    <span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold">Vista General</span>
+                    <div>
+                        <h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Resumen Global</h3>
+                        <span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold">Vista General</span>
+                    </div>
+                    <button onclick="downloadPLExcel()" class="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-bold px-4 py-2 rounded flex items-center transition shadow-sm border border-green-300">
+                        <i class="fa-solid fa-file-excel mr-2 text-green-600"></i> Descargar Reporte
+                    </button>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4">
@@ -338,9 +358,10 @@
         function downloadExcel() { if(typeof XLSX==='undefined'){alert("Error Excel");return;} const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)})); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones"); XLSX.writeFile(wb,"Reporte.xlsx"); }
 
         // ========================================================================================
-        // 3. LÓGICA GESTIÓN 2026 (CORREGIDA FECHAS + CLICK)
+        // 3. LÓGICA GESTIÓN 2026
         // ========================================================================================
         let plData = [];
+        let currentFilteredData = []; // Variable global para guardar lo que el usuario está viendo
         let plChartType = null;
         let plChartSku = null;
 
@@ -353,10 +374,9 @@
             return parseFloat(clean) || 0;
         }
 
-        // FUNCIÓN CLAVE: Parsear fecha para mostrar
+        // Formato para mostrar
         function formatDisplayDate(dateStr) {
             if (!dateStr || dateStr.trim() === '') return '-';
-            // Si viene 2026-01-20 -> 20/01/2026
             if (dateStr.includes('-') && dateStr.split('-').length === 3) {
                 const p = dateStr.split('-');
                 return `${p[2]}/${p[1]}/${p[0]}`;
@@ -364,17 +384,16 @@
             return dateStr; 
         }
 
-        // FUNCIÓN CLAVE: Parsear fecha para ordenar
+        // Formato para ordenar (FIXED: Soporta DD/MM/YYYY y YYYY-MM-DD)
         function parseDateForSort(dateStr) {
             if (!dateStr) return 0;
-            // Si es ISO (2026-01-20)
             if (dateStr.includes('-')) return new Date(dateStr).getTime();
-            // Si es Excel (20/01/2026) - Asumimos DD/MM/YYYY
             if (dateStr.includes('/')) {
                 const parts = dateStr.split('/');
-                if (parts.length === 3) return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+                // Asume DD/MM/YYYY. JS usa MM/DD/YYYY o YYYY-MM-DD
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
             }
-            return 0; // Fecha inválida va al fondo
+            return 0;
         }
 
         function savePLData() {
@@ -387,7 +406,6 @@
                 rows.forEach(row => {
                     const cols = row.split('\t');
                     if (cols.length >= 13) {
-                        // Captura columna 4 (ETD) o 3 (Oficial)
                         let rawDate = cols[4]?.trim() || cols[3]?.trim() || '';
                         newItems.push({
                             nroExpo: cols[0]?.trim(),
@@ -436,14 +454,14 @@
             });
 
             const summaryCard = document.createElement('div');
-            summaryCard.className = "bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer transition hover:bg-blue-100 mb-2 shadow-sm sticky top-0 z-10";
+            summaryCard.className = "expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10";
             summaryCard.innerHTML = `<div class="flex items-center text-blue-900 font-bold"><i class="fa-solid fa-chart-pie mr-2"></i><span>VER RESUMEN ${currentDest === 'TODOS' ? 'GLOBAL' : currentDest.toUpperCase()}</span></div>`;
             summaryCard.onclick = () => renderDashboardView(currentDest, null); 
             container.appendChild(summaryCard);
 
             Object.values(grouped).forEach(expo => {
                 const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded border border-gray-100 hover:bg-gray-50 cursor-pointer transition mb-1";
+                div.className = "expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";
                 div.onclick = () => renderDashboardView(currentDest, expo.id); 
                 div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${expo.id}</span><span class="text-green-600">$${expo.usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${expo.destino}</div>`;
                 container.appendChild(div);
@@ -473,6 +491,9 @@
                 document.getElementById('pl-subtitle').innerText = "Acumulado";
                 document.getElementById('chart-sku-title').innerText = "Top 5 Variantes (Acumulado)";
             }
+
+            // GUARDAR PARA EXPORTAR
+            currentFilteredData = dataset;
 
             let totalUSD = 0, totalKG = 0, uniqueItems = 0;
             const byType = {}, byProduct = {};
@@ -529,22 +550,21 @@
         }
 
         // =========================================================
-        // 4. BUSCADOR INTERACTIVO
+        // 4. BUSCADOR INTERACTIVO Y DESCARGA
         // =========================================================
         
-        // Función para saltar a la operación desde la búsqueda
         function selectExpoFromSearch(expoId, destino) {
             closeSearch();
-            // Actualizamos el filtro de destino para que coincida (opcional pero bueno para contexto)
             const selDest = document.getElementById('pl-filter-dest');
-            // Verificar si el destino existe en el filtro, si no, lo agregamos (raro pero posible)
-            selDest.value = destino; 
-            
-            // Forzamos el renderizado de la lista para ese destino
+            // Intentar seleccionar destino, si es "Todos" o existe
+            if(selDest.querySelector(`option[value="${destino}"]`)) {
+                selDest.value = destino;
+            } else {
+                selDest.value = 'TODOS';
+            }
             renderPLList(); 
-            
-            // Y ahora sí cargamos la vista específica
-            renderDashboardView(destino, expoId);
+            // Cargar vista especifica
+            renderDashboardView(selDest.value === 'TODOS' ? 'TODOS' : destino, expoId);
         }
 
         function searchSKU() {
@@ -557,22 +577,21 @@
             if (term.length < 2) { resultPanel.classList.add('hidden'); status.innerText = "Escribe para buscar..."; return; }
             resultPanel.classList.remove('hidden');
             
-            let matches = plData.filter(item => (item.sku && item.sku.toLowerCase().includes(term)) || (item.desc && item.desc.toLowerCase().includes(term)));
+            // BUSQUEDA AMPLIADA: SKU, Descripcion Y Operacion
+            let matches = plData.filter(item => 
+                (item.sku && item.sku.toLowerCase().includes(term)) || 
+                (item.desc && item.desc.toLowerCase().includes(term)) ||
+                (item.nroExpo && item.nroExpo.toLowerCase().includes(term))
+            );
             status.innerText = `Encontrados: ${matches.length}`;
 
-            // Ordenamiento CORREGIDO usando parseDateForSort
-            if (sortMode === 'newest') {
-                matches.sort((a, b) => parseDateForSort(b.fecha) - parseDateForSort(a.fecha));
-            } else if (sortMode === 'oldest') {
-                matches.sort((a, b) => parseDateForSort(a.fecha) - parseDateForSort(b.fecha));
-            } else if (sortMode === 'expensive') {
-                matches.sort((a, b) => b.precioTotal - a.precioTotal);
-            }
+            if (sortMode === 'newest') matches.sort((a, b) => parseDateForSort(b.fecha) - parseDateForSort(a.fecha));
+            else if (sortMode === 'oldest') matches.sort((a, b) => parseDateForSort(a.fecha) - parseDateForSort(b.fecha));
+            else if (sortMode === 'expensive') matches.sort((a, b) => b.precioTotal - a.precioTotal);
 
             tbody.innerHTML = "";
             if (matches.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
             else matches.slice(0, 50).forEach(item => {
-                // AQUÍ AGREGAMOS EL CLICK (onclick)
                 tbody.innerHTML += `
                     <tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${item.nroExpo}', '${item.destino}')">
                         <td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDisplayDate(item.fecha)}</td>
@@ -586,6 +605,34 @@
             });
         }
         function closeSearch() { document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
+
+        // --- DESCARGA EXCEL CONTEXTUAL ---
+        function downloadPLExcel() {
+            if (!currentFilteredData || currentFilteredData.length === 0) {
+                alert("No hay datos visibles para descargar.");
+                return;
+            }
+            
+            // Preparamos datos limpios para Excel
+            const exportData = currentFilteredData.map(item => ({
+                "Operación": item.nroExpo,
+                "Destino": item.destino,
+                "Fecha (ETD)": formatDisplayDate(item.fecha),
+                "Tipo": item.tipo,
+                "SKU": item.sku,
+                "Descripción": item.desc,
+                "Kg Neto": item.kgNeto,
+                "Total USD": item.precioTotal
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte Freddo");
+            
+            // Nombre del archivo dinámico
+            const title = document.getElementById('pl-main-title').innerText.replace(/ /g, "_");
+            XLSX.writeFile(wb, `Reporte_${title}.xlsx`);
+        }
 
         window.addEventListener('load', () => { updateEquipment(); loadDashboard(); });
     </script>
