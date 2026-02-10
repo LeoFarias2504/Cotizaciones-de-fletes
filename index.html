@@ -15,6 +15,7 @@
         .tab-inactive:hover { color: #374151; background-color: #f9fafb; }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
@@ -90,7 +91,7 @@
 
     <div id="view-gestion2026" class="hidden p-6 max-w-screen-2xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <div><h2 class="text-2xl font-bold text-gray-800">Exportaciones FREDDO</h2><p class="text-sm text-gray-500">Gestión de Operaciones</p></div>
+            <div><h2 class="text-2xl font-bold text-gray-800">Panel 2026 (Nube)</h2><p class="text-sm text-gray-500">Gestión de Stock, Trazabilidad y Packing List</p></div>
             <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar Excel</button>
         </div>
 
@@ -147,23 +148,7 @@
                 </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
                     <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between"><span>Detalle Items</span><span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0</span></div>
-                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-2">Fecha</th>
-                                    <th class="px-4 py-2">Operación</th>
-                                    <th class="px-4 py-2">Destino</th>
-                                    <th class="px-4 py-2">SKU</th>
-                                    <th class="px-4 py-2">Descripción</th>
-                                    <th class="px-4 py-2">Tipo</th>
-                                    <th class="px-4 py-2 text-right">Kg Neto</th>
-                                    <th class="px-4 py-2 text-right">Valor USD</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pl-table-body" class="text-gray-600"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">SKU</th><th class="px-4 py-2">Descripción</th><th class="px-4 py-2">Tipo</th><th class="px-4 py-2 text-right">Kg Neto</th><th class="px-4 py-2 text-right">Valor USD</th></tr></thead><tbody id="pl-table-body" class="text-gray-600"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -191,7 +176,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURACIÓN DE URL
+        // URL EXACTA QUE PASASTE
         // ==========================================
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
         // ==========================================
@@ -262,26 +247,34 @@
 
         function renderDash(fd, sid){
             let ds=plData; if(fd!=='TODOS')ds=ds.filter(i=>i.destino===fd);
-            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 SKUs";}
-            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Variantes";}
+            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 Productos";}
+            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Productos";}
             
             currentFilteredData=ds; 
             
             let tu=0,tk=0,ui=0;const bt={},bp={};
-            ds.forEach(i=>{tu+=i.precioTotal;tk+=i.kgNeto;let t=i.tipo||"Otros";bt[t]=(bt[t]||0)+i.precioTotal;let k;if(sid)k=i.sku||i.desc||"N/A";else k=cleanName(i.desc)||(i.sku||"N/A");bp[k]=(bp[k]||0)+i.precioTotal;});
+            ds.forEach(i=>{
+                tu+=i.precioTotal; tk+=i.kgNeto; 
+                let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; 
+                // AQUI ESTABA LA LOGICA ANTERIOR (MEZCLABA SKU Y DESC)
+                // AHORA: SIEMPRE DESCRIPCION (SI EXISTE), SINO SKU.
+                let k = i.desc || i.sku || "N/A";
+                // SI ES GLOBAL, LIMPIAMOS UN POCO EL NOMBRE PARA AGRUPAR
+                if(!sid) k = cleanName(i.desc) || (i.sku || "N/A");
+                
+                bp[k]=(bp[k]||0)+i.precioTotal;
+            });
             ui=sid?ds.length:new Set(ds.map(i=>i.nroExpo)).size;
             
             document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`;document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`;document.getElementById('pl-kpi-items').innerText=ui;document.getElementById('pl-table-count').innerText=ds.length;
             
             const tb=document.getElementById('pl-table-body');tb.innerHTML="";
-            // AQUÍ ESTABA EL ERROR VISUAL: COLUMNAS SEPARADAS AHORA
+            // TABLA CORREGIDA
             ds.slice(0,100).forEach(i=>{tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50 transition">
                 <td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td>
-                <td class="px-4 py-2 font-bold text-xs text-blue-900">${i.nroExpo}</td>
-                <td class="px-4 py-2 text-xs bg-gray-50">${i.destino}</td>
-                <td class="px-4 py-2 font-mono text-xs">${i.sku}</td>
-                <td class="px-4 py-2 text-xs truncate max-w-xs" title="${i.desc}">${i.desc}</td>
-                <td class="px-4 py-2 text-xs"><span class="bg-blue-100 text-blue-800 px-2 rounded">${i.tipo}</span></td>
+                <td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td>
+                <td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td>
+                <td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${i.tipo}</span></td>
                 <td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td>
                 <td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td>
             </tr>`;});
@@ -293,7 +286,7 @@
             if(plChartType)plChartType.destroy();if(plChartSku)plChartSku.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
             plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
             const sp=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,20)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
+            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,25)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
         }
 
         function selectExpoFromSearch(eid,dest){closeSearch();const s=document.getElementById('pl-filter-dest');if(s.querySelector(`option[value="${dest}"]`))s.value=dest;else s.value='TODOS';renderPLList();renderDash(s.value==='TODOS'?'TODOS':dest,eid);}
@@ -308,7 +301,7 @@
                 <td class="px-4 py-2 font-mono text-xs text-gray-600">${formatDate(i.fecha)}</td>
                 <td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td>
                 <td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td>
-                <td class="px-4 py-2 font-mono">${i.sku}</td>
+                <td class="px-4 py-2 font-mono text-xs">${i.sku}</td>
                 <td class="px-4 py-2 text-xs truncate max-w-xs">${i.desc}</td>
                 <td class="px-4 py-2 text-xs bg-blue-50">${i.tipo}</td>
                 <td class="px-4 py-2 text-right font-bold text-green-600 text-xs">${i.kgNeto}</td>
