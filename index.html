@@ -182,7 +182,6 @@
                         <option value="TODOS">Todos los destinos</option>
                     </select>
                 </div>
-                
                 <div id="pl-list-container" class="flex-1 overflow-y-auto p-2 space-y-2">
                     </div>
             </div>
@@ -229,6 +228,7 @@
                         <table class="w-full text-sm text-left">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
                                 <tr>
+                                    <th class="px-4 py-2">Fecha</th>
                                     <th class="px-4 py-2">SKU / ID</th>
                                     <th class="px-4 py-2">Descripción</th>
                                     <th class="px-4 py-2">Tipo</th>
@@ -252,7 +252,7 @@
             </div>
             <p class="text-sm text-gray-600 mb-2">
                 Ve a tu Excel, hoja "2026". Copia las filas (desde Nro Expo hasta Precio Total) y pégalas aquí.
-                <br><strong class="text-red-500">Nota:</strong> Esto borrará los datos anteriores y cargará los nuevos.
+                <br><strong class="text-red-500">IMPORTANTE:</strong> Esto actualizará la base de datos.
             </p>
             <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:outline-none focus:border-green-500 bg-gray-50" placeholder="Paste Excel data here..."></textarea>
             <div class="mt-4 flex justify-end space-x-3">
@@ -352,6 +352,16 @@
             return parseFloat(clean) || 0;
         }
 
+        function formatDisplayDate(dateStr) {
+            if (!dateStr || dateStr.trim() === '') return '-';
+            // Si viene como 2026-01-07 (ISO)
+            if (dateStr.includes('-') && dateStr.length === 10) {
+                const p = dateStr.split('-');
+                return `${p[2]}/${p[1]}/${p[0]}`; // DD/MM/YYYY
+            }
+            return dateStr;
+        }
+
         function savePLData() {
             const text = document.getElementById('pl-paste-area').value;
             if (!text) return;
@@ -362,11 +372,13 @@
                 rows.forEach(row => {
                     const cols = row.split('\t');
                     if (cols.length >= 13) {
+                        // AQUÍ ESTABA LA CLAVE: Capturamos col 4 (ETD) o col 3 (OFICIAL)
+                        let rawDate = cols[4]?.trim() || cols[3]?.trim() || '';
                         newItems.push({
                             nroExpo: cols[0]?.trim(),
                             destino: cols[1]?.trim(),
                             tipo: cols[2]?.trim(),
-                            fecha: cols[4]?.trim() || cols[3]?.trim(),
+                            fecha: rawDate, 
                             sku: cols[5]?.trim(),
                             desc: cols[6]?.trim(),
                             kgNeto: parseMoney(cols[9]),
@@ -427,10 +439,9 @@
         function cleanProductName(desc) {
             if (!desc) return "OTROS";
             let clean = desc.toUpperCase();
-            // Limpieza MUY suave: solo prefijos irrelevantes, NO el sabor.
-            clean = clean.replace(/^F-\s*/, ''); // Quita F- al inicio
-            clean = clean.replace(/^HELADO\s+/, ''); // Quita HELADO al inicio
-            clean = clean.replace(/^PINTA\s+/, ''); // Quita PINTA
+            clean = clean.replace(/^F-\s*/, ''); 
+            clean = clean.replace(/^HELADO\s+/, ''); 
+            clean = clean.replace(/^PINTA\s+/, ''); 
             return clean.trim();
         }
 
@@ -462,8 +473,6 @@
                 if (specificExpoId) {
                     key = item.sku || item.desc || "N/A";
                 } else {
-                    // AQUÍ ESTÁ EL CAMBIO CLAVE: Usamos la función cleanProductName
-                    // Esto agrupa "Frutilla" con "frutilla " pero respeta "Granizado" vs "Tentacion"
                     key = cleanProductName(item.desc) || (item.sku || "N/A");
                 }
                 
@@ -480,7 +489,7 @@
             const tbody = document.getElementById('pl-table-body');
             tbody.innerHTML = "";
             dataset.slice(0, 100).forEach(item => {
-                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-medium text-xs text-gray-900">${item.nroExpo}<br><span class="text-gray-400">${item.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${item.desc}">${item.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${item.tipo}</span></td><td class="px-4 py-2 text-right">${item.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${item.precioTotal.toLocaleString()}</td></tr>`;
+                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDisplayDate(item.fecha)}</td><td class="px-4 py-2 font-medium text-xs text-gray-900">${item.nroExpo}<br><span class="text-gray-400">${item.sku}</span></td><td class="px-4 py-2 truncate max-w-xs" title="${item.desc}">${item.desc}</td><td class="px-4 py-2 text-xs"><span class="bg-gray-100 px-2 rounded">${item.tipo}</span></td><td class="px-4 py-2 text-right">${item.kgNeto.toLocaleString()}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${item.precioTotal.toLocaleString()}</td></tr>`;
             });
 
             updatePLCharts(byType, byProduct);
@@ -519,14 +528,16 @@
             let matches = plData.filter(item => (item.sku && item.sku.toLowerCase().includes(term)) || (item.desc && item.desc.toLowerCase().includes(term)));
             status.innerText = `Encontrados: ${matches.length}`;
 
-            if (sortMode === 'newest') matches.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-            else if (sortMode === 'oldest') matches.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            // Ordenamiento mejorado
+            if (sortMode === 'newest') matches.sort((a, b) => (b.fecha > a.fecha) ? 1 : -1);
+            else if (sortMode === 'oldest') matches.sort((a, b) => (a.fecha > b.fecha) ? 1 : -1);
             else if (sortMode === 'expensive') matches.sort((a, b) => b.precioTotal - a.precioTotal);
 
             tbody.innerHTML = "";
             if (matches.length === 0) tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
             else matches.slice(0, 50).forEach(item => {
-                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 transition"><td class="px-4 py-2 font-mono text-xs text-gray-500">${item.fecha || '-'}</td><td class="px-4 py-2 font-bold text-blue-900">${item.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${item.destino}</td><td class="px-4 py-2 font-mono">${item.sku}</td><td class="px-4 py-2 text-xs">${item.desc}</td><td class="px-4 py-2 text-right">${item.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${item.precioTotal.toLocaleString()}</td></tr>`;
+                // AQUI USAMOS EL FORMAT DISPLAY DATE
+                tbody.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 transition"><td class="px-4 py-2 font-mono text-xs font-bold text-gray-600">${formatDisplayDate(item.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${item.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${item.destino}</td><td class="px-4 py-2 font-mono">${item.sku}</td><td class="px-4 py-2 text-xs">${item.desc}</td><td class="px-4 py-2 text-right">${item.kgNeto}</td><td class="px-4 py-2 text-right font-bold text-green-600">$${item.precioTotal.toLocaleString()}</td></tr>`;
             });
         }
         function closeSearch() { document.getElementById('search-results-panel').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
