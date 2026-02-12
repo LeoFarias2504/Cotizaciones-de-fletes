@@ -8,33 +8,54 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; }
-        .tab-btn { padding: 10px 20px; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; }
-        .tab-btn:hover { color: #1e3a8a; background-color: #f1f5f9; }
-        .tab-btn.active { color: #1e3a8a; border-bottom-color: #1e3a8a; background-color: #eff6ff; }
-        .clickable-row:hover { background-color: #e0f2fe !important; cursor: pointer; }
-        .expo-card { transition: all 0.2s; border-left: 4px solid transparent; }
-        .expo-card:hover { border-left-color: #2563eb; background-color: #f0f9ff; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
+        
+        /* Botones de Navegación */
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            background: transparent;
+        }
+        .nav-btn:hover { color: #1e3a8a; background-color: #e2e8f0; }
+        .nav-btn.active { color: #1e3a8a; border-bottom-color: #1e3a8a; background-color: #eff6ff; }
+
+        /* Tablas y Cards */
+        .clickable-row { cursor: pointer; transition: background-color 0.15s; }
+        .clickable-row:hover { background-color: #dbeafe !important; }
+        
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800">
 
     <nav class="bg-white shadow-md sticky top-0 z-50 px-6">
         <div class="flex justify-between items-center h-16 max-w-screen-2xl mx-auto">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center text-blue-900 text-2xl font-bold tracking-tight">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center text-blue-900 text-2xl font-extrabold tracking-tight">
                     <i class="fa-solid fa-ship mr-3"></i>FREDDO <span class="text-blue-600 ml-1">COMEX</span>
                 </div>
-                <div class="h-8 w-px bg-gray-300 mx-2"></div>
-                <div class="flex space-x-1">
-                    <button onclick="switchTab('cotizador')" id="btn-cotizador" class="tab-btn active"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
-                    <button onclick="switchTab('2026')" id="btn-2026" class="tab-btn">2026</button>
-                    <button onclick="switchTab('2025')" id="btn-2025" class="tab-btn">2025</button>
-                    <button onclick="switchTab('2024')" id="btn-2024" class="tab-btn">2024</button>
-                    <button onclick="switchTab('evolucion')" id="btn-evolucion" class="tab-btn text-purple-700"><i class="fa-solid fa-chart-line mr-2"></i>Evolución</button>
+                
+                <div class="flex space-x-1 h-16 items-end">
+                    <button onclick="switchTab('cotizador')" id="btn-cotizador" class="nav-btn active"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
+                    <button onclick="switchTab('2026')" id="btn-2026" class="nav-btn">2026</button>
+                    <button onclick="switchTab('2025')" id="btn-2025" class="nav-btn">2025</button>
+                    <button onclick="switchTab('2024')" id="btn-2024" class="nav-btn">2024</button>
+                    <button onclick="switchTab('evolucion')" id="btn-evolucion" class="nav-btn text-purple-700 font-bold"><i class="fa-solid fa-chart-line mr-2"></i>Evolución</button>
                 </div>
             </div>
         </div>
@@ -42,44 +63,51 @@
 
     <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex flex-col lg:flex-row gap-6">
-            <div class="w-full lg:w-1/3 bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6">
-                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2 text-blue-600"></i>Nueva Cotización</h2>
+            
+            <div class="w-full lg:w-1/3 bg-white rounded-xl shadow border-t-4 border-blue-600 p-6 h-fit">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización</h2>
                 <form id="comexForm" class="space-y-4">
-                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required></div>
+                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required placeholder="Ej: EXP-001"></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
-                        <div><label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label><select name="modalidad" id="modalidadSelect" onchange="updateEq()" class="w-full border p-2 rounded text-sm"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label><select name="modalidad" id="modalidadSelect" onchange="updateEq()" class="w-full border p-2 rounded text-sm bg-white"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label><input type="text" name="incoterm" class="w-full border p-2 rounded text-sm" required></div>
-                        <div><label class="text-xs font-bold text-gray-500 uppercase">Equipo</label><select name="contenedor" id="equipoSelect" class="w-full border p-2 rounded text-sm" required></select></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Equipo</label><select name="contenedor" id="equipoSelect" class="w-full border p-2 rounded text-sm bg-white" required></select></div>
                     </div>
                     <div><label class="text-xs font-bold text-gray-500 uppercase">Carrier</label><input type="text" name="carrier" class="w-full border p-2 rounded text-sm" required></div>
-                    <div class="bg-gray-50 p-3 rounded border border-gray-200 grid grid-cols-3 gap-2">
-                        <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center"></div>
-                        <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center" required></div>
-                        <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center" required></div>
+                    <div class="bg-blue-50 p-3 rounded border border-blue-100 grid grid-cols-3 gap-2">
+                        <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center bg-white"></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center bg-white" required></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center bg-white" required></div>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow-lg">GUARDAR</button>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded transition shadow-lg">GUARDAR</button>
                 </form>
             </div>
+
             <div class="w-full lg:w-2/3 space-y-6">
                 <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
                     <span class="font-bold text-gray-700">Filtro Histórico:</span>
                     <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Global</option></select>
                 </div>
                 <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600"><p class="text-xs text-gray-400 font-bold">TT AVG</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500"><p class="text-xs text-gray-400 font-bold">TOP</p><p id="kpiTop" class="text-xs font-bold text-gray-800 mt-2 truncate">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900 card-hover"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600 card-hover"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600 card-hover"><p class="text-xs text-gray-400 font-bold">TT AVG</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500 card-hover"><p class="text-xs text-gray-400 font-bold">TOP</p><p id="kpiTop" class="text-xs font-bold text-gray-800 mt-2 truncate">-</p></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 h-56">
-                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="costChart"></canvas></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="timeChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><canvas id="costChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><canvas id="timeChart"></canvas></div>
                 </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
-                    <div class="overflow-x-auto max-h-60"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-500 bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead><tbody id="historyTableBody"></tbody></table></div>
+                    <div class="overflow-x-auto max-h-64">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,12 +115,12 @@
 
     <div id="view-gestion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex justify-between items-center mb-6">
-            <div><h2 class="text-2xl font-bold text-gray-800">Gestión de Exportaciones <span id="lbl-year" class="text-blue-600">2026</span></h2><p class="text-sm text-gray-500">Panel de Control Operativo</p></div>
+            <div><h2 class="text-2xl font-bold text-gray-800">Gestión <span id="lbl-year" class="text-blue-600">2026</span></h2><p class="text-sm text-gray-500">Panel Operativo y Packing List</p></div>
             <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)</button>
         </div>
 
         <div class="bg-white p-4 rounded-xl shadow border mb-4 flex gap-4 items-center">
-            <div class="flex items-center gap-3 w-1/2 bg-gray-50 px-3 py-2 rounded-lg border">
+            <div class="flex items-center gap-3 w-1/2 bg-gray-50 px-3 py-2 rounded-lg border focus-within:border-blue-500 focus-within:bg-white transition">
                 <i class="fa-solid fa-search text-gray-400"></i>
                 <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar Operación, SKU, Descripción..." class="w-full bg-transparent outline-none text-sm">
             </div>
@@ -107,7 +135,7 @@
         <div class="grid grid-cols-12 gap-6">
             <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[850px] flex flex-col border">
                 <div class="p-4 border-b bg-gray-50"><label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label><select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select></div>
-                <div id="pl-list" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+                <div id="pl-list" class="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50"></div>
             </div>
             <div class="col-span-12 md:col-span-8 space-y-6">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -115,17 +143,17 @@
                     <button onclick="downloadExcelPL()" class="text-green-700 text-sm font-bold border border-green-200 px-3 py-1 rounded hover:bg-green-50"><i class="fa-solid fa-file-excel mr-2"></i>Descargar</button>
                 </div>
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600"><p class="text-xs text-gray-400 font-bold">ITEMS/OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900 card-hover"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500 card-hover"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600 card-hover"><p class="text-xs text-gray-400 font-bold">ITEMS/OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
                 </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
                     <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr>
@@ -144,11 +172,11 @@
     <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
         <h2 class="text-2xl font-bold text-purple-800 mb-6">Comparativa Mensual (2024 - 2026)</h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500 card-hover">
                 <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
                 <div class="h-72"><canvas id="evoChartUSD"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500">
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500 card-hover">
                 <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
                 <div class="h-72"><canvas id="evoChartKG"></canvas></div>
             </div>
@@ -175,7 +203,7 @@
 
     <script>
         // =========================================================
-        // 🚨 CONFIGURACIÓN URL (PEGA LA TUYA AQUÍ)
+        // 🚨 URL DEL SCRIPT (NO TOCAR SI NO CAMBIA)
         // =========================================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
         // =========================================================
@@ -184,37 +212,52 @@
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
         let sortDir = 1;
         
-        // Variables Charts Gestion
+        // Variables Charts Globales
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
-        // Variables Charts Evolucion
-        let evoCharts = [];
-        // Variables Charts Cotizador
+        let evoChartUSD = null, evoChartKG = null;
         let chartCost = null, chartTime = null;
 
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('cotizador'); 
+            updateEq(); 
+            loadCot(); 
+        });
+
+        // --- NAVEGACIÓN ---
         function switchTab(tab) {
-            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Ocultar vistas
+            document.getElementById('view-cotizador').classList.add('hidden');
+            document.getElementById('view-gestion').classList.add('hidden');
+            document.getElementById('view-evolucion').classList.add('hidden');
+            
+            // Reset botones
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
             if (tab === 'cotizador') {
                 document.getElementById('view-cotizador').classList.remove('hidden');
                 document.getElementById('btn-cotizador').classList.add('active');
-                // IMPORTANTE: Redibujar gráficos del cotizador al entrar
-                if(rawCot.length > 0) applyFilter(); 
+                if(rawCot.length > 0) applyFilter();
             } else if (tab === 'evolucion') {
                 document.getElementById('view-evolucion').classList.remove('hidden');
                 document.getElementById('btn-evolucion').classList.add('active');
                 loadEvolution();
             } else {
+                // Es un año (2026, 2025, 2024)
                 currentYear = tab;
                 document.getElementById('view-gestion').classList.remove('hidden');
                 document.getElementById('btn-' + tab).classList.add('active');
+                
+                // Actualizar Textos
                 document.getElementById('lbl-year').innerText = tab;
                 document.getElementById('lbl-year-btn').innerText = tab;
                 document.getElementById('lbl-year-modal').innerText = tab;
+                
                 loadData(tab);
             }
         }
 
+        // --- FUNCIONES GESTIÓN DE DATOS ---
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
         function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
@@ -235,7 +278,7 @@
             if(data.length > 0) {
                 const fd = new FormData(); fd.append('action', 'save_pl'); fd.append('year', currentYear); fd.append('data', JSON.stringify(data));
                 fetch(API_URL, { method: 'POST', body: fd }).then(r => r.json()).then(d => {
-                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Datos guardados.`);
+                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Guardado en ${currentYear}`);
                 });
             } else { alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden'); }
         }
@@ -250,7 +293,7 @@
             }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
         }
 
-        // --- RENDER GESTION ---
+        // --- RENDERIZADO GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -268,13 +311,13 @@
                 groups[i.nroExpo].total += i.precioTotal;
             });
             const sumCard = document.createElement('div');
-            sumCard.className = "expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 flex justify-between items-center";
+            sumCard.className = "bg-white p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 flex justify-between items-center hover:bg-blue-50";
             sumCard.innerHTML = `<div class="font-bold text-blue-900"><i class="fa-solid fa-globe mr-2"></i>RESUMEN ${filter}</div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;
             sumCard.onclick = () => renderView(filter, null);
             container.appendChild(sumCard);
             Object.values(groups).forEach(g => {
                 const div = document.createElement('div');
-                div.className = "expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";
+                div.className = "bg-white p-3 rounded border border-gray-200 cursor-pointer mb-1 hover:bg-gray-50";
                 div.onclick = () => renderView(filter, g.id);
                 div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${g.id}</span><span class="text-green-600">$${g.total.toLocaleString()}</span></div><div class="text-[10px] text-gray-400 mt-1">${g.dest}</div>`;
                 container.appendChild(div);
@@ -361,7 +404,7 @@
         function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
         function goToOp(id, dest) { closeSearch(); const s = document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS'; renderList(); renderView(s.value === 'TODOS' ? 'TODOS' : dest, id); }
 
-        // --- EVOLUCIÓN ---
+        // --- EVOLUCIÓN MENSUAL ---
         function getMonthFromDate(dStr) {
             if(!dStr) return -1;
             if(dStr.includes('-')) return parseInt(dStr.split('-')[1]) - 1; 
@@ -382,14 +425,18 @@
                     data[y].forEach(i => { const m = getMonthFromDate(i.fecha); if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; yUSD += i.precioTotal; yKG += i.kgNeto; } });
                     totals[y] = { usd: yUSD, kg: yKG };
                 });
-                evoCharts.forEach(c => c.destroy());
+                
+                if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
+                
                 const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-                evoCharts.push(new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD')));
-                evoCharts.push(new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG')));
+                
+                evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
+                evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
+                
                 const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
                 years.forEach(y => { let am = seriesUSD[y].filter(v => v > 0).length || 1; tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right font-mono text-green-700">$${totals[y].usd.toLocaleString()}</td><td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td><td class="p-3 text-right text-gray-500">$${(totals[y].usd / am).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; });
                 document.getElementById('loader').classList.add('hidden');
-            });
+            }).catch(e=>{console.log(e); document.getElementById('loader').classList.add('hidden');});
         }
 
         function downloadExcelPL() {
@@ -401,7 +448,6 @@
         }
 
         // --- COTIZADOR (RESTAURADO) ---
-        let rawCot = [];
         const eqOpts = {"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
         function updateEq() { const m=document.getElementById('modalidadSelect').value; const s=document.getElementById('equipoSelect'); s.innerHTML=""; eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e)}); }
         document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
@@ -442,11 +488,9 @@
             const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
             if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{
                 let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
-                tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${d}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`;
+                tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;
             });
         }
-
-        window.onload = () => { switchTab('cotizador'); updateEq(); loadCot(); };
     </script>
 </body>
 </html>
