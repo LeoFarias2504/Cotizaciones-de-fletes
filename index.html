@@ -3,364 +3,508 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Sistema Integral</title>
+    <title>Freddo Comex - Control Tower</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .tab-active { border-bottom: 4px solid #1e3a8a; color: #1e3a8a; font-weight: bold; background-color: #eff6ff; }
-        .tab-inactive { color: #6b7280; border-bottom: 4px solid transparent; }
-        .tab-inactive:hover { color: #374151; background-color: #f9fafb; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-        /* Interacción */
-        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
-        .clickable-row:hover { background-color: #bfdbfe !important; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; }
+        .tab-btn { padding: 10px 20px; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: #1e3a8a; background-color: #f1f5f9; }
+        .tab-btn.active { color: #1e3a8a; border-bottom-color: #1e3a8a; background-color: #eff6ff; }
+        .clickable-row:hover { background-color: #e0f2fe !important; cursor: pointer; }
         .expo-card { transition: all 0.2s; border-left: 4px solid transparent; }
         .expo-card:hover { border-left-color: #2563eb; background-color: #f0f9ff; }
-        /* Headers Ordenables */
-        .sortable-header { cursor: pointer; user-select: none; transition: background-color 0.2s; }
-        .sortable-header:hover { background-color: #e5e7eb; color: #1e3a8a; }
+        /* Animaciones */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="min-h-screen text-slate-800">
 
     <nav class="bg-white shadow-md sticky top-0 z-50 px-6">
         <div class="flex justify-between items-center h-16 max-w-screen-2xl mx-auto">
-            <div class="flex items-center">
-                <i class="fa-solid fa-ship text-blue-900 text-2xl mr-3"></i>
-                <span class="text-xl font-bold text-gray-800 tracking-tight">FREDDO <span class="text-blue-600">COMEX</span></span>
-            </div>
-            <div class="flex space-x-4">
-                <button onclick="switchTab('cotizador')" id="tab-cotizador" class="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
-                <button onclick="switchTab('gestion2026')" id="tab-gestion" class="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none"><i class="fa-solid fa-chart-pie mr-2"></i>Gestión 2026</button>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center text-blue-900 text-2xl font-bold tracking-tight">
+                    <i class="fa-solid fa-ship mr-3"></i>FREDDO <span class="text-blue-600 ml-1">COMEX</span>
+                </div>
+                <div class="h-8 w-px bg-gray-300 mx-2"></div>
+                <div class="flex space-x-1">
+                    <button onclick="switchTab('cotizador')" id="btn-cotizador" class="tab-btn active"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
+                    <button onclick="switchTab('2026')" id="btn-2026" class="tab-btn">2026</button>
+                    <button onclick="switchTab('2025')" id="btn-2025" class="tab-btn">2025</button>
+                    <button onclick="switchTab('2024')" id="btn-2024" class="tab-btn">2024</button>
+                    <button onclick="switchTab('evolucion')" id="btn-evolucion" class="tab-btn text-purple-700"><i class="fa-solid fa-chart-line mr-2"></i>Evolución</button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto animate-fade-in">
+    <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex flex-col lg:flex-row gap-6">
-            <div class="w-full lg:w-1/3 bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6 h-fit">
+            <div class="w-full lg:w-1/3 bg-white rounded-xl shadow-lg border-t-4 border-blue-600 p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2 text-blue-600"></i>Nueva Cotización</h2>
                 <form id="comexForm" class="space-y-4">
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded bg-gray-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="Ej: EXP-001"></div>
+                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required></div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Modalidad</label><select id="modalidadSelect" name="modalidad" onchange="updateEquipment()" class="w-full border p-2 rounded text-sm bg-white"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label><select name="modalidad" id="modalidadSelect" onchange="updateEq()" class="w-full border p-2 rounded text-sm"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Incoterm</label><input type="text" name="incoterm" class="w-full border p-2 rounded text-sm" required></div>
-                        <div><label class="block text-xs font-bold text-gray-500 uppercase">Equipo</label><select id="equipoSelect" name="contenedor" class="w-full border p-2 rounded text-sm bg-white" required></select></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Incoterm</label><input type="text" name="incoterm" class="w-full border p-2 rounded text-sm" required></div>
+                        <div><label class="text-xs font-bold text-gray-500 uppercase">Equipo</label><select name="contenedor" id="equipoSelect" class="w-full border p-2 rounded text-sm" required></select></div>
                     </div>
-                    <div><label class="block text-xs font-bold text-gray-500 uppercase">Carrier</label><input type="text" name="carrier" class="w-full border p-2 rounded text-sm" required></div>
+                    <div><label class="text-xs font-bold text-gray-500 uppercase">Carrier</label><input type="text" name="carrier" class="w-full border p-2 rounded text-sm" required></div>
                     <div class="bg-gray-50 p-3 rounded border border-gray-200 grid grid-cols-3 gap-2">
                         <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center"></div>
                         <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center" required></div>
                         <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center" required></div>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded transition shadow-lg"><i class="fa-solid fa-save mr-2"></i> GUARDAR</button>
-                    <p id="statusMsg" class="hidden text-center text-xs font-bold text-green-600 mt-2">✅ Guardado correctamente</p>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded hover:bg-blue-800 transition shadow-lg">GUARDAR</button>
                 </form>
             </div>
             <div class="w-full lg:w-2/3 space-y-6">
                 <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
-                    <span class="font-bold text-gray-700"><i class="fa-solid fa-filter mr-2"></i>Filtro Histórico:</span>
-                    <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Todos los Destinos</option></select>
+                    <span class="font-bold text-gray-700">Filtro Histórico:</span>
+                    <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Global</option></select>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900"><p class="text-xs text-gray-400 font-bold uppercase">Total Ops</p><p id="kpiCount" class="text-2xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600"><p class="text-xs text-gray-400 font-bold uppercase">Costo Prom.</p><p id="kpiAvgCost" class="text-2xl font-bold text-green-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600"><p class="text-xs text-gray-400 font-bold uppercase">TT Prom.</p><p id="kpiAvgTime" class="text-2xl font-bold text-indigo-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500"><p class="text-xs text-gray-400 font-bold uppercase">Top Carrier</p><p id="kpiTop" class="text-sm font-bold text-gray-800 mt-1 truncate">-</p></div>
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600"><p class="text-xs text-gray-400 font-bold">TT AVG</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500"><p class="text-xs text-gray-400 font-bold">TOP</p><p id="kpiTop" class="text-xs font-bold text-gray-800 mt-2 truncate">-</p></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow h-64 border border-gray-100"><h3 class="text-xs font-bold text-gray-500 text-center mb-2">Costos por Operación</h3><div class="h-52"><canvas id="costChart"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow h-64 border border-gray-100"><h3 class="text-xs font-bold text-gray-500 text-center mb-2">Tiempos de Tránsito</h3><div class="h-52"><canvas id="timeChart"></canvas></div></div>
+                <div class="grid grid-cols-2 gap-4 h-56">
+                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="costChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="timeChart"></canvas></div>
                 </div>
-                <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                    <div class="bg-gray-50 px-4 py-2 border-b flex justify-between items-center"><h3 class="font-bold text-gray-700 text-sm"><i class="fa-solid fa-list mr-2"></i>Historial Reciente</h3><button onclick="downloadExcel()" class="text-green-600 hover:text-green-800 text-sm font-bold"><i class="fa-solid fa-download mr-1"></i> Excel</button></div>
-                    <div class="overflow-x-auto max-h-60 overflow-y-auto"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-500 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead><tbody id="historyTableBody" class="text-gray-600"></tbody></table></div>
+                <div class="bg-white rounded-xl shadow overflow-hidden border">
+                    <div class="overflow-x-auto max-h-60"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-500 bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead><tbody id="historyTableBody"></tbody></table></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="view-gestion2026" class="hidden p-6 max-w-screen-2xl mx-auto">
+    <div id="view-gestion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex justify-between items-center mb-6">
-            <div><h2 class="text-2xl font-bold text-gray-800">Panel 2026</h2><p class="text-sm text-gray-500">Gestion de exportaciones</p></div>
-            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Importar Excel</button>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Gestión de Exportaciones <span id="lbl-year" class="text-blue-600">2026</span></h2>
+                <p class="text-sm text-gray-500">Panel de Control Operativo</p>
+            </div>
+            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition">
+                <i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)
+            </button>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow border border-gray-200 mb-4 flex flex-col md:flex-row gap-4 items-center relative z-30">
-            <div class="flex items-center gap-3 w-full md:w-1/2 bg-gray-50 px-3 py-2 rounded-lg border focus-within:border-blue-500 focus-within:bg-white transition">
+        <div class="bg-white p-4 rounded-xl shadow border mb-4 flex gap-4 items-center">
+            <div class="flex items-center gap-3 w-1/2 bg-gray-50 px-3 py-2 rounded-lg border">
                 <i class="fa-solid fa-search text-gray-400"></i>
-                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar Operación, SKU o Descripción..." class="w-full bg-transparent outline-none text-sm">
-            </div>
-            <div class="flex items-center gap-2 w-full md:w-auto">
-                <select id="skuSort" onchange="searchSKU()" class="border rounded px-3 py-2 text-sm bg-white outline-none cursor-pointer hover:border-gray-400"><option value="newest">📅 Más Recientes</option><option value="oldest">📅 Más Viejos</option><option value="expensive">💰 Mayor Valor</option></select>
+                <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar Operación, SKU, Descripción..." class="w-full bg-transparent outline-none text-sm">
             </div>
             <div class="text-xs text-gray-400 ml-auto" id="db-status">Cargando...</div>
         </div>
 
-        <div id="search-results-panel" class="hidden bg-white rounded-xl shadow-2xl border border-blue-200 mb-6 overflow-hidden relative z-20 max-h-96 overflow-y-auto">
-            <div class="bg-blue-50 px-4 py-2 border-b border-blue-100 flex justify-between items-center sticky top-0"><h3 class="font-bold text-blue-900 text-sm">Resultados de Búsqueda</h3><button onclick="closeSearch()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button></div>
-            <table class="w-full text-sm text-left">
-                <thead class="text-xs text-gray-600 uppercase bg-gray-100 sticky top-0">
-                    <tr>
-                        <th class="px-4 py-2">Fecha (ETD)</th>
-                        <th class="px-4 py-2">Operación</th>
-                        <th class="px-4 py-2">Destino</th>
-                        <th class="px-4 py-2">SKU</th>
-                        <th class="px-4 py-2">Descripción</th>
-                        <th class="px-4 py-2">Tipo</th>
-                        <th class="px-4 py-2 text-right">Kg</th>
-                    </tr>
-                </thead>
-                <tbody id="sku-results-body" class="text-gray-700"></tbody>
-            </table>
+        <div id="search-results" class="hidden bg-white rounded-xl shadow-xl border border-blue-200 mb-6 overflow-hidden relative z-20 max-h-80 overflow-y-auto">
+            <div class="bg-blue-50 px-4 py-2 border-b flex justify-between sticky top-0"><h3 class="font-bold text-blue-900 text-sm">Resultados</h3><button onclick="closeSearch()"><i class="fa-solid fa-times text-gray-400"></i></button></div>
+            <table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100"><tr><th class="p-2">Fecha</th><th class="p-2">Op</th><th class="p-2">Destino</th><th class="p-2">SKU</th><th class="p-2">Desc</th><th class="p-2 text-right">Kg</th></tr></thead><tbody id="search-body"></tbody></table>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
-            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[900px] flex flex-col border border-gray-200">
+            <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[850px] flex flex-col border">
                 <div class="p-4 border-b bg-gray-50">
-                    <label class="text-xs font-bold text-gray-500 uppercase">Filtrar Destino</label>
-                    <select id="pl-filter-dest" onchange="renderPLList()" class="w-full mt-1 border border-gray-300 rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select>
+                    <label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label>
+                    <select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select>
                 </div>
-                <div id="pl-list-container" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+                <div id="pl-list" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
             <div class="col-span-12 md:col-span-8 space-y-6">
-                <div class="flex items-center justify-between border-b pb-2">
-                    <div><h3 id="pl-main-title" class="text-xl font-bold text-[#003366]">Cargando...</h3><span id="pl-subtitle" class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-bold text-xs">...</span></div>
-                    <button onclick="downloadPLExcel()" class="bg-green-50 hover:bg-green-100 text-green-700 text-sm font-bold px-4 py-2 rounded border border-green-200 transition"><i class="fa-solid fa-file-excel mr-2"></i> Descargar</button>
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div><h3 id="dash-title" class="text-xl font-bold text-[#003366]">Resumen</h3><span id="dash-sub" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-bold">General</span></div>
+                    <button onclick="downloadExcelPL()" class="text-green-700 text-sm font-bold border border-green-200 px-3 py-1 rounded hover:bg-green-50"><i class="fa-solid fa-file-excel mr-2"></i>Descargar</button>
                 </div>
-
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold uppercase">Monto Total</p><p id="pl-kpi-monto" class="text-2xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold uppercase">Peso Neto</p><p id="pl-kpi-peso" class="text-2xl font-bold text-gray-800">-</p></div>
-                    <div class="bg-white p-5 rounded-xl shadow border-l-4 border-purple-600"><p id="pl-kpi-label-3" class="text-xs text-gray-400 font-bold uppercase">Items</p><p id="pl-kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600"><p class="text-xs text-gray-400 font-bold">ITEMS/OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (USD)</h4><div class="h-56"><canvas id="plChartType"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 id="chart-sku-title" class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Sabores (USD)</h4><div class="h-56"><canvas id="plChartSku"></canvas></div></div>
+                <div class="grid grid-cols-2 gap-4 h-64">
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 h-72">
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Mix por Tipo (KG)</h4><div class="h-56"><canvas id="plChartTypeKg"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border border-gray-100"><h4 class="text-xs font-bold text-gray-500 uppercase text-center mb-2">Top 5 Sabores (KG)</h4><div class="h-56"><canvas id="plChartSkuKg"></canvas></div></div>
+                <div class="grid grid-cols-2 gap-4 h-64">
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
                 </div>
-
-                <div class="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-                    <div class="bg-gray-50 px-4 py-2 border-b font-bold text-gray-700 text-sm flex justify-between"><span>Detalle Items</span><span id="pl-table-count" class="text-xs bg-gray-200 px-2 rounded text-gray-600">0</span></div>
-                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
-                                <tr>
-                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('fecha')">Fecha <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('sku')">SKU <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('desc')">Descripción <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                    <th class="px-4 py-2 sortable-header" onclick="sortTable('tipo')">Tipo <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                    <th class="px-4 py-2 sortable-header text-right" onclick="sortTable('kgNeto')">Kg Neto <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                    <th class="px-4 py-2 sortable-header text-right" onclick="sortTable('precioTotal')">Valor USD <i class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody id="pl-table-body" class="text-gray-600"></tbody>
-                        </table>
-                    </div>
+                <div class="bg-white rounded-xl shadow overflow-hidden border">
+                    <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('fecha')">Fecha ↕</th>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('sku')">SKU ↕</th>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('desc')">Desc ↕</th>
+                        <th class="p-2">Tipo</th>
+                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('kg')">Kg ↕</th>
+                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('usd')">USD ↕</th>
+                    </tr></thead><tbody id="pl-table"></tbody></table></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
+    <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
+        <h2 class="text-2xl font-bold text-purple-800 mb-6">Evolución Histórica (2024 - 2026)</h2>
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
+                <h3 class="font-bold text-gray-700 mb-4">Crecimiento en Ventas (USD)</h3>
+                <div class="h-64"><canvas id="evoChartUSD"></canvas></div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500">
+                <h3 class="font-bold text-gray-700 mb-4">Evolución de Volumen (KG)</h3>
+                <div class="h-64"><canvas id="evoChartKG"></canvas></div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow border">
+            <h3 class="font-bold text-gray-700 mb-4">Comparativa por Destino</h3>
+            <div class="h-80"><canvas id="evoChartDest"></canvas></div>
+        </div>
+    </div>
+
+    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-2">Actualizar Base de Datos</h3>
-            <p class="text-sm text-gray-600 mb-4">Pega los datos del Excel (Hoja 2026). <br><span class="text-red-500 font-bold">IMPORTANTE:</span> Copia desde "NRO EXPO" hasta "PRECIO TOTAL".</p>
-            <textarea id="pl-paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded-lg p-3 text-xs font-mono focus:border-blue-500 outline-none" placeholder="Pega aquí..."></textarea>
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-xl font-bold text-gray-800">Importar Datos: <span id="lbl-year-modal" class="text-blue-600"></span></h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Copia las filas de tu Excel (Año correspondiente). <br><span class="text-red-500 font-bold">COLUMNAS:</span> NRO EXPO | DESTINO | TIPO | FECHA | ... | PRECIO TOTAL</p>
+            <textarea id="paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded p-3 text-xs font-mono focus:border-blue-500 outline-none" placeholder="Pegar aquí..."></textarea>
             <div class="mt-4 flex justify-end space-x-3">
-                <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-bold text-sm">Cancelar</button>
-                <button onclick="savePLData()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-sm shadow">Guardar y Reemplazar</button>
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded font-bold text-sm">Cancelar</button>
+                <button onclick="saveData()" class="px-6 py-2 bg-blue-600 text-white rounded font-bold text-sm shadow hover:bg-blue-700">Guardar Datos</button>
             </div>
         </div>
     </div>
 
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50 flex-col">
+    <div id="loader" class="hidden fixed inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-50">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
         <p class="font-bold text-gray-700 text-lg">Procesando...</p>
     </div>
 
     <script>
-        // ==========================================
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
-        // ==========================================
+        // =========================================================
+        // 🚨 CONFIGURACIÓN URL (PEGA LA TUYA AQUÍ)
+        // =========================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzSd_UXjCymNSH_XeSeoxP6uogO8KtFZ6oAgOY_Xg8pHaexvsIlEOJAcP0DB1qqmRd8/exec';
+        // =========================================================
 
-        function switchTab(t){document.getElementById('view-cotizador').classList.add('hidden');document.getElementById('view-gestion2026').classList.add('hidden');document.getElementById('tab-cotizador').className="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none";document.getElementById('tab-gestion').className="tab-inactive py-2 px-4 rounded-t-lg transition focus:outline-none";if(t==='cotizador'){document.getElementById('view-cotizador').classList.remove('hidden');document.getElementById('tab-cotizador').className="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none";}else{document.getElementById('view-gestion2026').classList.remove('hidden');document.getElementById('tab-gestion').className="tab-active py-2 px-4 rounded-t-lg transition focus:outline-none";loadPLData();}}
-        function openImportModal(){document.getElementById('importModal').classList.remove('hidden');document.getElementById('pl-paste-area').value='';document.getElementById('pl-paste-area').focus();}
-        function closeImportModal(){document.getElementById('importModal').classList.add('hidden');}
+        let currentYear = '2026';
+        let currentData = [];
+        let viewData = [];
+        let sortDir = 1;
+        let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
+        let evoCharts = [];
 
-        // --- COTIZADOR ---
-        let rawData=[],filteredData=[],chartCost=null,chartTime=null;
-        const eqOpts={"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
-        function updateEquipment(){const m=document.getElementById('modalidadSelect').value;const s=document.getElementById('equipoSelect');s.innerHTML="";eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e);});}
-        document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();const b=document.getElementById('submitBtn');b.disabled=true;b.innerHTML='Guardando...';fetch(scriptURL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{if(d.result==="error"){alert("Error Apps Script: "+d.message);}else{document.getElementById('statusMsg').classList.remove('hidden');e.target.reset();loadDashboard();setTimeout(()=>{document.getElementById('statusMsg').classList.add('hidden');b.disabled=false;b.innerHTML='GUARDAR';},2000);}}).catch(err=>{alert("Error de Red: "+err);b.disabled=false;b.innerHTML='GUARDAR';});});
-        async function loadDashboard(){try{const r=await fetch(scriptURL);const j=await r.json();rawData=j||[];populateFilter();applyFilter();}catch(e){console.log("No data cotizador");}}
-        function populateFilter(){const s=document.getElementById('filterCountry');if(!rawData||rawData.length===0)return;const cur=s.value;const c=[...new Set(rawData.map(r=>r[2]).filter(x=>x))].sort();s.innerHTML='<option value="ALL">🌎 Global</option>';c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`);s.value=cur;}
-        function applyFilter(){const c=document.getElementById('filterCountry').value;filteredData=(c==="ALL")?rawData:rawData.filter(r=>r[2]===c);let tc=0,tt=0,ct=0,st={};if(filteredData.length>0){filteredData.forEach(r=>{let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);let t=parseFloat(r[7])||0;if(!st[k])st[k]={cs:0,ts:0,c:0};st[k].cs+=co;st[k].ts+=t;st[k].c++;tc+=co;if(t>0){tt+=t;ct++;}});document.getElementById('kpiCount').innerText=filteredData.length;document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';document.getElementById('kpiTop').innerText=top;renderCharts(Object.keys(st),Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)),Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)),c!=="ALL");}const tb=document.getElementById('historyTableBody');tb.innerHTML="";if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{let d=r[0]?new Date(r[0]).toLocaleDateString():'-';tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;});}
-        function renderCharts(l,c,t,isC){if(chartCost)chartCost.destroy();if(chartTime)chartTime.destroy();const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isC?'#f97316':'#1e3a8a',borderRadius:4}]},options:o});chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:o});}
-        function downloadExcel(){if(!filteredData.length){alert("Nada para exportar");return;}const d=filteredData.map(r=>({Fecha:r[0],Ref:r[1],Dest:r[2],Carrier:r[6],Total:(parseFloat(r[8])||0)+(parseFloat(r[9])||0)}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(d),"Cotizaciones");XLSX.writeFile(wb,"Reporte.xlsx");}
+        // --- NAVEGACIÓN ---
+        function switchTab(tab) {
+            // Ocultar todo
+            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-        // --- GESTIÓN 2026 ---
-        let plData=[],currentFilteredData=[],plChartType=null,plChartSku=null,plChartTypeKg=null,plChartSkuKg=null;
-        
-        // Variables para el ordenamiento
-        let sortColumn = null;
-        let sortDirection = 1; // 1 = Asc, -1 = Desc
-
-        function parseMoney(s){if(!s)return 0;let c=s.toString().replace(/[$\sA-Za-z]/g,'');if(c.indexOf(',')>-1&&c.indexOf('.')>-1){if(c.lastIndexOf(',')>c.lastIndexOf('.')){c=c.replace(/\./g,'').replace(',','.');}else{c=c.replace(/,/g,'');}}else if(c.indexOf(',')>-1){c=c.replace(',','.');}return parseFloat(c)||0;}
-        function formatDate(d){if(!d||d.trim()==='')return'-';if(d.includes('-')&&d.length===10){const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}if(d.includes('T'))return d.split('T')[0];return d;}
-        function parseDateSort(d){if(!d)return 0;if(d.includes('-'))return new Date(d).getTime();if(d.includes('/')){const p=d.split('/');return new Date(`${p[2]}-${p[1]}-${p[0]}`).getTime();}return 0;}
-
-        function savePLData(){
-            const t=document.getElementById('pl-paste-area').value;if(!t)return;document.getElementById('loadingOverlay').classList.remove('hidden');
-            const r=t.split('\n');const n=[];
-            r.forEach(row=>{const c=row.split('\t');if(c.length>=13){let d=c[4]?.trim()||c[3]?.trim()||'';n.push({nroExpo:c[0]?.trim(),destino:c[1]?.trim(),tipo:c[2]?.trim(),fecha:d,sku:c[5]?.trim(),desc:c[6]?.trim(),kgNeto:parseMoney(c[9]),precioTotal:parseMoney(c[13])});}});
-            if(n.length>0){const fd=new FormData();fd.append('action','save_pl');fd.append('data',JSON.stringify(n));fetch(scriptURL,{method:'POST',body:fd}).then(r=>r.json()).then(d=>{document.getElementById('loadingOverlay').classList.add('hidden');closeImportModal();loadPLData();alert(`✅ Base Actualizada: ${d.count} registros.`);}).catch(e=>{alert("Error Nube: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});}else{alert("Datos inválidos. Copia desde el Excel.");document.getElementById('loadingOverlay').classList.add('hidden');}
-        }
-
-        function loadPLData(){
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            fetch(scriptURL+'?action=get_pl').then(r=>r.json()).then(d=>{plData=d||[];document.getElementById('db-status').innerText=`Registros: ${plData.length}`;renderPLList();document.getElementById('loadingOverlay').classList.add('hidden');}).catch(e=>{console.log("Error PL: "+e);document.getElementById('loadingOverlay').classList.add('hidden');});
-        }
-
-        function renderPLList(){
-            const fd=document.getElementById('pl-filter-dest');
-            if(fd.options.length===1&&plData.length>0){const d=[...new Set(plData.map(i=>i.destino).filter(x=>x))].sort();d.forEach(o=>{let e=document.createElement('option');e.value=o;e.innerText=o;fd.appendChild(e);});}
-            const cd=fd.value;const c=document.getElementById('pl-list-container');c.innerHTML="";
-            const g={};plData.forEach(i=>{if(cd!=='TODOS'&&i.destino!==cd)return;if(!i.nroExpo)return;if(!g[i.nroExpo])g[i.nroExpo]={id:i.nroExpo,d:i.destino,u:0};g[i.nroExpo].u+=i.precioTotal;});
-            const sc=document.createElement('div');sc.className="expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 z-10 flex items-center justify-between";sc.innerHTML=`<div class="font-bold text-blue-900 flex items-center"><i class="fa-solid fa-earth-americas mr-2"></i><span>RESUMEN ${cd==='TODOS'?'GLOBAL':cd.toUpperCase()}</span></div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;sc.onclick=()=>renderDash(cd,null);c.appendChild(sc);
-            Object.values(g).forEach(e=>{const d=document.createElement('div');d.className="expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";d.onclick=()=>renderDash(cd,e.id);d.innerHTML=`<div class="flex justify-between font-bold text-xs text-gray-700"><span>${e.id}</span><span class="text-green-600">$${e.u.toLocaleString('es-AR',{maximumFractionDigits:0})}</span></div><div class="text-[10px] text-gray-400 mt-1">${e.d}</div>`;c.appendChild(d);});
-            renderDash(cd,null);
-        }
-
-        function cleanName(d){if(!d)return"OTROS";let c=d.toUpperCase();c=c.replace(/^F-\s*/,'').replace(/^HELADO\s+/,'').replace(/^PINTA\s+/,'');return c.trim();}
-
-        function renderDash(fd, sid){
-            let ds=plData; if(fd!=='TODOS')ds=ds.filter(i=>i.destino===fd);
-            if(sid){ds=ds.filter(i=>i.nroExpo===sid);document.getElementById('pl-main-title').innerText=`Operación: ${sid}`;document.getElementById('pl-subtitle').innerText="Vista Detalle";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
-            else{document.getElementById('pl-main-title').innerText=fd==='TODOS'?"Resumen Global 2026":`Resumen: ${fd}`;document.getElementById('pl-subtitle').innerText="Acumulado";document.getElementById('chart-sku-title').innerText="Top 5 Productos (USD)";}
-            
-            // Reset sort when changing view
-            sortColumn = null; sortDirection = 1;
-            currentFilteredData=ds; 
-            
-            let tu=0,tk=0,ui=0;const bt={},bp={},btk={},bpk={};
-            ds.forEach(i=>{
-                tu+=i.precioTotal; tk+=i.kgNeto; 
-                let t=i.tipo||"Otros"; bt[t]=(bt[t]||0)+i.precioTotal; btk[t]=(btk[t]||0)+i.kgNeto;
-                let k = i.desc || i.sku || "N/A";
-                if(!sid) k = cleanName(i.desc) || (i.sku || "N/A");
-                bp[k]=(bp[k]||0)+i.precioTotal; bpk[k]=(bpk[k]||0)+i.kgNeto;
-            });
-            ui=sid?ds.length:new Set(ds.map(i=>i.nroExpo)).size;
-            document.getElementById('pl-kpi-monto').innerText=`$ ${tu.toLocaleString('es-AR',{maximumFractionDigits:0})}`;document.getElementById('pl-kpi-peso').innerText=`${tk.toLocaleString('es-AR',{maximumFractionDigits:0})} Kg`;document.getElementById('pl-kpi-items').innerText=ui;document.getElementById('pl-table-count').innerText=ds.length;
-            
-            renderTableRows(); // Llamamos a la función separada
-            updatePLCharts(bt,bp,btk,bpk);
-        }
-
-        // --- NUEVA FUNCIÓN PARA ORDENAR ---
-        function sortTable(column) {
-            // Si clic en la misma columna, invierte el orden
-            if (sortColumn === column) {
-                sortDirection *= -1;
+            if (tab === 'cotizador') {
+                document.getElementById('view-cotizador').classList.remove('hidden');
+                document.getElementById('btn-cotizador').classList.add('active');
+            } else if (tab === 'evolucion') {
+                document.getElementById('view-evolucion').classList.remove('hidden');
+                document.getElementById('btn-evolucion').classList.add('active');
+                loadEvolution();
             } else {
-                sortColumn = column;
-                sortDirection = 1;
+                // Vista Gestión (Año)
+                currentYear = tab;
+                document.getElementById('view-gestion').classList.remove('hidden');
+                document.getElementById('btn-' + tab).classList.add('active');
+                
+                // Actualizar labels
+                document.getElementById('lbl-year').innerText = tab;
+                document.getElementById('lbl-year-btn').innerText = tab;
+                document.getElementById('lbl-year-modal').innerText = tab;
+                
+                loadData(tab);
             }
-
-            // Actualizar iconos
-            document.querySelectorAll('.sortable-header i').forEach(icon => {
-                icon.className = 'fa-solid fa-sort ml-1 text-gray-400'; // Reset
-            });
-            const activeHeader = document.querySelector(`.sortable-header[onclick="sortTable('${column}')"] i`);
-            if (activeHeader) {
-                activeHeader.className = sortDirection === 1 ? 'fa-solid fa-sort-up ml-1 text-blue-600' : 'fa-solid fa-sort-down ml-1 text-blue-600';
-            }
-
-            // Ordenar datos
-            currentFilteredData.sort((a, b) => {
-                let valA = a[column];
-                let valB = b[column];
-
-                // Casos especiales
-                if (column === 'fecha') {
-                    return sortDirection * (parseDateSort(valA) - parseDateSort(valB));
-                }
-                if (column === 'kgNeto' || column === 'precioTotal') {
-                    return sortDirection * (valA - valB);
-                }
-                // String default
-                valA = String(valA || "").toLowerCase();
-                valB = String(valB || "").toLowerCase();
-                if (valA < valB) return -1 * sortDirection;
-                if (valA > valB) return 1 * sortDirection;
-                return 0;
-            });
-
-            renderTableRows(); // Re-renderizar solo filas
         }
 
-        // --- NUEVA FUNCIÓN PARA RENDERIZAR TABLA ---
-        function renderTableRows() {
-            const tb = document.getElementById('pl-table-body');
+        // --- GESTIÓN DE DATOS ---
+        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
+        function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
+        
+        function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
+        
+        function saveData() {
+            const txt = document.getElementById('paste-area').value;
+            if(!txt) return;
+            document.getElementById('loader').classList.remove('hidden');
+            
+            const rows = txt.split('\n');
+            const data = [];
+            rows.forEach(r => {
+                const c = r.split('\t');
+                if(c.length >= 13) {
+                    let d = c[4]?.trim() || c[3]?.trim() || '';
+                    data.push({
+                        nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: d,
+                        sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13])
+                    });
+                }
+            });
+
+            if(data.length > 0) {
+                const fd = new FormData();
+                fd.append('action', 'save_pl');
+                fd.append('year', currentYear); // ENVIA EL AÑO
+                fd.append('data', JSON.stringify(data));
+                
+                fetch(API_URL, { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(d => {
+                    document.getElementById('loader').classList.add('hidden');
+                    closeModal();
+                    loadData(currentYear);
+                    alert(`✅ Datos ${currentYear} guardados: ${d.count} registros.`);
+                });
+            } else {
+                alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden');
+            }
+        }
+
+        function loadData(year) {
+            document.getElementById('loader').classList.remove('hidden');
+            fetch(`${API_URL}?action=get_pl&year=${year}`)
+            .then(r => r.json())
+            .then(d => {
+                currentData = d || [];
+                document.getElementById('db-status').innerText = `Registros: ${currentData.length}`;
+                renderList();
+                document.getElementById('loader').classList.add('hidden');
+            })
+            .catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
+        }
+
+        // --- RENDERIZADO GESTION ---
+        function renderList() {
+            const sel = document.getElementById('pl-filter-dest');
+            if(sel.options.length === 1 && currentData.length > 0) {
+                const dests = [...new Set(currentData.map(i => i.destino).filter(x=>x))].sort();
+                dests.forEach(d => { let o = document.createElement('option'); o.value=d; o.innerText=d; sel.appendChild(o); });
+            }
+            const filter = sel.value;
+            const container = document.getElementById('pl-list');
+            container.innerHTML = "";
+            
+            // Agrupar
+            const groups = {};
+            currentData.forEach(i => {
+                if(filter !== 'TODOS' && i.destino !== filter) return;
+                if(!i.nroExpo) return;
+                if(!groups[i.nroExpo]) groups[i.nroExpo] = { id: i.nroExpo, dest: i.destino, total: 0 };
+                groups[i.nroExpo].total += i.precioTotal;
+            });
+
+            // Card Resumen
+            const sumCard = document.createElement('div');
+            sumCard.className = "expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 flex justify-between items-center";
+            sumCard.innerHTML = `<div class="font-bold text-blue-900"><i class="fa-solid fa-globe mr-2"></i>RESUMEN ${filter}</div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;
+            sumCard.onclick = () => renderView(filter, null);
+            container.appendChild(sumCard);
+
+            Object.values(groups).forEach(g => {
+                const div = document.createElement('div');
+                div.className = "expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";
+                div.onclick = () => renderView(filter, g.id);
+                div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${g.id}</span><span class="text-green-600">$${g.total.toLocaleString()}</span></div><div class="text-[10px] text-gray-400 mt-1">${g.dest}</div>`;
+                container.appendChild(div);
+            });
+            renderView(filter, null);
+        }
+
+        function cleanName(n) { return n ? n.toUpperCase().replace(/^F-\s*|^HELADO\s+|^PINTA\s+/, '').trim() : "OTROS"; }
+        function formatDate(d) { if(!d) return '-'; if(d.includes('-') && d.length===10) { const p=d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; } if(d.includes('T')) return d.split('T')[0]; return d; }
+
+        function renderView(destFilter, expoId) {
+            let data = currentData;
+            if(destFilter !== 'TODOS') data = data.filter(i => i.destino === destFilter);
+            
+            if(expoId) {
+                data = data.filter(i => i.nroExpo === expoId);
+                document.getElementById('dash-title').innerText = `Operación: ${expoId}`;
+                document.getElementById('dash-sub').innerText = "Detalle";
+                document.getElementById('title-bar').innerText = "Top 5 SKUs";
+            } else {
+                document.getElementById('dash-title').innerText = `Resumen ${destFilter}`;
+                document.getElementById('dash-sub').innerText = "Acumulado " + currentYear;
+                document.getElementById('title-bar').innerText = "Top 5 Productos";
+            }
+
+            viewData = data; // Para tabla y descarga
+
+            // KPIs
+            let tUSD = 0, tKG = 0;
+            const byType = {}, byTypeKg = {}, byItem = {}, byItemKg = {};
+
+            data.forEach(i => {
+                tUSD += i.precioTotal;
+                tKG += i.kgNeto;
+                
+                let type = i.tipo || "Otros";
+                byType[type] = (byType[type]||0) + i.precioTotal;
+                byTypeKg[type] = (byTypeKg[type]||0) + i.kgNeto;
+
+                let key = expoId ? (i.desc || i.sku) : cleanName(i.desc);
+                byItem[key] = (byItem[key]||0) + i.precioTotal;
+                byItemKg[key] = (byItemKg[key]||0) + i.kgNeto;
+            });
+
+            document.getElementById('kpi-usd').innerText = `$ ${tUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
+            document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
+            document.getElementById('kpi-items').innerText = expoId ? data.length : new Set(data.map(x=>x.nroExpo)).size;
+
+            renderTable();
+            renderCharts(byType, byItem, byTypeKg, byItemKg);
+        }
+
+        function renderCharts(bt, bi, btk, bik) {
+            [activeChartType, activeChartBar, activeChartTypeKg, activeChartBarKg].forEach(c => { if(c) c.destroy(); });
+            
+            const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 9} } } } };
+            const barOpt = { ...commonOpt, plugins: { legend: { display: false } }, indexAxis: 'y' };
+
+            // USD
+            activeChartType = new Chart(document.getElementById('chartType'), { type: 'doughnut', data: { labels: Object.keys(bt), datasets: [{ data: Object.values(bt), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
+            const topI = Object.entries(bi).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            activeChartBar = new Chart(document.getElementById('chartBar'), { type: 'bar', data: { labels: topI.map(x=>x[0].substring(0,20)), datasets: [{ data: topI.map(x=>x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] }, options: barOpt });
+
+            // KG
+            activeChartTypeKg = new Chart(document.getElementById('chartTypeKg'), { type: 'doughnut', data: { labels: Object.keys(btk), datasets: [{ data: Object.values(btk), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
+            const topIK = Object.entries(bik).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            activeChartBarKg = new Chart(document.getElementById('chartBarKg'), { type: 'bar', data: { labels: topIK.map(x=>x[0].substring(0,20)), datasets: [{ data: topIK.map(x=>x[1]), backgroundColor: '#f97316', borderRadius: 4 }] }, options: barOpt });
+        }
+
+        // --- TABLA ORDENAR ---
+        function sortT(col) {
+            sortDir *= -1;
+            viewData.sort((a,b) => {
+                let va = a[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
+                let vb = b[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
+                if(col==="kg" || col==="usd") return sortDir * (va - vb);
+                return sortDir * String(va).localeCompare(String(vb));
+            });
+            renderTable();
+        }
+
+        function renderTable() {
+            const tb = document.getElementById('pl-table');
             tb.innerHTML = "";
-            currentFilteredData.slice(0, 100).forEach(i => {
-                tb.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50 transition">
-                    <td class="px-4 py-2 font-mono text-xs text-gray-500">${formatDate(i.fecha)}</td>
-                    <td class="px-4 py-2 font-mono text-xs text-blue-900">${i.sku}</td>
-                    <td class="px-4 py-2 truncate max-w-xs text-xs font-bold" title="${i.desc}">${i.desc}</td>
-                    <td class="px-4 py-2 text-xs"><span class="bg-blue-100 text-blue-800 px-2 rounded">${i.tipo}</span></td>
-                    <td class="px-4 py-2 text-right text-xs">${i.kgNeto.toLocaleString()}</td>
-                    <td class="px-4 py-2 text-right font-bold text-green-700 text-xs">$${i.precioTotal.toLocaleString()}</td>
+            viewData.slice(0, 100).forEach(i => {
+                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition">
+                    <td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td>
+                    <td class="p-2 font-mono text-blue-900">${i.sku}</td>
+                    <td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td>
+                    <td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td>
+                    <td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td>
+                    <td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td>
                 </tr>`;
             });
         }
 
-        function updatePLCharts(bt,bp,btk,bpk){
-            if(plChartType)plChartType.destroy();if(plChartSku)plChartSku.destroy();if(plChartTypeKg)plChartTypeKg.destroy();if(plChartSkuKg)plChartSkuKg.destroy();
-            const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}}};
-            plChartType=new Chart(document.getElementById('plChartType'),{type:'doughnut',data:{labels:Object.keys(bt),datasets:[{data:Object.values(bt),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
-            const sp=Object.entries(bp).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            plChartSku=new Chart(document.getElementById('plChartSku'),{type:'bar',data:{labels:sp.map(x=>x[0].substring(0,25)+'...'),datasets:[{label:'USD',data:sp.map(x=>x[1]),backgroundColor:'#1e3a8a',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
-            // KG Charts
-            plChartTypeKg=new Chart(document.getElementById('plChartTypeKg'),{type:'doughnut',data:{labels:Object.keys(btk),datasets:[{data:Object.values(btk),backgroundColor:['#1e3a8a','#f97316','#10b981','#6366f1','#8b5cf6'],borderWidth:0}]},options:o});
-            const spk=Object.entries(bpk).sort((a,b)=>b[1]-a[1]).slice(0,5);
-            plChartSkuKg=new Chart(document.getElementById('plChartSkuKg'),{type:'bar',data:{labels:spk.map(x=>x[0].substring(0,25)+'...'),datasets:[{label:'KG',data:spk.map(x=>x[1]),backgroundColor:'#f97316',borderRadius:4}]},options:{...o,plugins:{legend:{display:false}},indexAxis:'y'}});
+        // --- BUSCADOR ---
+        function searchSKU() {
+            const t = document.getElementById('skuInput').value.toLowerCase();
+            const panel = document.getElementById('search-results');
+            if(t.length < 2) { panel.classList.add('hidden'); return; }
+            panel.classList.remove('hidden');
+            
+            const matches = currentData.filter(i => (String(i.sku).toLowerCase().includes(t)) || (String(i.desc).toLowerCase().includes(t)) || (String(i.nroExpo).toLowerCase().includes(t)));
+            const b = document.getElementById('search-body'); b.innerHTML = "";
+            
+            if(matches.length === 0) b.innerHTML = `<tr><td colspan="6" class="p-4 text-center">Sin resultados</td></tr>`;
+            else matches.slice(0, 50).forEach(i => {
+                b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')">
+                    <td class="p-2 text-xs">${formatDate(i.fecha)}</td>
+                    <td class="p-2 text-xs font-bold">${i.nroExpo}</td>
+                    <td class="p-2 text-xs">${i.destino}</td>
+                    <td class="p-2 text-xs">${i.sku}</td>
+                    <td class="p-2 text-xs">${i.desc}</td>
+                    <td class="p-2 text-xs text-right">${i.kgNeto}</td>
+                </tr>`;
+            });
+        }
+        function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
+        function goToOp(id, dest) {
+            closeSearch();
+            const s = document.getElementById('pl-filter-dest');
+            if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS';
+            renderList();
+            renderView(s.value === 'TODOS' ? 'TODOS' : dest, id);
         }
 
-        function selectExpoFromSearch(eid,dest){closeSearch();const s=document.getElementById('pl-filter-dest');if(s.querySelector(`option[value="${dest}"]`))s.value=dest;else s.value='TODOS';renderPLList();renderDash(s.value==='TODOS'?'TODOS':dest,eid);}
-        function searchSKU(){
-            const t=document.getElementById('skuInput').value.toLowerCase();const sm=document.getElementById('skuSort').value;const p=document.getElementById('search-results-panel');const b=document.getElementById('sku-results-body');
-            if(t.length<2){p.classList.add('hidden');return;}p.classList.remove('hidden');
-            let m=plData.filter(i=>(String(i.sku).toLowerCase().includes(t))||(String(i.desc).toLowerCase().includes(t))||(String(i.nroExpo).toLowerCase().includes(t)));
-            if(sm==='newest')m.sort((a,b)=>parseDateSort(b.fecha)-parseDateSort(a.fecha));else if(sm==='oldest')m.sort((a,b)=>parseDateSort(a.fecha)-parseDateSort(b.fecha));else m.sort((a,b)=>b.precioTotal-a.precioTotal);
-            b.innerHTML="";if(m.length===0)b.innerHTML=`<tr><td colspan="7" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
-            else m.slice(0,50).forEach(i=>{b.innerHTML+=`<tr class="bg-white border-b clickable-row" onclick="selectExpoFromSearch('${i.nroExpo}','${i.destino}')"><td class="px-4 py-2 font-mono text-xs text-gray-600">${formatDate(i.fecha)}</td><td class="px-4 py-2 font-bold text-blue-900">${i.nroExpo}</td><td class="px-4 py-2 text-xs bg-gray-100 rounded">${i.destino}</td><td class="px-4 py-2 font-mono">${i.sku}</td><td class="px-4 py-2 text-xs truncate max-w-xs">${i.desc}</td><td class="px-4 py-2 text-xs bg-blue-50">${i.tipo}</td><td class="px-4 py-2 text-right font-bold text-green-600 text-xs">${i.kgNeto}</td></tr>`;});
+        // --- EVOLUCIÓN ---
+        function loadEvolution() {
+            document.getElementById('loader').classList.remove('hidden');
+            fetch(`${API_URL}?action=get_all_years`)
+            .then(r => r.json())
+            .then(data => {
+                // data = { "2024": [...], "2025": [...], "2026": [...] }
+                const years = Object.keys(data).sort();
+                const totalsUSD = [], totalsKG = [];
+                const dests2026 = {};
+
+                years.forEach(y => {
+                    let u = 0, k = 0;
+                    data[y].forEach(i => { 
+                        u += i.precioTotal; k += i.kgNeto;
+                        if(y === '2026') dests2026[i.destino] = (dests2026[i.destino]||0) + i.precioTotal;
+                    });
+                    totalsUSD.push(u);
+                    totalsKG.push(k);
+                });
+
+                // Charts Evolution
+                evoCharts.forEach(c => c.destroy());
+                
+                const ctx1 = document.getElementById('evoChartUSD');
+                evoCharts.push(new Chart(ctx1, { type: 'line', data: { labels: years, datasets: [{ label: 'USD', data: totalsUSD, borderColor: '#16a34a', tension: 0.3, fill: true, backgroundColor: '#dcfce7' }] }, options: { maintainAspectRatio: false } }));
+                
+                const ctx2 = document.getElementById('evoChartKG');
+                evoCharts.push(new Chart(ctx2, { type: 'line', data: { labels: years, datasets: [{ label: 'KG', data: totalsKG, borderColor: '#f97316', tension: 0.3, fill: true, backgroundColor: '#ffedd5' }] }, options: { maintainAspectRatio: false } }));
+
+                const ctx3 = document.getElementById('evoChartDest');
+                evoCharts.push(new Chart(ctx3, { type: 'bar', data: { labels: Object.keys(dests2026), datasets: [{ label: 'Ventas 2026 por Destino', data: Object.values(dests2026), backgroundColor: '#1e3a8a', borderRadius: 5 }] }, options: { maintainAspectRatio: false } }));
+
+                document.getElementById('loader').classList.add('hidden');
+            });
         }
-        function closeSearch(){document.getElementById('search-results-panel').classList.add('hidden');document.getElementById('skuInput').value="";}
-        function downloadPLExcel(){
-            if(!currentFilteredData||currentFilteredData.length===0){alert("Sin datos");return;}
-            const e=currentFilteredData.map(i=>({"Operacion":i.nroExpo,"Destino":i.destino,"Fecha":formatDate(i.fecha),"Tipo":i.tipo,"SKU":i.sku,"Desc":i.desc,"Kg":i.kgNeto,"USD":i.precioTotal}));
-            const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(e),"Reporte");XLSX.writeFile(wb,`Reporte_Freddo.xlsx`);
+
+        function downloadExcelPL() {
+            if(!viewData.length) { alert("Sin datos"); return; }
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(viewData.map(i => ({
+                "Fecha": formatDate(i.fecha), "Op": i.nroExpo, "Dest": i.destino, "SKU": i.sku, "Desc": i.desc, "Tipo": i.tipo, "Kg": i.kgNeto, "USD": i.precioTotal
+            })));
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_" + currentYear);
+            XLSX.writeFile(wb, `Reporte_Freddo_${currentYear}.xlsx`);
         }
-        window.addEventListener('load',()=>{updateEquipment();loadDashboard();});
+
+        // --- COTIZADOR INIT ---
+        let rawCot = [];
+        const eqOpts = {"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
+        function updateEq() { const m=document.getElementById('modalidadSelect').value; const s=document.getElementById('equipoSelect'); s.innerHTML=""; eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e)}); }
+        document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
+        async function loadCot() { try{const r=await fetch(API_URL);const d=await r.json();rawCot=d||[];renderCotTable();}catch(e){}}
+        function renderCotTable() {
+            const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
+            rawCot.slice().reverse().slice(0,50).forEach(r=>{
+                let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
+                tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${d}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`;
+            });
+        }
+
+        window.onload = () => { switchTab('2026'); updateEq(); loadCot(); };
     </script>
 </body>
 </html>
