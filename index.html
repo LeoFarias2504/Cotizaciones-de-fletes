@@ -16,7 +16,6 @@
         .clickable-row:hover { background-color: #e0f2fe !important; cursor: pointer; }
         .expo-card { transition: all 0.2s; border-left: 4px solid transparent; }
         .expo-card:hover { border-left-color: #2563eb; background-color: #f0f9ff; }
-        /* Animaciones */
         .fade-in { animation: fadeIn 0.3s ease-in; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -88,13 +87,8 @@
 
     <div id="view-gestion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex justify-between items-center mb-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Gestión de Exportaciones <span id="lbl-year" class="text-blue-600">2026</span></h2>
-                <p class="text-sm text-gray-500">Panel de Control Operativo</p>
-            </div>
-            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition">
-                <i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)
-            </button>
+            <div><h2 class="text-2xl font-bold text-gray-800">Gestión de Exportaciones <span id="lbl-year" class="text-blue-600">2026</span></h2><p class="text-sm text-gray-500">Panel de Control Operativo</p></div>
+            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)</button>
         </div>
 
         <div class="bg-white p-4 rounded-xl shadow border mb-4 flex gap-4 items-center">
@@ -112,10 +106,7 @@
 
         <div class="grid grid-cols-12 gap-6">
             <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[850px] flex flex-col border">
-                <div class="p-4 border-b bg-gray-50">
-                    <label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label>
-                    <select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select>
-                </div>
+                <div class="p-4 border-b bg-gray-50"><label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label><select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select></div>
                 <div id="pl-list" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
             <div class="col-span-12 md:col-span-8 space-y-6">
@@ -151,35 +142,29 @@
     </div>
 
     <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
-        <h2 class="text-2xl font-bold text-purple-800 mb-6">Evolución Histórica (2024 - 2026)</h2>
-        <div class="grid grid-cols-2 gap-6 mb-6">
+        <h2 class="text-2xl font-bold text-purple-800 mb-6">Comparativa Mensual (2024 - 2026)</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
-                <h3 class="font-bold text-gray-700 mb-4">Crecimiento en Ventas (USD)</h3>
-                <div class="h-64"><canvas id="evoChartUSD"></canvas></div>
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="h-72"><canvas id="evoChartUSD"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500">
-                <h3 class="font-bold text-gray-700 mb-4">Evolución de Volumen (KG)</h3>
-                <div class="h-64"><canvas id="evoChartKG"></canvas></div>
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="h-72"><canvas id="evoChartKG"></canvas></div>
             </div>
         </div>
         <div class="bg-white p-6 rounded-xl shadow border">
-            <h3 class="font-bold text-gray-700 mb-4">Comparativa por Destino</h3>
-            <div class="h-80"><canvas id="evoChartDest"></canvas></div>
+            <h3 class="font-bold text-gray-700 mb-4">Resumen Acumulado por Año (YTD)</h3>
+            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-purple-50 text-purple-900 font-bold"><tr><th class="p-3">Año</th><th class="p-3 text-right">Total USD</th><th class="p-3 text-right">Total KG</th><th class="p-3 text-right">Promedio Mensual (USD)</th></tr></thead><tbody id="evoTableBody"></tbody></table></div>
         </div>
     </div>
 
     <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 fade-in">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6">
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-xl font-bold text-gray-800">Importar Datos: <span id="lbl-year-modal" class="text-blue-600"></span></h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
-            </div>
+            <div class="flex justify-between items-center mb-4 border-b pb-2"><h3 class="text-xl font-bold text-gray-800">Importar Datos: <span id="lbl-year-modal" class="text-blue-600"></span></h3><button onclick="closeModal()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button></div>
             <p class="text-sm text-gray-600 mb-4">Copia las filas de tu Excel (Año correspondiente). <br><span class="text-red-500 font-bold">COLUMNAS:</span> NRO EXPO | DESTINO | TIPO | FECHA | ... | PRECIO TOTAL</p>
             <textarea id="paste-area" class="w-full h-48 border-2 border-dashed border-gray-300 rounded p-3 text-xs font-mono focus:border-blue-500 outline-none" placeholder="Pegar aquí..."></textarea>
-            <div class="mt-4 flex justify-end space-x-3">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded font-bold text-sm">Cancelar</button>
-                <button onclick="saveData()" class="px-6 py-2 bg-blue-600 text-white rounded font-bold text-sm shadow hover:bg-blue-700">Guardar Datos</button>
-            </div>
+            <div class="mt-4 flex justify-end space-x-3"><button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded font-bold text-sm">Cancelar</button><button onclick="saveData()" class="px-6 py-2 bg-blue-600 text-white rounded font-bold text-sm shadow hover:bg-blue-700">Guardar Datos</button></div>
         </div>
     </div>
 
@@ -192,101 +177,80 @@
         // =========================================================
         // 🚨 CONFIGURACIÓN URL (PEGA LA TUYA AQUÍ)
         // =========================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzSd_UXjCymNSH_XeSeoxP6uogO8KtFZ6oAgOY_Xg8pHaexvsIlEOJAcP0DB1qqmRd8/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
         // =========================================================
 
         let currentYear = '2026';
-        let currentData = [];
-        let viewData = [];
+        let currentData = [], viewData = [], rawCot = [], filteredData = [];
         let sortDir = 1;
+        
+        // Variables Charts Gestion
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
+        // Variables Charts Evolucion
         let evoCharts = [];
+        // Variables Charts Cotizador
+        let chartCost = null, chartTime = null;
 
-        // --- NAVEGACIÓN ---
         function switchTab(tab) {
-            // Ocultar todo
             ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
             if (tab === 'cotizador') {
                 document.getElementById('view-cotizador').classList.remove('hidden');
                 document.getElementById('btn-cotizador').classList.add('active');
+                // IMPORTANTE: Redibujar gráficos del cotizador al entrar
+                if(rawCot.length > 0) applyFilter(); 
             } else if (tab === 'evolucion') {
                 document.getElementById('view-evolucion').classList.remove('hidden');
                 document.getElementById('btn-evolucion').classList.add('active');
                 loadEvolution();
             } else {
-                // Vista Gestión (Año)
                 currentYear = tab;
                 document.getElementById('view-gestion').classList.remove('hidden');
                 document.getElementById('btn-' + tab).classList.add('active');
-                
-                // Actualizar labels
                 document.getElementById('lbl-year').innerText = tab;
                 document.getElementById('lbl-year-btn').innerText = tab;
                 document.getElementById('lbl-year-modal').innerText = tab;
-                
                 loadData(tab);
             }
         }
 
-        // --- GESTIÓN DE DATOS ---
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
-        
         function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
         
         function saveData() {
             const txt = document.getElementById('paste-area').value;
             if(!txt) return;
             document.getElementById('loader').classList.remove('hidden');
-            
             const rows = txt.split('\n');
             const data = [];
             rows.forEach(r => {
                 const c = r.split('\t');
                 if(c.length >= 13) {
                     let d = c[4]?.trim() || c[3]?.trim() || '';
-                    data.push({
-                        nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: d,
-                        sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13])
-                    });
+                    data.push({ nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: d, sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13]) });
                 }
             });
-
             if(data.length > 0) {
-                const fd = new FormData();
-                fd.append('action', 'save_pl');
-                fd.append('year', currentYear); // ENVIA EL AÑO
-                fd.append('data', JSON.stringify(data));
-                
-                fetch(API_URL, { method: 'POST', body: fd })
-                .then(r => r.json())
-                .then(d => {
-                    document.getElementById('loader').classList.add('hidden');
-                    closeModal();
-                    loadData(currentYear);
-                    alert(`✅ Datos ${currentYear} guardados: ${d.count} registros.`);
+                const fd = new FormData(); fd.append('action', 'save_pl'); fd.append('year', currentYear); fd.append('data', JSON.stringify(data));
+                fetch(API_URL, { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Datos guardados.`);
                 });
-            } else {
-                alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden');
-            }
+            } else { alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden'); }
         }
 
         function loadData(year) {
             document.getElementById('loader').classList.remove('hidden');
-            fetch(`${API_URL}?action=get_pl&year=${year}`)
-            .then(r => r.json())
-            .then(d => {
+            fetch(`${API_URL}?action=get_pl&year=${year}`).then(r => r.json()).then(d => {
                 currentData = d || [];
                 document.getElementById('db-status').innerText = `Registros: ${currentData.length}`;
                 renderList();
                 document.getElementById('loader').classList.add('hidden');
-            })
-            .catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
+            }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
         }
 
-        // --- RENDERIZADO GESTION ---
+        // --- RENDER GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -296,8 +260,6 @@
             const filter = sel.value;
             const container = document.getElementById('pl-list');
             container.innerHTML = "";
-            
-            // Agrupar
             const groups = {};
             currentData.forEach(i => {
                 if(filter !== 'TODOS' && i.destino !== filter) return;
@@ -305,14 +267,11 @@
                 if(!groups[i.nroExpo]) groups[i.nroExpo] = { id: i.nroExpo, dest: i.destino, total: 0 };
                 groups[i.nroExpo].total += i.precioTotal;
             });
-
-            // Card Resumen
             const sumCard = document.createElement('div');
             sumCard.className = "expo-card bg-blue-50 p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 flex justify-between items-center";
             sumCard.innerHTML = `<div class="font-bold text-blue-900"><i class="fa-solid fa-globe mr-2"></i>RESUMEN ${filter}</div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;
             sumCard.onclick = () => renderView(filter, null);
             container.appendChild(sumCard);
-
             Object.values(groups).forEach(g => {
                 const div = document.createElement('div');
                 div.className = "expo-card bg-white p-3 rounded border border-gray-100 cursor-pointer mb-1";
@@ -329,7 +288,6 @@
         function renderView(destFilter, expoId) {
             let data = currentData;
             if(destFilter !== 'TODOS') data = data.filter(i => i.destino === destFilter);
-            
             if(expoId) {
                 data = data.filter(i => i.nroExpo === expoId);
                 document.getElementById('dash-title').innerText = `Operación: ${expoId}`;
@@ -340,52 +298,35 @@
                 document.getElementById('dash-sub').innerText = "Acumulado " + currentYear;
                 document.getElementById('title-bar').innerText = "Top 5 Productos";
             }
-
-            viewData = data; // Para tabla y descarga
-
-            // KPIs
+            viewData = data;
             let tUSD = 0, tKG = 0;
             const byType = {}, byTypeKg = {}, byItem = {}, byItemKg = {};
-
             data.forEach(i => {
-                tUSD += i.precioTotal;
-                tKG += i.kgNeto;
-                
+                tUSD += i.precioTotal; tKG += i.kgNeto;
                 let type = i.tipo || "Otros";
-                byType[type] = (byType[type]||0) + i.precioTotal;
-                byTypeKg[type] = (byTypeKg[type]||0) + i.kgNeto;
-
+                byType[type] = (byType[type]||0) + i.precioTotal; byTypeKg[type] = (byTypeKg[type]||0) + i.kgNeto;
                 let key = expoId ? (i.desc || i.sku) : cleanName(i.desc);
-                byItem[key] = (byItem[key]||0) + i.precioTotal;
-                byItemKg[key] = (byItemKg[key]||0) + i.kgNeto;
+                byItem[key] = (byItem[key]||0) + i.precioTotal; byItemKg[key] = (byItemKg[key]||0) + i.kgNeto;
             });
-
             document.getElementById('kpi-usd').innerText = `$ ${tUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('kpi-items').innerText = expoId ? data.length : new Set(data.map(x=>x.nroExpo)).size;
-
             renderTable();
-            renderCharts(byType, byItem, byTypeKg, byItemKg);
+            renderMgmtCharts(byType, byItem, byTypeKg, byItemKg);
         }
 
-        function renderCharts(bt, bi, btk, bik) {
+        function renderMgmtCharts(bt, bi, btk, bik) {
             [activeChartType, activeChartBar, activeChartTypeKg, activeChartBarKg].forEach(c => { if(c) c.destroy(); });
-            
             const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 9} } } } };
             const barOpt = { ...commonOpt, plugins: { legend: { display: false } }, indexAxis: 'y' };
-
-            // USD
             activeChartType = new Chart(document.getElementById('chartType'), { type: 'doughnut', data: { labels: Object.keys(bt), datasets: [{ data: Object.values(bt), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
             const topI = Object.entries(bi).sort((a,b)=>b[1]-a[1]).slice(0,5);
             activeChartBar = new Chart(document.getElementById('chartBar'), { type: 'bar', data: { labels: topI.map(x=>x[0].substring(0,20)), datasets: [{ data: topI.map(x=>x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] }, options: barOpt });
-
-            // KG
             activeChartTypeKg = new Chart(document.getElementById('chartTypeKg'), { type: 'doughnut', data: { labels: Object.keys(btk), datasets: [{ data: Object.values(btk), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
             const topIK = Object.entries(bik).sort((a,b)=>b[1]-a[1]).slice(0,5);
             activeChartBarKg = new Chart(document.getElementById('chartBarKg'), { type: 'bar', data: { labels: topIK.map(x=>x[0].substring(0,20)), datasets: [{ data: topIK.map(x=>x[1]), backgroundColor: '#f97316', borderRadius: 4 }] }, options: barOpt });
         }
 
-        // --- TABLA ORDENAR ---
         function sortT(col) {
             sortDir *= -1;
             viewData.sort((a,b) => {
@@ -401,81 +342,52 @@
             const tb = document.getElementById('pl-table');
             tb.innerHTML = "";
             viewData.slice(0, 100).forEach(i => {
-                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition">
-                    <td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td>
-                    <td class="p-2 font-mono text-blue-900">${i.sku}</td>
-                    <td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td>
-                    <td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td>
-                    <td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td>
-                    <td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td>
-                </tr>`;
+                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition"><td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td><td class="p-2 font-mono text-blue-900">${i.sku}</td><td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td><td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td><td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`;
             });
         }
 
-        // --- BUSCADOR ---
         function searchSKU() {
             const t = document.getElementById('skuInput').value.toLowerCase();
             const panel = document.getElementById('search-results');
             if(t.length < 2) { panel.classList.add('hidden'); return; }
             panel.classList.remove('hidden');
-            
             const matches = currentData.filter(i => (String(i.sku).toLowerCase().includes(t)) || (String(i.desc).toLowerCase().includes(t)) || (String(i.nroExpo).toLowerCase().includes(t)));
             const b = document.getElementById('search-body'); b.innerHTML = "";
-            
             if(matches.length === 0) b.innerHTML = `<tr><td colspan="6" class="p-4 text-center">Sin resultados</td></tr>`;
             else matches.slice(0, 50).forEach(i => {
-                b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')">
-                    <td class="p-2 text-xs">${formatDate(i.fecha)}</td>
-                    <td class="p-2 text-xs font-bold">${i.nroExpo}</td>
-                    <td class="p-2 text-xs">${i.destino}</td>
-                    <td class="p-2 text-xs">${i.sku}</td>
-                    <td class="p-2 text-xs">${i.desc}</td>
-                    <td class="p-2 text-xs text-right">${i.kgNeto}</td>
-                </tr>`;
+                b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')"><td class="p-2 text-xs">${formatDate(i.fecha)}</td><td class="p-2 text-xs font-bold">${i.nroExpo}</td><td class="p-2 text-xs">${i.destino}</td><td class="p-2 text-xs">${i.sku}</td><td class="p-2 text-xs">${i.desc}</td><td class="p-2 text-xs text-right">${i.kgNeto}</td></tr>`;
             });
         }
         function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
-        function goToOp(id, dest) {
-            closeSearch();
-            const s = document.getElementById('pl-filter-dest');
-            if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS';
-            renderList();
-            renderView(s.value === 'TODOS' ? 'TODOS' : dest, id);
-        }
+        function goToOp(id, dest) { closeSearch(); const s = document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS'; renderList(); renderView(s.value === 'TODOS' ? 'TODOS' : dest, id); }
 
         // --- EVOLUCIÓN ---
+        function getMonthFromDate(dStr) {
+            if(!dStr) return -1;
+            if(dStr.includes('-')) return parseInt(dStr.split('-')[1]) - 1; 
+            if(dStr.includes('/')) return parseInt(dStr.split('/')[1]) - 1; 
+            const dObj = new Date(dStr);
+            if(!isNaN(dObj)) return dObj.getMonth();
+            return -1;
+        }
+
         function loadEvolution() {
             document.getElementById('loader').classList.remove('hidden');
-            fetch(`${API_URL}?action=get_all_years`)
-            .then(r => r.json())
-            .then(data => {
-                // data = { "2024": [...], "2025": [...], "2026": [...] }
+            fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
                 const years = Object.keys(data).sort();
-                const totalsUSD = [], totalsKG = [];
-                const dests2026 = {};
-
+                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const seriesUSD = {}, seriesKG = {}, totals = {};
                 years.forEach(y => {
-                    let u = 0, k = 0;
-                    data[y].forEach(i => { 
-                        u += i.precioTotal; k += i.kgNeto;
-                        if(y === '2026') dests2026[i.destino] = (dests2026[i.destino]||0) + i.precioTotal;
-                    });
-                    totalsUSD.push(u);
-                    totalsKG.push(k);
+                    seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0); let yUSD = 0, yKG = 0;
+                    data[y].forEach(i => { const m = getMonthFromDate(i.fecha); if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; yUSD += i.precioTotal; yKG += i.kgNeto; } });
+                    totals[y] = { usd: yUSD, kg: yKG };
                 });
-
-                // Charts Evolution
                 evoCharts.forEach(c => c.destroy());
-                
-                const ctx1 = document.getElementById('evoChartUSD');
-                evoCharts.push(new Chart(ctx1, { type: 'line', data: { labels: years, datasets: [{ label: 'USD', data: totalsUSD, borderColor: '#16a34a', tension: 0.3, fill: true, backgroundColor: '#dcfce7' }] }, options: { maintainAspectRatio: false } }));
-                
-                const ctx2 = document.getElementById('evoChartKG');
-                evoCharts.push(new Chart(ctx2, { type: 'line', data: { labels: years, datasets: [{ label: 'KG', data: totalsKG, borderColor: '#f97316', tension: 0.3, fill: true, backgroundColor: '#ffedd5' }] }, options: { maintainAspectRatio: false } }));
-
-                const ctx3 = document.getElementById('evoChartDest');
-                evoCharts.push(new Chart(ctx3, { type: 'bar', data: { labels: Object.keys(dests2026), datasets: [{ label: 'Ventas 2026 por Destino', data: Object.values(dests2026), backgroundColor: '#1e3a8a', borderRadius: 5 }] }, options: { maintainAspectRatio: false } }));
-
+                const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+                evoCharts.push(new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD')));
+                evoCharts.push(new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG')));
+                const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
+                years.forEach(y => { let am = seriesUSD[y].filter(v => v > 0).length || 1; tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right font-mono text-green-700">$${totals[y].usd.toLocaleString()}</td><td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td><td class="p-3 text-right text-gray-500">$${(totals[y].usd / am).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; });
                 document.getElementById('loader').classList.add('hidden');
             });
         }
@@ -483,28 +395,58 @@
         function downloadExcelPL() {
             if(!viewData.length) { alert("Sin datos"); return; }
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(viewData.map(i => ({
-                "Fecha": formatDate(i.fecha), "Op": i.nroExpo, "Dest": i.destino, "SKU": i.sku, "Desc": i.desc, "Tipo": i.tipo, "Kg": i.kgNeto, "USD": i.precioTotal
-            })));
+            const ws = XLSX.utils.json_to_sheet(viewData.map(i => ({ "Fecha": formatDate(i.fecha), "Op": i.nroExpo, "Dest": i.destino, "SKU": i.sku, "Desc": i.desc, "Tipo": i.tipo, "Kg": i.kgNeto, "USD": i.precioTotal })));
             XLSX.utils.book_append_sheet(wb, ws, "Reporte_" + currentYear);
             XLSX.writeFile(wb, `Reporte_Freddo_${currentYear}.xlsx`);
         }
 
-        // --- COTIZADOR INIT ---
+        // --- COTIZADOR (RESTAURADO) ---
         let rawCot = [];
         const eqOpts = {"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
         function updateEq() { const m=document.getElementById('modalidadSelect').value; const s=document.getElementById('equipoSelect'); s.innerHTML=""; eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e)}); }
         document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
-        async function loadCot() { try{const r=await fetch(API_URL);const d=await r.json();rawCot=d||[];renderCotTable();}catch(e){}}
+        
+        async function loadCot() { 
+            try{ const r=await fetch(API_URL); const d=await r.json(); rawCot=d||[]; applyFilter(); } catch(e){} 
+        }
+        
+        function applyFilter() {
+            const c=document.getElementById('filterCountry').value; 
+            filteredData=(c==="ALL")?rawCot:rawCot.filter(r=>r[2]===c);
+            let tc=0,tt=0,ct=0,st={};
+            if(filteredData.length>0){
+                filteredData.forEach(r=>{
+                    let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");
+                    let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);
+                    let t=parseFloat(r[7])||0;
+                    if(!st[k])st[k]={cs:0,ts:0,c:0}; st[k].cs+=co;st[k].ts+=t;st[k].c++; tc+=co; if(t>0){tt+=t;ct++;}
+                });
+                document.getElementById('kpiCount').innerText=filteredData.length;
+                document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";
+                document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";
+                let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';
+                document.getElementById('kpiTop').innerText=top;
+                renderCotCharts(Object.keys(st), Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)), Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)), c!=="ALL");
+            }
+            renderCotTable();
+        }
+
+        function renderCotCharts(l,c,t,isC){
+            if(chartCost)chartCost.destroy(); if(chartTime)chartTime.destroy();
+            const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+            chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isC?'#f97316':'#1e3a8a',borderRadius:4}]},options:o});
+            chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:o});
+        }
+
         function renderCotTable() {
             const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
-            rawCot.slice().reverse().slice(0,50).forEach(r=>{
+            if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{
                 let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
                 tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${d}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`;
             });
         }
 
-        window.onload = () => { switchTab('2026'); updateEq(); loadCot(); };
+        window.onload = () => { switchTab('cotizador'); updateEq(); loadCot(); };
     </script>
 </body>
 </html>
