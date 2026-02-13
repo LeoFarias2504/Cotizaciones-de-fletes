@@ -11,30 +11,15 @@
     
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
-        
-        /* Botones de Navegación */
-        .nav-btn {
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            color: #64748b;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s;
-            background: transparent;
-        }
+        .nav-btn { padding: 0.75rem 1.5rem; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; background: transparent; }
         .nav-btn:hover { color: #1e3a8a; background-color: #e2e8f0; }
         .nav-btn.active { color: #1e3a8a; border-bottom-color: #1e3a8a; background-color: #eff6ff; }
-
-        /* Tablas y Cards */
         .clickable-row { cursor: pointer; transition: background-color 0.15s; }
         .clickable-row:hover { background-color: #dbeafe !important; }
-        
         .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -49,7 +34,6 @@
                 <div class="flex items-center text-blue-900 text-2xl font-extrabold tracking-tight">
                     <i class="fa-solid fa-ship mr-3"></i>FREDDO <span class="text-blue-600 ml-1">COMEX</span>
                 </div>
-                
                 <div class="flex space-x-1 h-16 items-end">
                     <button onclick="switchTab('cotizador')" id="btn-cotizador" class="nav-btn active"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
                     <button onclick="switchTab('2026')" id="btn-2026" class="nav-btn">2026</button>
@@ -88,9 +72,17 @@
 
             <div class="w-full lg:w-2/3 space-y-6">
                 <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
-                    <span class="font-bold text-gray-700">Filtro Histórico:</span>
-                    <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Global</option></select>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-gray-700"><i class="fa-solid fa-filter mr-2"></i>Filtro Histórico:</span>
+                        <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none cursor-pointer">
+                            <option value="ALL">🌎 Global</option>
+                        </select>
+                    </div>
+                    <button onclick="downloadExcelCot()" class="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-bold px-4 py-2 rounded flex items-center transition shadow-sm border border-green-300">
+                        <i class="fa-solid fa-file-excel mr-2 text-green-600"></i> Descargar Histórico
+                    </button>
                 </div>
+
                 <div class="grid grid-cols-4 gap-4">
                     <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900 card-hover"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
                     <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600 card-hover"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
@@ -203,7 +195,7 @@
 
     <script>
         // =========================================================
-        // 🚨 URL DEL SCRIPT (NO TOCAR SI NO CAMBIA)
+        // 🚨 CONFIGURACIÓN URL
         // =========================================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
         // =========================================================
@@ -212,26 +204,19 @@
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
         let sortDir = 1;
         
-        // Variables Charts Globales
+        // Variables Charts
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
         let evoChartUSD = null, evoChartKG = null;
         let chartCost = null, chartTime = null;
 
-        // INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', () => {
             switchTab('cotizador'); 
             updateEq(); 
             loadCot(); 
         });
 
-        // --- NAVEGACIÓN ---
         function switchTab(tab) {
-            // Ocultar vistas
-            document.getElementById('view-cotizador').classList.add('hidden');
-            document.getElementById('view-gestion').classList.add('hidden');
-            document.getElementById('view-evolucion').classList.add('hidden');
-            
-            // Reset botones
+            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
             if (tab === 'cotizador') {
@@ -243,21 +228,17 @@
                 document.getElementById('btn-evolucion').classList.add('active');
                 loadEvolution();
             } else {
-                // Es un año (2026, 2025, 2024)
                 currentYear = tab;
                 document.getElementById('view-gestion').classList.remove('hidden');
                 document.getElementById('btn-' + tab).classList.add('active');
-                
-                // Actualizar Textos
                 document.getElementById('lbl-year').innerText = tab;
                 document.getElementById('lbl-year-btn').innerText = tab;
                 document.getElementById('lbl-year-modal').innerText = tab;
-                
                 loadData(tab);
             }
         }
 
-        // --- FUNCIONES GESTIÓN DE DATOS ---
+        // --- GESTIÓN DATOS ---
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
         function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
@@ -293,7 +274,7 @@
             }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
         }
 
-        // --- RENDERIZADO GESTION ---
+        // --- RENDER GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -425,14 +406,10 @@
                     data[y].forEach(i => { const m = getMonthFromDate(i.fecha); if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; yUSD += i.precioTotal; yKG += i.kgNeto; } });
                     totals[y] = { usd: yUSD, kg: yKG };
                 });
-                
                 if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
-                
                 const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-                
                 evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
                 evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
-                
                 const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
                 years.forEach(y => { let am = seriesUSD[y].filter(v => v > 0).length || 1; tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right font-mono text-green-700">$${totals[y].usd.toLocaleString()}</td><td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td><td class="p-3 text-right text-gray-500">$${(totals[y].usd / am).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; });
                 document.getElementById('loader').classList.add('hidden');
@@ -453,9 +430,18 @@
         document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
         
         async function loadCot() { 
-            try{ const r=await fetch(API_URL); const d=await r.json(); rawCot=d||[]; applyFilter(); } catch(e){} 
+            try{ const r=await fetch(API_URL); const d=await r.json(); rawCot=d||[]; populateFilter(); applyFilter(); } catch(e){} 
         }
         
+        function populateFilter() { 
+            const s = document.getElementById('filterCountry'); 
+            const cur = s.value; 
+            const c = [...new Set(rawCot.map(r => r[2]).filter(x => x))].sort(); 
+            s.innerHTML = '<option value="ALL">🌎 Global</option>'; 
+            c.forEach(x => s.innerHTML += `<option value="${x}">${x}</option>`); 
+            s.value = cur; 
+        }
+
         function applyFilter() {
             const c=document.getElementById('filterCountry').value; 
             filteredData=(c==="ALL")?rawCot:rawCot.filter(r=>r[2]===c);
@@ -490,6 +476,28 @@
                 let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
                 tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;
             });
+        }
+
+        // --- EXPORTAR EXCEL COTIZADOR ---
+        function downloadExcelCot() {
+            if(!filteredData.length){alert("Nada para exportar"); return;}
+            const filterName = document.getElementById('filterCountry').value;
+            const data = filteredData.map(r => ({
+                Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-',
+                Ref: r[1],
+                Destino: r[2],
+                Modalidad: r[3],
+                Incoterm: r[4],
+                Equipo: r[5],
+                Carrier: r[6],
+                TransitTime: r[7],
+                Flete: parseFloat(r[8])||0,
+                Gastos: parseFloat(r[9])||0,
+                Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0)
+            }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Cotizaciones");
+            XLSX.writeFile(wb, `Cotizaciones_${filterName}.xlsx`);
         }
     </script>
 </body>
