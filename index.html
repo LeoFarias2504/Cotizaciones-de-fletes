@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex</title>
+    <title>Freddo Comex - Control Tower</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -162,20 +162,60 @@
     </div>
 
     <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
-        <h2 class="text-2xl font-bold text-purple-800 mb-6">Comparativa Mensual (2024 - 2026)</h2>
+        
+        <div class="bg-white p-6 rounded-xl shadow border-t-4 border-purple-600 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Comparativa Interanual (Mismo Período)</h3>
+                    <p class="text-sm text-gray-500">Selecciona fechas para comparar el mismo periodo de tiempo año tras año.</p>
+                </div>
+                <div class="flex items-center gap-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase block">Desde</label>
+                        <input type="date" id="yoy-start" class="bg-transparent border-b border-purple-300 text-sm outline-none font-bold text-purple-800 cursor-pointer" onchange="renderYOY()">
+                    </div>
+                    <div class="text-purple-300 font-bold">-</div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-500 uppercase block">Hasta</label>
+                        <input type="date" id="yoy-end" class="bg-transparent border-b border-purple-300 text-sm outline-none font-bold text-purple-800 cursor-pointer" onchange="renderYOY()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 h-64 border rounded-xl p-2 bg-gray-50">
+                    <canvas id="yoyChart"></canvas>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border rounded overflow-hidden">
+                        <thead class="bg-purple-100 text-purple-900 font-bold text-xs uppercase">
+                            <tr>
+                                <th class="p-3">Año</th>
+                                <th class="p-3 text-right">USD (Período)</th>
+                                <th class="p-3 text-center">Operaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yoy-table-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Evolución Anual y Estacionalidad</h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500 card-hover">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3></div>
                 <div class="h-72"><canvas id="evoChartUSD"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500 card-hover">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3></div>
                 <div class="h-72"><canvas id="evoChartKG"></canvas></div>
             </div>
         </div>
         <div class="bg-white p-6 rounded-xl shadow border">
-            <h3 class="font-bold text-gray-700 mb-4">Resumen Acumulado por Año (YTD)</h3>
-            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-purple-50 text-purple-900 font-bold"><tr><th class="p-3">Año</th><th class="p-3 text-right">Total USD</th><th class="p-3 text-right">Total KG</th><th class="p-3 text-right">Promedio Mensual (USD)</th></tr></thead><tbody id="evoTableBody"></tbody></table></div>
+            <h3 class="font-bold text-gray-700 mb-4">Resumen Acumulado por Año (Total Anual)</h3>
+            <div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-gray-100 text-gray-700 font-bold uppercase text-xs"><tr><th class="p-3">Año</th><th class="p-3 text-right">Total USD</th><th class="p-3 text-right">Total KG</th><th class="p-3 text-right">Promedio Mensual (USD)</th></tr></thead><tbody id="evoTableBody"></tbody></table></div>
         </div>
     </div>
 
@@ -197,26 +237,32 @@
         // =========================================================
         // 🚨 CONFIGURACIÓN URL
         // =========================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
         // =========================================================
 
         let currentYear = '2026';
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
+        let allYearsData = {}; // Guarda datos de todos los años para el dashboard comparativo
         let sortDir = 1;
         
-        // Variables Charts
+        // Variables Charts Globales
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
-        let evoChartUSD = null, evoChartKG = null;
+        let evoChartUSD = null, evoChartKG = null, chartYOY = null;
         let chartCost = null, chartTime = null;
 
+        // INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', () => {
             switchTab('cotizador'); 
             updateEq(); 
             loadCot(); 
         });
 
+        // --- NAVEGACIÓN ---
         function switchTab(tab) {
-            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('view-cotizador').classList.add('hidden');
+            document.getElementById('view-gestion').classList.add('hidden');
+            document.getElementById('view-evolucion').classList.add('hidden');
+            
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
             if (tab === 'cotizador') {
@@ -226,7 +272,7 @@
             } else if (tab === 'evolucion') {
                 document.getElementById('view-evolucion').classList.remove('hidden');
                 document.getElementById('btn-evolucion').classList.add('active');
-                loadEvolution();
+                loadEvolution(); // Carga todos los años y dibuja gráficos
             } else {
                 currentYear = tab;
                 document.getElementById('view-gestion').classList.remove('hidden');
@@ -385,7 +431,7 @@
         function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
         function goToOp(id, dest) { closeSearch(); const s = document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS'; renderList(); renderView(s.value === 'TODOS' ? 'TODOS' : dest, id); }
 
-        // --- EVOLUCIÓN MENSUAL ---
+        // --- EVOLUCIÓN MENSUAL & YOY ---
         function getMonthFromDate(dStr) {
             if(!dStr) return -1;
             if(dStr.includes('-')) return parseInt(dStr.split('-')[1]) - 1; 
@@ -394,26 +440,138 @@
             if(!isNaN(dObj)) return dObj.getMonth();
             return -1;
         }
+        
+        // Extraer mes y dia para comparar "Períodos Exactos"
+        const toMMDD = (d) => {
+            if(!d) return '';
+            const str = String(d).trim();
+            if(str.includes('-')) {
+                const p = str.split('T')[0].split('-');
+                if(p.length >= 3) return `${p[1].padStart(2,'0')}-${p[2].substring(0,2).padStart(2,'0')}`;
+            }
+            if(str.includes('/')) {
+                const p = str.split('/');
+                if(p.length >= 3) return `${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+            }
+            return '';
+        };
 
         function loadEvolution() {
             document.getElementById('loader').classList.remove('hidden');
             fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
-                const years = Object.keys(data).sort();
-                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                const seriesUSD = {}, seriesKG = {}, totals = {};
-                years.forEach(y => {
-                    seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0); let yUSD = 0, yKG = 0;
-                    data[y].forEach(i => { const m = getMonthFromDate(i.fecha); if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; yUSD += i.precioTotal; yKG += i.kgNeto; } });
-                    totals[y] = { usd: yUSD, kg: yKG };
-                });
-                if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
-                const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-                evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
-                evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
-                const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
-                years.forEach(y => { let am = seriesUSD[y].filter(v => v > 0).length || 1; tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right font-mono text-green-700">$${totals[y].usd.toLocaleString()}</td><td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td><td class="p-3 text-right text-gray-500">$${(totals[y].usd / am).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; });
+                allYearsData = data; // Guardar global
+                
+                // 1. Configurar YOY por defecto (Desde 1 de Enero hasta Hoy)
+                const today = new Date();
+                const currentYearNum = today.getFullYear();
+                const startStr = `${currentYearNum}-01-01`;
+                const endStr = today.toISOString().split('T')[0];
+                document.getElementById('yoy-start').value = startStr;
+                document.getElementById('yoy-end').value = endStr;
+                
+                // Dibujar gráficos
+                renderYOY();
+                renderEvoCharts();
+                
                 document.getElementById('loader').classList.add('hidden');
             }).catch(e=>{console.log(e); document.getElementById('loader').classList.add('hidden');});
+        }
+
+        // FUNCION YOY (Gerencial - Mismo Periodo)
+        function renderYOY() {
+            const startVal = document.getElementById('yoy-start').value;
+            const endVal = document.getElementById('yoy-end').value;
+            if(!startVal || !endVal) return;
+
+            // Extraer solo mes y dia (MM-DD)
+            const startMMDD = startVal.substring(5, 10);
+            const endMMDD = endVal.substring(5, 10);
+
+            const years = Object.keys(allYearsData).sort();
+            const usdData = [];
+            const opsData = [];
+
+            const tb = document.getElementById('yoy-table-body');
+            tb.innerHTML = '';
+
+            years.forEach(y => {
+                let usd = 0;
+                let ops = new Set();
+                
+                allYearsData[y].forEach(i => {
+                    const itemMMDD = toMMDD(i.fecha);
+                    if(itemMMDD >= startMMDD && itemMMDD <= endMMDD) {
+                        usd += i.precioTotal;
+                        if(i.nroExpo) ops.add(i.nroExpo);
+                    }
+                });
+                
+                usdData.push(usd);
+                const opsCount = ops.size;
+                opsData.push(opsCount);
+
+                tb.innerHTML += `<tr class="bg-white border-b hover:bg-purple-50 transition"><td class="p-3 font-bold text-gray-700">${y}</td><td class="p-3 text-right text-green-700 font-bold">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-center font-bold text-blue-900">${opsCount}</td></tr>`;
+            });
+
+            if(chartYOY) chartYOY.destroy();
+            chartYOY = new Chart(document.getElementById('yoyChart'), {
+                type: 'bar',
+                data: {
+                    labels: years,
+                    datasets: [
+                        { label: 'USD Comercializados', data: usdData, backgroundColor: '#16a34a', yAxisID: 'y', borderRadius: 4 },
+                        { label: 'Cant. Operaciones', data: opsData, backgroundColor: '#1e3a8a', yAxisID: 'y1', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { type: 'linear', position: 'left', title: {display: true, text: 'Monto USD'} },
+                        y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false}, title: {display: true, text: 'Cantidad Ops'} }
+                    },
+                    plugins: { tooltip: { mode: 'index', intersect: false } }
+                }
+            });
+        }
+
+        // FUNCION EVOLUCION GENERAL (Todos los meses)
+        function renderEvoCharts() {
+            const years = Object.keys(allYearsData).sort();
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const seriesUSD = {}, seriesKG = {}, totals = {};
+            
+            years.forEach(y => {
+                seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0); let yUSD = 0, yKG = 0;
+                allYearsData[y].forEach(i => { 
+                    const m = getMonthFromDate(i.fecha); 
+                    if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; yUSD += i.precioTotal; yKG += i.kgNeto; } 
+                });
+                totals[y] = { usd: yUSD, kg: yKG };
+            });
+            
+            if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
+            
+            const createConfig = (dataset, label) => ({ 
+                type: 'line', 
+                data: { 
+                    labels: months, 
+                    datasets: years.map((y, idx) => ({ 
+                        label: y, data: dataset[y], 
+                        borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', 
+                        backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 
+                    })) 
+                }, 
+                options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, interaction: { mode: 'index', intersect: false } } 
+            });
+            
+            evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
+            evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
+            
+            const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
+            years.forEach(y => { 
+                let am = seriesUSD[y].filter(v => v > 0).length || 1; 
+                tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right font-mono text-green-700">$${totals[y].usd.toLocaleString()}</td><td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td><td class="p-3 text-right text-gray-500">$${(totals[y].usd / am).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; 
+            });
         }
 
         function downloadExcelPL() {
@@ -478,26 +636,11 @@
             });
         }
 
-        // --- EXPORTAR EXCEL COTIZADOR ---
         function downloadExcelCot() {
             if(!filteredData.length){alert("Nada para exportar"); return;}
             const filterName = document.getElementById('filterCountry').value;
-            const data = filteredData.map(r => ({
-                Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-',
-                Ref: r[1],
-                Destino: r[2],
-                Modalidad: r[3],
-                Incoterm: r[4],
-                Equipo: r[5],
-                Carrier: r[6],
-                TransitTime: r[7],
-                Flete: parseFloat(r[8])||0,
-                Gastos: parseFloat(r[9])||0,
-                Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0)
-            }));
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Cotizaciones");
-            XLSX.writeFile(wb, `Cotizaciones_${filterName}.xlsx`);
+            const data = filteredData.map(r => ({ Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-', Ref: r[1], Destino: r[2], Modalidad: r[3], Incoterm: r[4], Equipo: r[5], Carrier: r[6], TransitTime: r[7], Flete: parseFloat(r[8])||0, Gastos: parseFloat(r[9])||0, Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0) }));
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Cotizaciones"); XLSX.writeFile(wb, `Cotizaciones_${filterName}.xlsx`);
         }
     </script>
 </body>
