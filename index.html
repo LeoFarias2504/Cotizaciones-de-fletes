@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freddo Comex - Control Tower</title>
+    <title>Freddo Comex - Tablero de Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f1f5f9; }
-        .nav-btn { padding: 0.75rem 1.5rem; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; background: transparent; cursor: pointer;}
+        .nav-btn { padding: 0.75rem 1.5rem; font-weight: 600; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; background: transparent; }
         .nav-btn:hover { color: #1e3a8a; background-color: #e2e8f0; }
         .nav-btn.active { color: #1e3a8a; border-bottom-color: #1e3a8a; background-color: #eff6ff; }
         .clickable-row { cursor: pointer; transition: background-color 0.15s; }
         .clickable-row:hover { background-color: #dbeafe !important; }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -31,7 +34,7 @@
                 <div class="flex items-center text-blue-900 text-2xl font-extrabold tracking-tight">
                     <i class="fa-solid fa-ship mr-3"></i>FREDDO <span class="text-blue-600 ml-1">COMEX</span>
                 </div>
-                <div class="flex space-x-1 h-16 items-end" id="menu-tabs">
+                <div class="flex space-x-1 h-16 items-end">
                     <button onclick="switchTab('cotizador')" id="btn-cotizador" class="nav-btn active"><i class="fa-solid fa-calculator mr-2"></i>Cotizador</button>
                     <button onclick="switchTab('2026')" id="btn-2026" class="nav-btn">2026</button>
                     <button onclick="switchTab('2025')" id="btn-2025" class="nav-btn">2025</button>
@@ -42,16 +45,13 @@
         </div>
     </nav>
 
-    <div id="error-banner" class="hidden bg-red-600 text-white text-center p-3 font-bold shadow-lg z-50 sticky top-16">
-        ⚠️ Error al procesar los datos. Revisa la consola o actualiza la página.
-    </div>
-
     <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex flex-col lg:flex-row gap-6">
+            
             <div class="w-full lg:w-1/3 bg-white rounded-xl shadow border-t-4 border-blue-600 p-6 h-fit">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización</h2>
                 <form id="comexForm" class="space-y-4">
-                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required></div>
+                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required placeholder="Ej: EXP-001"></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label><select name="modalidad" id="modalidadSelect" onchange="updateEq()" class="w-full border p-2 rounded text-sm bg-white"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
@@ -66,26 +66,40 @@
                         <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center bg-white" required></div>
                         <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center bg-white" required></div>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded transition shadow-lg hover:bg-blue-800">GUARDAR</button>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 rounded transition shadow-lg">GUARDAR</button>
                 </form>
             </div>
+
             <div class="w-full lg:w-2/3 space-y-6">
                 <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
-                    <div class="flex items-center gap-3"><span class="font-bold text-gray-700">Filtro Histórico:</span><select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none"><option value="ALL">🌎 Global</option></select></div>
-                    <button onclick="downloadExcelCot()" class="text-green-700 font-bold text-sm bg-green-50 px-4 py-2 rounded border border-green-300 hover:bg-green-100">Descargar Histórico</button>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-gray-700"><i class="fa-solid fa-filter mr-2"></i>Filtro Histórico:</span>
+                        <select id="filterCountry" onchange="applyFilter()" class="border bg-orange-50 text-orange-900 font-bold rounded px-3 py-1 text-sm outline-none cursor-pointer">
+                            <option value="ALL">🌎 Global</option>
+                        </select>
+                    </div>
+                    <button onclick="downloadExcelCot()" class="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-bold px-4 py-2 rounded flex items-center transition shadow-sm border border-green-300">
+                        <i class="fa-solid fa-file-excel mr-2 text-green-600"></i> Descargar Histórico
+                    </button>
                 </div>
+
                 <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600"><p class="text-xs text-gray-400 font-bold">TT AVG</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500"><p class="text-xs text-gray-400 font-bold">TOP</p><p id="kpiTop" class="text-xs font-bold text-gray-800 mt-2 truncate">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-blue-900 card-hover"><p class="text-xs text-gray-400 font-bold">OPS</p><p id="kpiCount" class="text-xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-green-600 card-hover"><p class="text-xs text-gray-400 font-bold">COSTO AVG</p><p id="kpiAvgCost" class="text-xl font-bold text-green-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-indigo-600 card-hover"><p class="text-xs text-gray-400 font-bold">TT AVG</p><p id="kpiAvgTime" class="text-xl font-bold text-indigo-600">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow text-center border-b-4 border-gray-500 card-hover"><p class="text-xs text-gray-400 font-bold">TOP</p><p id="kpiTop" class="text-xs font-bold text-gray-800 mt-2 truncate">-</p></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 h-56">
-                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="costChart"></canvas></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><canvas id="timeChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><canvas id="costChart"></canvas></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><canvas id="timeChart"></canvas></div>
                 </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
-                    <div class="overflow-x-auto max-h-64"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-500 bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead><tbody id="historyTableBody"></tbody></table></div>
+                    <div class="overflow-x-auto max-h-64">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-500 bg-gray-100 sticky top-0"><tr><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Ref</th><th class="px-4 py-2">Destino</th><th class="px-4 py-2">Carrier</th><th class="px-4 py-2 text-right">Total</th></tr></thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -94,55 +108,45 @@
     <div id="view-gestion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
         <div class="flex justify-between items-center mb-6">
             <div><h2 class="text-2xl font-bold text-gray-800">Gestión <span id="lbl-year" class="text-blue-600">2026</span></h2><p class="text-sm text-gray-500">Panel Operativo y Packing List</p></div>
-            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow transition"><i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)</button>
+            <button onclick="openImportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition"><i class="fa-solid fa-file-import mr-2"></i> Importar Excel (<span id="lbl-year-btn">2026</span>)</button>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow border mb-4 flex flex-col md:flex-row gap-4 items-center">
-            <div class="flex items-center gap-3 w-full md:w-1/2 bg-gray-50 px-3 py-2 rounded-lg border focus-within:border-blue-500 focus-within:bg-white transition">
+        <div class="bg-white p-4 rounded-xl shadow border mb-4 flex gap-4 items-center">
+            <div class="flex items-center gap-3 w-1/2 bg-gray-50 px-3 py-2 rounded-lg border focus-within:border-blue-500 focus-within:bg-white transition">
                 <i class="fa-solid fa-search text-gray-400"></i>
                 <input type="text" id="skuInput" onkeyup="searchSKU()" placeholder="Buscar Operación, SKU, Descripción..." class="w-full bg-transparent outline-none text-sm">
-            </div>
-            <div class="flex items-center gap-2 w-full md:w-auto">
-                <select id="skuSort" onchange="searchSKU()" class="border rounded px-3 py-2 text-sm bg-white outline-none cursor-pointer hover:border-gray-400">
-                    <option value="newest">📅 Más Recientes</option>
-                    <option value="oldest">📅 Más Viejos</option>
-                    <option value="expensive">💰 Mayor Valor</option>
-                </select>
             </div>
             <div class="text-xs text-gray-400 ml-auto" id="db-status">Cargando...</div>
         </div>
 
         <div id="search-results" class="hidden bg-white rounded-xl shadow-xl border border-blue-200 mb-6 overflow-hidden relative z-20 max-h-80 overflow-y-auto">
             <div class="bg-blue-50 px-4 py-2 border-b flex justify-between sticky top-0"><h3 class="font-bold text-blue-900 text-sm">Resultados</h3><button onclick="closeSearch()"><i class="fa-solid fa-times text-gray-400"></i></button></div>
-            <table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100"><tr><th class="p-2">Fecha</th><th class="p-2">Op</th><th class="p-2">Destino</th><th class="p-2">SKU</th><th class="p-2">Desc</th><th class="p-2 text-right">Kg</th><th class="p-2 text-right">USD</th></tr></thead><tbody id="search-body"></tbody></table>
+            <table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100"><tr><th class="p-2">Fecha</th><th class="p-2">Op</th><th class="p-2">Destino</th><th class="p-2">SKU</th><th class="p-2">Desc</th><th class="p-2 text-right">Kg</th></tr></thead><tbody id="search-body"></tbody></table>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
             <div class="col-span-12 md:col-span-4 bg-white rounded-xl shadow h-[850px] flex flex-col border">
-                <div class="p-4 border-b bg-gray-50"><label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label><select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold outline-none"><option value="TODOS">Todos</option></select></div>
+                <div class="p-4 border-b bg-gray-50"><label class="text-xs font-bold text-gray-500">FILTRAR DESTINO</label><select id="pl-filter-dest" onchange="renderList()" class="w-full mt-1 border rounded p-2 text-sm font-bold text-gray-700 outline-none"><option value="TODOS">Todos</option></select></div>
                 <div id="pl-list" class="flex-1 overflow-y-auto p-2 space-y-1 bg-gray-50"></div>
             </div>
             <div class="col-span-12 md:col-span-8 space-y-6">
                 <div class="flex justify-between items-center border-b pb-2">
                     <div><h3 id="dash-title" class="text-xl font-bold text-[#003366]">Resumen</h3><span id="dash-sub" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-bold">General</span></div>
-                    <button onclick="downloadExcelPL()" class="text-green-700 text-sm font-bold border border-green-200 px-3 py-1 rounded hover:bg-green-50"><i class="fa-solid fa-file-excel mr-2"></i>Descargar Excel</button>
+                    <button onclick="downloadExcelPL()" class="text-green-700 text-sm font-bold border border-green-200 px-3 py-1 rounded hover:bg-green-50"><i class="fa-solid fa-file-excel mr-2"></i>Descargar</button>
                 </div>
-                
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
-                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600"><p class="text-xs text-gray-400 font-bold">ITEMS / OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5 (USD)</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900 card-hover"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500 card-hover"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600 card-hover"><p class="text-xs text-gray-400 font-bold">ITEMS/OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 h-64">
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
-                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
                 </div>
-
+                <div class="grid grid-cols-2 gap-4 h-64">
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border card-hover"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
+                </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
                     <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr>
                         <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('fecha')">Fecha ↕</th>
@@ -158,49 +162,43 @@
     </div>
 
     <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
+        <h2 class="text-2xl font-bold text-purple-800 mb-6">Comparativa Mensual e Interanual (YTD)</h2>
         
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-600 mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <h3 class="text-2xl font-bold text-gray-800">📊 Rendimiento Mismo Período (YTD)</h3>
-                    <p class="text-sm text-gray-500">Selecciona el rango de fechas para comparar la evolución real año tras año.</p>
-                </div>
-                <div class="flex items-center gap-3 bg-purple-50 p-3 rounded-lg border border-purple-200 shadow-sm">
-                    <div class="text-purple-800 font-bold text-sm mr-2"><i class="fa-regular fa-calendar mr-1"></i> Filtro:</div>
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block">Desde</label>
-                        <input type="date" id="yoy-start" class="bg-white border border-purple-300 rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none cursor-pointer" onchange="renderYOY()">
-                    </div>
-                    <div class="text-purple-400 font-bold">-</div>
-                    <div>
-                        <label class="text-[10px] font-bold text-gray-500 uppercase block">Hasta</label>
-                        <input type="date" id="yoy-end" class="bg-white border border-purple-300 rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none cursor-pointer" onchange="renderYOY()">
-                    </div>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div class="lg:col-span-5 overflow-x-auto">
-                    <h4 class="text-sm font-bold text-gray-500 uppercase mb-2">Período Seleccionado: <span id="yoy-range-lbl" class="text-purple-600 font-bold"></span></h4>
-                    <table class="w-full text-sm text-left border rounded shadow-sm">
-                        <thead class="bg-purple-100 text-purple-900 font-bold text-xs uppercase">
-                            <tr><th class="p-3">Año</th><th class="p-3 text-right">USD (FOB)</th><th class="p-3 text-right">Kilos</th><th class="p-3 text-center">Ops</th></tr>
-                        </thead>
-                        <tbody id="yoy-table-body"></tbody>
-                    </table>
-                </div>
-                <div class="lg:col-span-7 h-64 border rounded-xl p-2 bg-gray-50"><canvas id="yoyChart"></canvas></div>
-            </div>
-        </div>
-
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">📈 Evolución Anual Completa</h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mes a Mes (USD)</h3></div>
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500 card-hover">
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
                 <div class="h-72"><canvas id="evoChartUSD"></canvas></div>
             </div>
-            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mes a Mes (KG)</h3></div>
+            <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500 card-hover">
+                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
                 <div class="h-72"><canvas id="evoChartKG"></canvas></div>
+            </div>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow border">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <h3 class="font-bold text-gray-700 text-lg">Resumen Acumulado por Año (YTD)</h3>
+                
+                <div class="flex items-center gap-3 bg-purple-50 p-2 rounded-lg border border-purple-200 shadow-sm">
+                    <span class="text-xs font-bold text-purple-800 uppercase">Filtrar Período:</span>
+                    <input type="date" id="ytd-start" class="text-sm border border-purple-200 rounded px-2 py-1 outline-none text-purple-900" onchange="filterYTD()">
+                    <span class="text-xs font-bold text-purple-400">al</span>
+                    <input type="date" id="ytd-end" class="text-sm border border-purple-200 rounded px-2 py-1 outline-none text-purple-900" onchange="filterYTD()">
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-purple-50 text-purple-900 font-bold">
+                        <tr>
+                            <th class="p-3">Año</th>
+                            <th class="p-3 text-right">Total USD</th>
+                            <th class="p-3 text-right">Total KG</th>
+                            <th class="p-3 text-center">Operaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="evoTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -215,123 +213,86 @@
     </div>
 
     <div id="loader" class="hidden fixed inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-50">
-        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i><p class="font-bold text-gray-700 text-lg mt-2" id="loader-msg">Procesando...</p>
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
+        <p class="font-bold text-gray-700 text-lg">Procesando...</p>
     </div>
 
     <script>
         // =========================================================
-        // 🚨 CONFIGURACIÓN URL EXACTA
+        // 🚨 CONFIGURACIÓN URL (NO TOCAR SI NO CAMBIA)
         // =========================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
         // =========================================================
 
         let currentYear = '2026';
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
-        let allYearsData = {}; 
         let sortDir = 1;
         
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
-        let evoChartUSD = null, evoChartKG = null, chartYOY = null;
+        let evoChartUSD = null, evoChartKG = null;
         let chartCost = null, chartTime = null;
-
-        window.addEventListener('load', () => {
-            switchTab('cotizador'); 
-            updateEq(); 
-            loadCot(); 
-        });
-
-        function showLoader(msg) { document.getElementById('loader-msg').innerText = msg || "Procesando..."; document.getElementById('loader').classList.remove('hidden'); }
-        function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
+        
+        // NUEVA VARIABLE GLOBAL PARA EL FILTRO YTD
+        let allYearsData = {};
 
         function switchTab(tab) {
-            try {
-                ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-                if (tab === 'cotizador') {
-                    document.getElementById('view-cotizador').classList.remove('hidden');
-                    document.getElementById('btn-cotizador').classList.add('active');
-                    if(rawCot.length > 0) applyFilter();
-                } else if (tab === 'evolucion') {
-                    document.getElementById('view-evolucion').classList.remove('hidden');
-                    document.getElementById('btn-evolucion').classList.add('active');
-                    loadEvolution();
-                } else {
-                    currentYear = tab;
-                    document.getElementById('view-gestion').classList.remove('hidden');
-                    document.getElementById('btn-' + tab).classList.add('active');
-                    document.getElementById('lbl-year').innerText = tab;
-                    document.getElementById('lbl-year-btn').innerText = tab;
-                    document.getElementById('lbl-year-modal').innerText = tab;
-                    loadData(tab);
-                }
-            } catch (e) {
-                console.error(e);
+            if (tab === 'cotizador') {
+                document.getElementById('view-cotizador').classList.remove('hidden');
+                document.getElementById('btn-cotizador').classList.add('active');
+                if(rawCot.length > 0) applyFilter();
+            } else if (tab === 'evolucion') {
+                document.getElementById('view-evolucion').classList.remove('hidden');
+                document.getElementById('btn-evolucion').classList.add('active');
+                loadEvolution();
+            } else {
+                currentYear = tab;
+                document.getElementById('view-gestion').classList.remove('hidden');
+                document.getElementById('btn-' + tab).classList.add('active');
+                document.getElementById('lbl-year').innerText = tab;
+                document.getElementById('lbl-year-btn').innerText = tab;
+                document.getElementById('lbl-year-modal').innerText = tab;
+                loadData(tab);
             }
         }
 
-        // --- PARSEO DE FECHAS SEGURO ---
-        function parseDateLocal(val) {
-            if(!val) return null;
-            let str = String(val).trim();
-            if(str.includes('/')) {
-                let p = str.split('/');
-                if(p.length === 3) return new Date(p[2], parseInt(p[1])-1, p[0]);
-            }
-            if(str.includes('-')) {
-                let p = str.split('T')[0].split('-');
-                if(p.length === 3) return new Date(p[0], parseInt(p[1])-1, p[2]);
-            }
-            let d = new Date(val);
-            return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        }
-
-        function formatDate(dVal) {
-            let d = parseDateLocal(dVal);
-            if(!d) return '-';
-            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        }
-        
-        // Retorna número (ej: 101 para Ene 1, 1231 para Dic 31) -> Para comparar seguro.
-        function getMonthDayNumber(dVal) {
-            let d = parseDateLocal(dVal);
-            if(!d) return -1;
-            return (d.getMonth() + 1) * 100 + d.getDate(); 
-        }
-
-        // --- GESTIÓN DATOS ---
-        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; }
+        function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
-        function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) c=c.replace(/\./g,'').replace(',','.'); else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
+        function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
         
         function saveData() {
             const txt = document.getElementById('paste-area').value;
             if(!txt) return;
-            showLoader("Guardando en la Nube...");
+            document.getElementById('loader').classList.remove('hidden');
             const rows = txt.split('\n');
             const data = [];
             rows.forEach(r => {
                 const c = r.split('\t');
                 if(c.length >= 13) {
-                    data.push({ nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: c[4]?.trim()||c[3]?.trim()||'', sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13]) });
+                    let d = c[4]?.trim() || c[3]?.trim() || '';
+                    data.push({ nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: d, sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13]) });
                 }
             });
             if(data.length > 0) {
                 const fd = new FormData(); fd.append('action', 'save_pl'); fd.append('year', currentYear); fd.append('data', JSON.stringify(data));
-                fetch(API_URL, { method: 'POST', body: fd }).then(r=>r.json()).then(d=>{ hideLoader(); closeModal(); loadData(currentYear); alert(`✅ Guardado.`); }).catch(e=>{hideLoader(); alert("Error de Red.");});
-            } else { alert("Datos inválidos"); hideLoader(); }
+                fetch(API_URL, { method: 'POST', body: fd }).then(r => r.json()).then(d => {
+                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Guardado.`);
+                });
+            } else { alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden'); }
         }
 
         function loadData(year) {
-            showLoader(`Cargando Año ${year}...`);
+            document.getElementById('loader').classList.remove('hidden');
             fetch(`${API_URL}?action=get_pl&year=${year}`).then(r => r.json()).then(d => {
                 currentData = d || [];
+                document.getElementById('db-status').innerText = `Registros: ${currentData.length}`;
                 renderList();
-                hideLoader();
-            }).catch(e => { console.log(e); hideLoader(); });
+                document.getElementById('loader').classList.add('hidden');
+            }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
         }
 
-        // --- RENDER GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -349,49 +310,54 @@
                 groups[i.nroExpo].total += i.precioTotal;
             });
             const sumCard = document.createElement('div');
-            sumCard.className = "bg-white p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 hover:bg-blue-50";
-            sumCard.innerHTML = `<div class="font-bold text-blue-900">RESUMEN ${filter}</div>`;
+            sumCard.className = "bg-white p-3 rounded border border-blue-200 cursor-pointer mb-2 shadow-sm sticky top-0 flex justify-between items-center hover:bg-blue-50";
+            sumCard.innerHTML = `<div class="font-bold text-blue-900"><i class="fa-solid fa-globe mr-2"></i>RESUMEN ${filter}</div><i class="fa-solid fa-chevron-right text-blue-300"></i>`;
             sumCard.onclick = () => renderView(filter, null);
             container.appendChild(sumCard);
             Object.values(groups).forEach(g => {
                 const div = document.createElement('div');
                 div.className = "bg-white p-3 rounded border cursor-pointer mb-1 hover:bg-gray-50";
                 div.onclick = () => renderView(filter, g.id);
-                div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${g.id}</span><span class="text-green-600">$${g.total.toLocaleString()}</span></div>`;
+                div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${g.id}</span><span class="text-green-600">$${g.total.toLocaleString()}</span></div><div class="text-[10px] text-gray-400 mt-1">${g.dest}</div>`;
                 container.appendChild(div);
             });
             renderView(filter, null);
         }
 
         function cleanName(n) { return n ? n.toUpperCase().replace(/^F-\s*|^HELADO\s+|^PINTA\s+/, '').trim() : "OTROS"; }
+        function formatDate(d) { if(!d) return '-'; if(d.includes('-') && d.length===10) { const p=d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; } if(d.includes('T')) return d.split('T')[0]; return d; }
 
         function renderView(destFilter, expoId) {
             let data = currentData;
             if(destFilter !== 'TODOS') data = data.filter(i => i.destino === destFilter);
-            if(expoId) data = data.filter(i => i.nroExpo === expoId);
-            
-            document.getElementById('dash-title').innerText = expoId ? `Op: ${expoId}` : `Resumen ${destFilter}`;
+            if(expoId) {
+                data = data.filter(i => i.nroExpo === expoId);
+                document.getElementById('dash-title').innerText = `Operación: ${expoId}`;
+                document.getElementById('dash-sub').innerText = "Detalle";
+                document.getElementById('title-bar').innerText = "Top 5 SKUs";
+            } else {
+                document.getElementById('dash-title').innerText = `Resumen ${destFilter}`;
+                document.getElementById('dash-sub').innerText = "Acumulado " + currentYear;
+                document.getElementById('title-bar').innerText = "Top 5 Productos";
+            }
             viewData = data;
-            
             let tUSD = 0, tKG = 0;
-            const bt = {}, btk = {}, bp = {}, bpk = {};
-            data.forEach(i => { 
-                tUSD += (i.precioTotal||0); tKG += (i.kgNeto||0); 
-                let t = i.tipo || "Otros";
-                bt[t] = (bt[t]||0) + i.precioTotal; btk[t] = (btk[t]||0) + i.kgNeto;
-                let k = expoId ? (i.desc || i.sku) : cleanName(i.desc);
-                bp[k] = (bp[k]||0) + i.precioTotal; bpk[k] = (bpk[k]||0) + i.kgNeto;
+            const byType = {}, byTypeKg = {}, byItem = {}, byItemKg = {};
+            data.forEach(i => {
+                tUSD += i.precioTotal; tKG += i.kgNeto;
+                let type = i.tipo || "Otros";
+                byType[type] = (byType[type]||0) + i.precioTotal; byTypeKg[type] = (byTypeKg[type]||0) + i.kgNeto;
+                let key = expoId ? (i.desc || i.sku) : cleanName(i.desc);
+                byItem[key] = (byItem[key]||0) + i.precioTotal; byItemKg[key] = (byItemKg[key]||0) + i.kgNeto;
             });
-            
             document.getElementById('kpi-usd').innerText = `$ ${tUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('kpi-items').innerText = expoId ? data.length : new Set(data.map(x=>x.nroExpo)).size;
-            
             renderTable();
-            renderMgmtCharts(bt, bp, btk, bpk);
+            renderCharts(byType, byItem, byTypeKg, byItemKg);
         }
 
-        function renderMgmtCharts(bt, bi, btk, bik) {
+        function renderCharts(bt, bi, btk, bik) {
             [activeChartType, activeChartBar, activeChartTypeKg, activeChartBarKg].forEach(c => { if(c) c.destroy(); });
             const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 9} } } } };
             const barOpt = { ...commonOpt, plugins: { legend: { display: false } }, indexAxis: 'y' };
@@ -408,8 +374,7 @@
             viewData.sort((a,b) => {
                 let va = a[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
                 let vb = b[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
-                if (col === "fecha") return sortDir * ((parseDateLocal(va)?.getTime()||0) - (parseDateLocal(vb)?.getTime()||0));
-                if (col==="kg" || col==="usd") return sortDir * (va - vb);
+                if(col==="kg" || col==="usd") return sortDir * (va - vb);
                 return sortDir * String(va).localeCompare(String(vb));
             });
             renderTable();
@@ -419,149 +384,142 @@
             const tb = document.getElementById('pl-table');
             tb.innerHTML = "";
             viewData.slice(0, 100).forEach(i => {
-                tb.innerHTML += `<tr class="bg-white border-b text-xs hover:bg-gray-50"><td class="p-2">${formatDate(i.fecha)}</td><td class="p-2 font-mono">${i.sku||'-'}</td><td class="p-2 truncate max-w-xs font-bold">${i.desc||'-'}</td><td class="p-2">${i.tipo||'-'}</td><td class="p-2 text-right">${(i.kgNeto||0).toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${(i.precioTotal||0).toLocaleString()}</td></tr>`;
+                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition"><td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td><td class="p-2 font-mono text-blue-900">${i.sku}</td><td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td><td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td><td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`;
             });
         }
 
-        // EL BUSCADOR QUE FALTABA ESTA AQUI ABAJO
         function searchSKU() {
-            try {
-                const t = document.getElementById('skuInput').value.toLowerCase();
-                const sm = document.getElementById('skuSort').value; // AHORA EXISTE
-                const panel = document.getElementById('search-results');
-                if(t.length < 2) { panel.classList.add('hidden'); return; }
-                panel.classList.remove('hidden');
-                
-                let matches = currentData.filter(i => (String(i.sku).toLowerCase().includes(t)) || (String(i.desc).toLowerCase().includes(t)) || (String(i.nroExpo).toLowerCase().includes(t)));
-                
-                // ORDENAR BUSQUEDA
-                if(sm==='newest') matches.sort((a,b)=>(parseDateLocal(b.fecha)?.getTime()||0)-(parseDateLocal(a.fecha)?.getTime()||0));
-                else if(sm==='oldest') matches.sort((a,b)=>(parseDateLocal(a.fecha)?.getTime()||0)-(parseDateLocal(b.fecha)?.getTime()||0));
-                else matches.sort((a,b)=>(b.precioTotal||0)-(a.precioTotal||0));
-
-                const b = document.getElementById('search-body'); b.innerHTML = "";
-                if(matches.length === 0) b.innerHTML = `<tr><td colspan="7" class="p-4 text-center">Sin resultados</td></tr>`;
-                else matches.slice(0, 50).forEach(i => {
-                    b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')"><td class="p-2 text-xs">${formatDate(i.fecha)}</td><td class="p-2 text-xs font-bold">${i.nroExpo}</td><td class="p-2 text-xs">${i.destino}</td><td class="p-2 text-xs">${i.sku}</td><td class="p-2 text-xs">${i.desc}</td><td class="p-2 text-xs text-right">${i.kgNeto}</td><td class="p-2 text-xs text-right text-green-600 font-bold">$${i.precioTotal}</td></tr>`;
-                });
-            } catch (err) {
-                console.error(err);
-            }
+            const t = document.getElementById('skuInput').value.toLowerCase();
+            const panel = document.getElementById('search-results');
+            if(t.length < 2) { panel.classList.add('hidden'); return; }
+            panel.classList.remove('hidden');
+            const matches = currentData.filter(i => (String(i.sku).toLowerCase().includes(t)) || (String(i.desc).toLowerCase().includes(t)) || (String(i.nroExpo).toLowerCase().includes(t)));
+            const b = document.getElementById('search-body'); b.innerHTML = "";
+            if(matches.length === 0) b.innerHTML = `<tr><td colspan="6" class="p-4 text-center">Sin resultados</td></tr>`;
+            else matches.slice(0, 50).forEach(i => {
+                b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')"><td class="p-2 text-xs">${formatDate(i.fecha)}</td><td class="p-2 text-xs font-bold">${i.nroExpo}</td><td class="p-2 text-xs">${i.destino}</td><td class="p-2 text-xs">${i.sku}</td><td class="p-2 text-xs">${i.desc}</td><td class="p-2 text-xs text-right">${i.kgNeto}</td></tr>`;
+            });
         }
-        
         function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
         function goToOp(id, dest) { closeSearch(); const s = document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS'; renderList(); renderView(s.value === 'TODOS' ? 'TODOS' : dest, id); }
 
-        // --- EVOLUCIÓN YOY ---
-        function loadEvolution() {
-            showLoader("Analizando Historia...");
-            fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
-                allYearsData = data; 
-                
-                // Seteo de fechas (1 Ene hasta Hoy)
-                const today = new Date();
-                document.getElementById('yoy-start').value = `${today.getFullYear()}-01-01`;
-                document.getElementById('yoy-end').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-                
-                renderYOY();
-                renderEvoCharts();
-                hideLoader();
-            }).catch(e=>{console.log(e); hideLoader();});
+        // --- FUNCIONES NUEVAS: FILTRO DE EVOLUCION YOY ---
+
+        function getMonthFromDate(dStr) {
+            if(!dStr) return -1;
+            if(dStr.includes('-')) return parseInt(dStr.split('-')[1]) - 1; 
+            if(dStr.includes('/')) return parseInt(dStr.split('/')[1]) - 1; 
+            const dObj = new Date(dStr);
+            if(!isNaN(dObj)) return dObj.getMonth();
+            return -1;
         }
 
-        function renderYOY() {
-            try {
-                const startVal = document.getElementById('yoy-start').value; 
-                const endVal = document.getElementById('yoy-end').value;
-                if(!startVal || !endVal) return;
-
-                // Convierte "2026-02-28" a numero 228 (Mes 2, Dia 28)
-                const sParts = startVal.split('-');
-                const eParts = endVal.split('-');
-                const startMD = parseInt(sParts[1], 10) * 100 + parseInt(sParts[2], 10);
-                const endMD = parseInt(eParts[1], 10) * 100 + parseInt(eParts[2], 10);
-                
-                document.getElementById('yoy-range-lbl').innerText = `(${sParts[2]}/${sParts[1]} al ${eParts[2]}/${eParts[1]})`;
-
-                const years = Object.keys(allYearsData).sort();
-                const usdData = [], kgData = [], opsData = [];
-                const tb = document.getElementById('yoy-table-body');
-                tb.innerHTML = '';
-
-                years.forEach(y => {
-                    let usd = 0, kg = 0, ops = new Set();
-                    allYearsData[y].forEach(i => {
-                        let itemMD = getMonthDayNumber(i.fecha);
-                        // Filtro matematico perfecto
-                        if(itemMD !== -1 && itemMD >= startMD && itemMD <= endMD) {
-                            usd += (i.precioTotal||0); kg += (i.kgNeto||0);
-                            if(i.nroExpo) ops.add(i.nroExpo);
-                        }
-                    });
-                    usdData.push(usd); kgData.push(kg); opsData.push(ops.size);
-                    tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right text-green-700 font-bold">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-right text-orange-600 font-bold">${kg.toLocaleString('es-AR', {maximumFractionDigits:0})} kg</td><td class="p-3 text-center font-bold text-blue-900">${ops.size}</td></tr>`;
-                });
-
-                if(chartYOY) chartYOY.destroy();
-                chartYOY = new Chart(document.getElementById('yoyChart'), { type: 'bar', data: { labels: years, datasets: [{ label: 'USD', data: usdData, backgroundColor: '#16a34a', yAxisID: 'y' }, { label: 'Ops', data: opsData, backgroundColor: '#1e3a8a', yAxisID: 'y1' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: {drawOnChartArea: false} } } } });
-            } catch (e) { console.error("Error YOY", e); }
+        function getMMDD(dStr) {
+            if(!dStr) return -1;
+            let str = String(dStr).trim();
+            if(str.includes('-')) {
+                let p = str.split('T')[0].split('-');
+                if(p.length >= 3) return parseInt(p[1])*100 + parseInt(p[2].substring(0,2)); // ej: 228
+            }
+            if(str.includes('/')) {
+                let p = str.split('/');
+                if(p.length >= 3) return parseInt(p[1])*100 + parseInt(p[0]); // ej: 228
+            }
+            let dObj = new Date(dStr);
+            if(!isNaN(dObj)) return (dObj.getMonth()+1)*100 + dObj.getDate();
+            return -1;
         }
 
-        function renderEvoCharts() {
+        function filterYTD() {
+            const sVal = document.getElementById('ytd-start').value;
+            const eVal = document.getElementById('ytd-end').value;
+            if(!sVal || !eVal) return;
+
+            // Extraer formato MM*100 + DD para comparar facilmente sin importar el año
+            const sMD = parseInt(sVal.split('-')[1])*100 + parseInt(sVal.split('-')[2]);
+            const eMD = parseInt(eVal.split('-')[1])*100 + parseInt(eVal.split('-')[2]);
+
             const years = Object.keys(allYearsData).sort();
-            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const seriesUSD = {}, seriesKG = {};
-            
+            const tb = document.getElementById('evoTableBody');
+            tb.innerHTML = "";
+
             years.forEach(y => {
-                seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0);
-                allYearsData[y].forEach(i => { 
-                    let d = parseDateLocal(i.fecha);
-                    if(d) { let m = d.getMonth(); seriesUSD[y][m] += (i.precioTotal||0); seriesKG[y][m] += (i.kgNeto||0); }
+                let usd = 0, kg = 0;
+                let ops = new Set();
+
+                allYearsData[y].forEach(i => {
+                    let itemMD = getMMDD(i.fecha);
+                    if(itemMD !== -1 && itemMD >= sMD && itemMD <= eMD) {
+                        usd += i.precioTotal;
+                        kg += i.kgNeto;
+                        if(i.nroExpo) ops.add(i.nroExpo);
+                    }
                 });
+
+                tb.innerHTML += `<tr class="bg-white border-b hover:bg-purple-50 transition">
+                    <td class="p-3 font-bold">${y}</td>
+                    <td class="p-3 text-right font-mono text-green-700">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td>
+                    <td class="p-3 text-right font-mono">${kg.toLocaleString('es-AR', {maximumFractionDigits:0})}</td>
+                    <td class="p-3 text-center text-blue-900 font-bold">${ops.size}</td>
+                </tr>`;
             });
-            
-            if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
-            const cfg = (ds) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: ds[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false } });
-            
-            evoChartUSD = new Chart(document.getElementById('evoChartUSD'), cfg(seriesUSD));
-            evoChartKG = new Chart(document.getElementById('evoChartKG'), cfg(seriesKG));
+        }
+
+        function loadEvolution() {
+            document.getElementById('loader').classList.remove('hidden');
+            fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
+                allYearsData = data; // Lo guardamos globalmente para que filterYTD() lo pueda usar
+                
+                const years = Object.keys(data).sort();
+                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                const seriesUSD = {}, seriesKG = {};
+                
+                years.forEach(y => {
+                    seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0);
+                    data[y].forEach(i => { 
+                        const m = getMonthFromDate(i.fecha); 
+                        if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; } 
+                    });
+                });
+                
+                if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
+                const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+                evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
+                evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
+                
+                // Configurar fechas del filtro (1 Ene del año actual hasta hoy)
+                const today = new Date();
+                document.getElementById('ytd-start').value = `${today.getFullYear()}-01-01`;
+                document.getElementById('ytd-end').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                
+                // Ejecutar el filtro con las fechas por defecto para que la tabla se dibuje
+                filterYTD();
+
+                document.getElementById('loader').classList.add('hidden');
+            }).catch(e=>{console.log(e); document.getElementById('loader').classList.add('hidden');});
         }
 
         function downloadExcelPL() {
             if(!viewData.length) { alert("Sin datos"); return; }
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.json_to_sheet(viewData.map(i => ({ "Fecha": formatDate(i.fecha), "Op": i.nroExpo, "Dest": i.destino, "SKU": i.sku, "Desc": i.desc, "Tipo": i.tipo, "Kg": i.kgNeto, "USD": i.precioTotal })));
-            XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte_" + currentYear);
             XLSX.writeFile(wb, `Reporte_Freddo_${currentYear}.xlsx`);
         }
 
-        // --- COTIZADOR ---
+        // --- COTIZADOR INIT ---
         const eqOpts = {"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
         function updateEq() { const m=document.getElementById('modalidadSelect').value; const s=document.getElementById('equipoSelect'); s.innerHTML=""; eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e)}); }
-        document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Cotización Guardada');loadCot();});});
-        
-        async function loadCot() { try{ const r=await fetch(API_URL); const d=await r.json(); rawCot=d||[]; populateFilter(); applyFilter(); } catch(e){} }
-        function populateFilter() { const s=document.getElementById('filterCountry'); const cur=s.value; const c=[...new Set(rawCot.map(r=>r[2]).filter(x=>x))].sort(); s.innerHTML='<option value="ALL">🌎 Global</option>'; c.forEach(x=>s.innerHTML+=`<option value="${x}">${x}</option>`); s.value=cur; }
-        
+        document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
+        async function loadCot() { try{const r=await fetch(API_URL);const d=await r.json();rawCot=d||[];applyFilter();}catch(e){}}
         function applyFilter() {
-            const c=document.getElementById('filterCountry').value; filteredData=(c==="ALL")?rawCot:rawCot.filter(r=>r[2]===c);
-            let tc=0,tt=0,ct=0,st={};
-            if(filteredData.length>0){
-                filteredData.forEach(r=>{ let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D"); let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0); let t=parseFloat(r[7])||0; if(!st[k])st[k]={cs:0,ts:0,c:0}; st[k].cs+=co;st[k].ts+=t;st[k].c++; tc+=co; if(t>0){tt+=t;ct++;} });
-                document.getElementById('kpiCount').innerText=filteredData.length; document.getElementById('kpiAvgCost').innerText=`$${(tc/filteredData.length).toFixed(0)}`; document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";
-                document.getElementById('kpiTop').innerText=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';
-                if(chartCost)chartCost.destroy(); if(chartTime)chartTime.destroy();
-                chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:Object.keys(st),datasets:[{label:'USD',data:Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)),backgroundColor:'#1e3a8a'}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-                chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:Object.keys(st),datasets:[{label:'Días',data:Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)),borderColor:'#4f46e5'}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}}}});
-            }
             const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
-            if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{ tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="p-2">${r[0]?new Date(r[0]).toLocaleDateString():'-'}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`; });
+            rawCot.slice().reverse().slice(0,50).forEach(r=>{
+                let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
+                tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${d}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`;
+            });
         }
-
-        function downloadExcelCot() {
-            if(!filteredData.length){alert("Vacío"); return;}
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filteredData.map(r => ({ Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-', Ref: r[1], Destino: r[2], Modalidad: r[3], Incoterm: r[4], Equipo: r[5], Carrier: r[6], TT: r[7], Flete: r[8], Gastos: r[9], Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0) }))), "Cot"); XLSX.writeFile(wb, `Cotizaciones.xlsx`);
-        }
+        function downloadExcelCot() {} // Placeholder para no romper
     </script>
 </body>
 </html>
