@@ -24,6 +24,31 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Filtro de meses - estilos */
+        .month-btn {
+            padding: 0.3rem 0.55rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .month-btn:hover { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+        .month-btn.in-range { background: #ede9fe; border-color: #a78bfa; color: #6d28d9; }
+        .month-btn.selected-start, .month-btn.selected-end { background: #7c3aed; border-color: #7c3aed; color: white; }
+        .month-btn.selected-start { border-radius: 6px 6px 6px 6px; }
+        .period-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: #f5f3ff; border: 1px solid #c4b5fd; color: #6d28d9; border-radius: 999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; }
+        .sort-th { cursor: pointer; user-select: none; white-space: nowrap; }
+        .sort-th:hover { background-color: #dbeafe !important; color: #1e3a8a; }
+        .sort-th.active-asc { background-color: #eff6ff !important; color: #1e3a8a; }
+        .sort-th.active-desc { background-color: #eff6ff !important; color: #1e3a8a; }
+        .sort-icon { display: inline-block; margin-left: 4px; opacity: 0.35; font-size: 0.65rem; }
+        .sort-th.active-asc .sort-icon, .sort-th.active-desc .sort-icon { opacity: 1; color: #2563eb; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800">
@@ -120,8 +145,26 @@
         </div>
 
         <div id="search-results" class="hidden bg-white rounded-xl shadow-xl border border-blue-200 mb-6 overflow-hidden relative z-20 max-h-80 overflow-y-auto">
-            <div class="bg-blue-50 px-4 py-2 border-b flex justify-between sticky top-0"><h3 class="font-bold text-blue-900 text-sm">Resultados</h3><button onclick="closeSearch()"><i class="fa-solid fa-times text-gray-400"></i></button></div>
-            <table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100"><tr><th class="p-2">Fecha</th><th class="p-2">Op</th><th class="p-2">Destino</th><th class="p-2">SKU</th><th class="p-2">Desc</th><th class="p-2 text-right">Kg</th></tr></thead><tbody id="search-body"></tbody></table>
+            <div class="bg-blue-50 px-4 py-2 border-b flex justify-between sticky top-0 z-10">
+                <h3 class="font-bold text-blue-900 text-sm flex items-center gap-2">
+                    Resultados
+                    <span class="text-xs text-blue-400 font-normal">— clic en columna para ordenar</span>
+                </h3>
+                <button onclick="closeSearch()"><i class="fa-solid fa-times text-gray-400"></i></button>
+            </div>
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-gray-600 bg-gray-100 sticky top-[37px]" id="search-thead">
+                    <tr>
+                        <th class="p-2 sort-th" id="srth-fecha" onclick="sortSearch('fecha')">Fecha <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="srth-nroExpo" onclick="sortSearch('nroExpo')">Op <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="srth-destino" onclick="sortSearch('destino')">Destino <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="srth-sku" onclick="sortSearch('sku')">SKU <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="srth-desc" onclick="sortSearch('desc')">Desc <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th text-right" id="srth-kgNeto" onclick="sortSearch('kgNeto')">Kg <span class="sort-icon">↕</span></th>
+                    </tr>
+                </thead>
+                <tbody id="search-body"></tbody>
+            </table>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
@@ -149,44 +192,93 @@
                 </div>
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
                     <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr>
-                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('fecha')">Fecha ↕</th>
-                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('sku')">SKU ↕</th>
-                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('desc')">Desc ↕</th>
+                        <th class="p-2 sort-th" id="plth-fecha" onclick="sortT('fecha')">Fecha <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="plth-sku" onclick="sortT('sku')">SKU <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th" id="plth-desc" onclick="sortT('desc')">Desc <span class="sort-icon">↕</span></th>
                         <th class="p-2">Tipo</th>
-                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('kg')">Kg ↕</th>
-                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('usd')">USD ↕</th>
+                        <th class="p-2 sort-th text-right" id="plth-kg" onclick="sortT('kg')">Kg <span class="sort-icon">↕</span></th>
+                        <th class="p-2 sort-th text-right" id="plth-usd" onclick="sortT('usd')">USD <span class="sort-icon">↕</span></th>
                     </tr></thead><tbody id="pl-table"></tbody></table></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- PESTAÑA EVOLUCIÓN - CON FILTRO DE PERÍODOS                  -->
+    <!-- ============================================================ -->
     <div id="view-evolucion" class="hidden p-6 max-w-screen-2xl mx-auto fade-in">
-        <h2 class="text-2xl font-bold text-purple-800 mb-6">Comparativa Mensual e Interanual (YTD)</h2>
-        
+
+        <!-- Header -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-purple-800">Comparativa Mensual (2024 - 2026)</h2>
+                <p class="text-sm text-gray-500 mt-1">Seleccioná un rango de meses para comparar entre años</p>
+            </div>
+            <!-- Badge del período activo -->
+            <div id="evo-period-badge" class="period-badge hidden">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span id="evo-period-text"></span>
+                <button onclick="clearPeriodFilter()" class="ml-1 text-purple-400 hover:text-purple-700" title="Limpiar filtro">
+                    <i class="fa-solid fa-times-circle"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Panel de filtro de meses -->
+        <div class="bg-white rounded-xl shadow border border-purple-100 p-5 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div class="flex items-center gap-2 text-sm font-bold text-purple-800 shrink-0">
+                    <i class="fa-solid fa-sliders"></i>
+                    Filtrar período:
+                </div>
+                <!-- Botones de meses -->
+                <div class="flex flex-wrap gap-2" id="month-buttons">
+                    <!-- Se generan por JS -->
+                </div>
+                <!-- Accesos rápidos -->
+                <div class="flex flex-wrap gap-2 sm:ml-auto shrink-0">
+                    <span class="text-xs text-gray-400 self-center font-semibold">Rápidos:</span>
+                    <button onclick="setQuickPeriod(0,2)" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold px-2 py-1 rounded transition">Q1</button>
+                    <button onclick="setQuickPeriod(3,5)" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold px-2 py-1 rounded transition">Q2</button>
+                    <button onclick="setQuickPeriod(6,8)" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold px-2 py-1 rounded transition">Q3</button>
+                    <button onclick="setQuickPeriod(9,11)" class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold px-2 py-1 rounded transition">Q4</button>
+                    <button onclick="setQuickPeriod(0,5)" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-2 py-1 rounded transition">H1</button>
+                    <button onclick="setQuickPeriod(6,11)" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-2 py-1 rounded transition">H2</button>
+                    <button onclick="clearPeriodFilter()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 font-bold px-2 py-1 rounded transition"><i class="fa-solid fa-rotate-left mr-1"></i>Todo</button>
+                </div>
+            </div>
+            <!-- Instrucción de uso -->
+            <p id="evo-filter-hint" class="text-xs text-gray-400 mt-3 italic">
+                <i class="fa-solid fa-info-circle mr-1"></i>
+                Hacé clic en un mes para seleccionar el inicio del período, luego clic en otro para definir el fin.
+            </p>
+        </div>
+
+        <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500 card-hover">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700">Ventas Mensuales (USD)</h3>
+                    <div class="text-xs text-gray-400" id="evo-chart-label-usd">Comparativa Anual</div>
+                </div>
                 <div class="h-72"><canvas id="evoChartUSD"></canvas></div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500 card-hover">
-                <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3><div class="text-xs text-gray-400">Comparativa Anual</div></div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700">Volumen Mensual (KG)</h3>
+                    <div class="text-xs text-gray-400" id="evo-chart-label-kg">Comparativa Anual</div>
+                </div>
                 <div class="h-72"><canvas id="evoChartKG"></canvas></div>
             </div>
         </div>
-        
+
+        <!-- Tabla resumen -->
         <div class="bg-white p-6 rounded-xl shadow border">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                <h3 class="font-bold text-gray-700 text-lg">Resumen Acumulado por Año (YTD)</h3>
-                
-                <div class="flex items-center gap-3 bg-purple-50 p-2 rounded-lg border border-purple-200 shadow-sm">
-                    <span class="text-xs font-bold text-purple-800 uppercase">Filtrar Período:</span>
-                    <input type="date" id="ytd-start" class="text-sm border border-purple-200 rounded px-2 py-1 outline-none text-purple-900" onchange="filterYTD()">
-                    <span class="text-xs font-bold text-purple-400">al</span>
-                    <input type="date" id="ytd-end" class="text-sm border border-purple-200 rounded px-2 py-1 outline-none text-purple-900" onchange="filterYTD()">
-                </div>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-gray-700">Resumen Acumulado por Año</h3>
+                <span id="evo-table-period" class="text-xs bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full">YTD Completo</span>
             </div>
-            
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="bg-purple-50 text-purple-900 font-bold">
@@ -194,7 +286,8 @@
                             <th class="p-3">Año</th>
                             <th class="p-3 text-right">Total USD</th>
                             <th class="p-3 text-right">Total KG</th>
-                            <th class="p-3 text-center">Operaciones</th>
+                            <th class="p-3 text-right">Meses con datos</th>
+                            <th class="p-3 text-right">Promedio Mensual (USD)</th>
                         </tr>
                     </thead>
                     <tbody id="evoTableBody"></tbody>
@@ -219,22 +312,36 @@
 
     <script>
         // =========================================================
-        // 🚨 CONFIGURACIÓN URL (NO TOCAR SI NO CAMBIA)
+        // 🚨 CONFIGURACIÓN URL
         // =========================================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbzSNd1a7uNIVV3YZYC7j3735Jo-H_qVgjGJ6kgeSe689vv5BRfSdoWSYmMnfWoVx3OoHQ/exec';
         // =========================================================
 
         let currentYear = '2026';
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
-        let sortDir = 1;
         
+        // Variables Charts
         let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
         let evoChartUSD = null, evoChartKG = null;
         let chartCost = null, chartTime = null;
-        
-        // NUEVA VARIABLE GLOBAL PARA EL FILTRO YTD
-        let allYearsData = {};
 
+        // =========================================================
+        // ESTADO DEL FILTRO DE MESES (Evolución)
+        // =========================================================
+        const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+        let evoFilterStart = null;   // índice 0–11, null = sin filtro
+        let evoFilterEnd   = null;   // índice 0–11, null = sin filtro
+        let evoClickPhase  = 0;      // 0 = esperando inicio, 1 = esperando fin
+        let allYearsData   = null;   // cache de los datos cargados
+
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('cotizador'); 
+            updateEq(); 
+            loadCot();
+            buildMonthButtons();
+        });
+
+        // --- NAV ---
         function switchTab(tab) {
             ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -258,6 +365,7 @@
             }
         }
 
+        // --- GESTIÓN DATOS ---
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; document.getElementById('paste-area').focus(); }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
         function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) { if(c.lastIndexOf(',') > c.lastIndexOf('.')) c=c.replace(/\./g,'').replace(',','.'); else c=c.replace(/,/g,''); } else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
@@ -278,7 +386,7 @@
             if(data.length > 0) {
                 const fd = new FormData(); fd.append('action', 'save_pl'); fd.append('year', currentYear); fd.append('data', JSON.stringify(data));
                 fetch(API_URL, { method: 'POST', body: fd }).then(r => r.json()).then(d => {
-                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Guardado.`);
+                    document.getElementById('loader').classList.add('hidden'); closeModal(); loadData(currentYear); alert(`✅ Guardado en ${currentYear}`);
                 });
             } else { alert("Datos inválidos"); document.getElementById('loader').classList.add('hidden'); }
         }
@@ -293,6 +401,7 @@
             }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
         }
 
+        // --- RENDER GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -316,7 +425,7 @@
             container.appendChild(sumCard);
             Object.values(groups).forEach(g => {
                 const div = document.createElement('div');
-                div.className = "bg-white p-3 rounded border cursor-pointer mb-1 hover:bg-gray-50";
+                div.className = "bg-white p-3 rounded border border-gray-200 cursor-pointer mb-1 hover:bg-gray-50";
                 div.onclick = () => renderView(filter, g.id);
                 div.innerHTML = `<div class="flex justify-between font-bold text-xs text-gray-700"><span>${g.id}</span><span class="text-green-600">$${g.total.toLocaleString()}</span></div><div class="text-[10px] text-gray-400 mt-1">${g.dest}</div>`;
                 container.appendChild(div);
@@ -354,10 +463,10 @@
             document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
             document.getElementById('kpi-items').innerText = expoId ? data.length : new Set(data.map(x=>x.nroExpo)).size;
             renderTable();
-            renderCharts(byType, byItem, byTypeKg, byItemKg);
+            renderMgmtCharts(byType, byItem, byTypeKg, byItemKg);
         }
 
-        function renderCharts(bt, bi, btk, bik) {
+        function renderMgmtCharts(bt, bi, btk, bik) {
             [activeChartType, activeChartBar, activeChartTypeKg, activeChartBarKg].forEach(c => { if(c) c.destroy(); });
             const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 9} } } } };
             const barOpt = { ...commonOpt, plugins: { legend: { display: false } }, indexAxis: 'y' };
@@ -369,41 +478,122 @@
             activeChartBarKg = new Chart(document.getElementById('chartBarKg'), { type: 'bar', data: { labels: topIK.map(x=>x[0].substring(0,20)), datasets: [{ data: topIK.map(x=>x[1]), backgroundColor: '#f97316', borderRadius: 4 }] }, options: barOpt });
         }
 
-        function sortT(col) {
-            sortDir *= -1;
-            viewData.sort((a,b) => {
-                let va = a[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
-                let vb = b[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
-                if(col==="kg" || col==="usd") return sortDir * (va - vb);
-                return sortDir * String(va).localeCompare(String(vb));
-            });
-            renderTable();
-        }
+        // --- estado de sort ---
+        let plSortCol = null, plSortDir = 1;
+        let srSortCol = null, srSortDir = 1;
+        let searchMatches = [];   // cache de resultados del buscador
 
         function renderTable() {
             const tb = document.getElementById('pl-table');
             tb.innerHTML = "";
             viewData.slice(0, 100).forEach(i => {
-                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition"><td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td><td class="p-2 font-mono text-blue-900">${i.sku}</td><td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td><td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td><td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td></tr>`;
+                tb.innerHTML += `<tr class="bg-white border-b clickable-row text-xs transition">
+                    <td class="p-2 font-mono text-gray-500">${formatDate(i.fecha)}</td>
+                    <td class="p-2 font-mono text-blue-900">${i.sku}</td>
+                    <td class="p-2 truncate max-w-xs font-bold" title="${i.desc}">${i.desc}</td>
+                    <td class="p-2"><span class="bg-blue-50 text-blue-700 px-1 rounded">${i.tipo}</span></td>
+                    <td class="p-2 text-right">${i.kgNeto.toLocaleString()}</td>
+                    <td class="p-2 text-right font-bold text-green-700">$${i.precioTotal.toLocaleString()}</td>
+                </tr>`;
             });
+        }
+
+        function sortT(col) {
+            if(plSortCol === col) plSortDir *= -1; else { plSortCol = col; plSortDir = 1; }
+            const fieldMap = { fecha:'fecha', sku:'sku', desc:'desc', kg:'kgNeto', usd:'precioTotal' };
+            const field = fieldMap[col] || col;
+            viewData.sort((a,b) => {
+                let va = a[field], vb = b[field];
+                if(col==='kg' || col==='usd') return plSortDir * (va - vb);
+                return plSortDir * String(va||'').localeCompare(String(vb||''));
+            });
+            updatePlSortHeaders();
+            renderTable();
+        }
+
+        function updatePlSortHeaders() {
+            ['fecha','sku','desc','kg','usd'].forEach(c => {
+                const th = document.getElementById(`plth-${c}`);
+                if(!th) return;
+                th.classList.remove('active-asc','active-desc');
+                const icon = th.querySelector('.sort-icon');
+                if(plSortCol === c) {
+                    th.classList.add(plSortDir === 1 ? 'active-asc' : 'active-desc');
+                    icon.innerText = plSortDir === 1 ? '↑' : '↓';
+                } else { icon.innerText = '↕'; }
+            });
+        }
+
+        function sortSearch(col) {
+            if(srSortCol === col) srSortDir *= -1; else { srSortCol = col; srSortDir = 1; }
+            const numCols = ['kgNeto'];
+            searchMatches.sort((a,b) => {
+                let va = a[col], vb = b[col];
+                if(numCols.includes(col)) return srSortDir * (va - vb);
+                return srSortDir * String(va||'').localeCompare(String(vb||''));
+            });
+            updateSrSortHeaders();
+            renderSearchResults();
+        }
+
+        function updateSrSortHeaders() {
+            ['fecha','nroExpo','destino','sku','desc','kgNeto'].forEach(c => {
+                const th = document.getElementById(`srth-${c}`);
+                if(!th) return;
+                th.classList.remove('active-asc','active-desc');
+                const icon = th.querySelector('.sort-icon');
+                if(srSortCol === c) {
+                    th.classList.add(srSortDir === 1 ? 'active-asc' : 'active-desc');
+                    icon.innerText = srSortDir === 1 ? '↑' : '↓';
+                } else { icon.innerText = '↕'; }
+            });
+        }
+
+        function renderSearchResults() {
+            const b = document.getElementById('search-body'); b.innerHTML = "";
+            if(searchMatches.length === 0) {
+                b.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Sin resultados</td></tr>`;
+            } else {
+                searchMatches.slice(0, 100).forEach(i => {
+                    b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer transition" onclick="goToOp('${i.nroExpo}','${i.destino}')">
+                        <td class="p-2 text-xs font-mono text-gray-500">${formatDate(i.fecha)}</td>
+                        <td class="p-2 text-xs font-bold text-blue-900">${i.nroExpo}</td>
+                        <td class="p-2 text-xs">${i.destino}</td>
+                        <td class="p-2 text-xs font-mono">${i.sku}</td>
+                        <td class="p-2 text-xs truncate max-w-[180px]" title="${i.desc}">${i.desc}</td>
+                        <td class="p-2 text-xs text-right font-bold">${i.kgNeto.toLocaleString()}</td>
+                    </tr>`;
+                });
+            }
         }
 
         function searchSKU() {
             const t = document.getElementById('skuInput').value.toLowerCase();
             const panel = document.getElementById('search-results');
-            if(t.length < 2) { panel.classList.add('hidden'); return; }
+            if(t.length < 2) { panel.classList.add('hidden'); searchMatches = []; return; }
             panel.classList.remove('hidden');
-            const matches = currentData.filter(i => (String(i.sku).toLowerCase().includes(t)) || (String(i.desc).toLowerCase().includes(t)) || (String(i.nroExpo).toLowerCase().includes(t)));
-            const b = document.getElementById('search-body'); b.innerHTML = "";
-            if(matches.length === 0) b.innerHTML = `<tr><td colspan="6" class="p-4 text-center">Sin resultados</td></tr>`;
-            else matches.slice(0, 50).forEach(i => {
-                b.innerHTML += `<tr class="bg-white border-b hover:bg-blue-50 cursor-pointer" onclick="goToOp('${i.nroExpo}','${i.destino}')"><td class="p-2 text-xs">${formatDate(i.fecha)}</td><td class="p-2 text-xs font-bold">${i.nroExpo}</td><td class="p-2 text-xs">${i.destino}</td><td class="p-2 text-xs">${i.sku}</td><td class="p-2 text-xs">${i.desc}</td><td class="p-2 text-xs text-right">${i.kgNeto}</td></tr>`;
-            });
+            searchMatches = currentData.filter(i =>
+                String(i.sku).toLowerCase().includes(t) ||
+                String(i.desc).toLowerCase().includes(t) ||
+                String(i.nroExpo).toLowerCase().includes(t)
+            );
+            // Aplicar sort activo si hay uno
+            if(srSortCol) {
+                const numCols = ['kgNeto'];
+                searchMatches.sort((a,b) => {
+                    let va = a[srSortCol], vb = b[srSortCol];
+                    if(numCols.includes(srSortCol)) return srSortDir * (va - vb);
+                    return srSortDir * String(va||'').localeCompare(String(vb||''));
+                });
+            }
+            renderSearchResults();
         }
         function closeSearch() { document.getElementById('search-results').classList.add('hidden'); document.getElementById('skuInput').value = ""; }
         function goToOp(id, dest) { closeSearch(); const s = document.getElementById('pl-filter-dest'); if(s.querySelector(`option[value="${dest}"]`)) s.value = dest; else s.value = 'TODOS'; renderList(); renderView(s.value === 'TODOS' ? 'TODOS' : dest, id); }
 
-        // --- FUNCIONES NUEVAS: FILTRO DE EVOLUCION YOY ---
+        // =========================================================
+        // EVOLUCIÓN MENSUAL - CON FILTRO DE PERÍODO
+        // =========================================================
 
         function getMonthFromDate(dStr) {
             if(!dStr) return -1;
@@ -414,89 +604,182 @@
             return -1;
         }
 
-        function getMMDD(dStr) {
-            if(!dStr) return -1;
-            let str = String(dStr).trim();
-            if(str.includes('-')) {
-                let p = str.split('T')[0].split('-');
-                if(p.length >= 3) return parseInt(p[1])*100 + parseInt(p[2].substring(0,2)); // ej: 228
-            }
-            if(str.includes('/')) {
-                let p = str.split('/');
-                if(p.length >= 3) return parseInt(p[1])*100 + parseInt(p[0]); // ej: 228
-            }
-            let dObj = new Date(dStr);
-            if(!isNaN(dObj)) return (dObj.getMonth()+1)*100 + dObj.getDate();
-            return -1;
+        // Construir los botones de meses
+        function buildMonthButtons() {
+            const container = document.getElementById('month-buttons');
+            container.innerHTML = '';
+            MONTHS.forEach((m, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'month-btn';
+                btn.id = `mbtn-${idx}`;
+                btn.innerText = m;
+                btn.onclick = () => onMonthClick(idx);
+                container.appendChild(btn);
+            });
         }
 
-        function filterYTD() {
-            const sVal = document.getElementById('ytd-start').value;
-            const eVal = document.getElementById('ytd-end').value;
-            if(!sVal || !eVal) return;
+        function onMonthClick(idx) {
+            if(evoClickPhase === 0) {
+                // Primer clic: seleccionar inicio
+                evoFilterStart = idx;
+                evoFilterEnd = null;
+                evoClickPhase = 1;
+                updateMonthButtonStyles();
+                document.getElementById('evo-filter-hint').innerHTML = `<i class="fa-solid fa-info-circle mr-1 text-purple-500"></i><span class="text-purple-600 font-semibold">Inicio: ${MONTHS[idx]}</span> — Ahora hacé clic en el mes final del período.`;
+            } else {
+                // Segundo clic: seleccionar fin
+                if(idx < evoFilterStart) {
+                    // Si clicó antes del inicio, intercambiar
+                    evoFilterEnd = evoFilterStart;
+                    evoFilterStart = idx;
+                } else {
+                    evoFilterEnd = idx;
+                }
+                evoClickPhase = 0;
+                updateMonthButtonStyles();
+                document.getElementById('evo-filter-hint').innerHTML = `<i class="fa-solid fa-info-circle mr-1"></i>Hacé clic en un mes para seleccionar el inicio del período, luego clic en otro para definir el fin.`;
+                // Actualizar gráficos con el nuevo rango
+                if(allYearsData) renderEvolution(allYearsData);
+            }
+        }
 
-            // Extraer formato MM*100 + DD para comparar facilmente sin importar el año
-            const sMD = parseInt(sVal.split('-')[1])*100 + parseInt(sVal.split('-')[2]);
-            const eMD = parseInt(eVal.split('-')[1])*100 + parseInt(eVal.split('-')[2]);
-
-            const years = Object.keys(allYearsData).sort();
-            const tb = document.getElementById('evoTableBody');
-            tb.innerHTML = "";
-
-            years.forEach(y => {
-                let usd = 0, kg = 0;
-                let ops = new Set();
-
-                allYearsData[y].forEach(i => {
-                    let itemMD = getMMDD(i.fecha);
-                    if(itemMD !== -1 && itemMD >= sMD && itemMD <= eMD) {
-                        usd += i.precioTotal;
-                        kg += i.kgNeto;
-                        if(i.nroExpo) ops.add(i.nroExpo);
-                    }
-                });
-
-                tb.innerHTML += `<tr class="bg-white border-b hover:bg-purple-50 transition">
-                    <td class="p-3 font-bold">${y}</td>
-                    <td class="p-3 text-right font-mono text-green-700">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td>
-                    <td class="p-3 text-right font-mono">${kg.toLocaleString('es-AR', {maximumFractionDigits:0})}</td>
-                    <td class="p-3 text-center text-blue-900 font-bold">${ops.size}</td>
-                </tr>`;
+        function updateMonthButtonStyles() {
+            MONTHS.forEach((_, idx) => {
+                const btn = document.getElementById(`mbtn-${idx}`);
+                btn.classList.remove('selected-start', 'selected-end', 'in-range');
+                if(evoFilterStart !== null && evoFilterEnd !== null) {
+                    if(idx === evoFilterStart) btn.classList.add('selected-start');
+                    else if(idx === evoFilterEnd) btn.classList.add('selected-end');
+                    else if(idx > evoFilterStart && idx < evoFilterEnd) btn.classList.add('in-range');
+                } else if(evoFilterStart !== null && evoClickPhase === 1) {
+                    if(idx === evoFilterStart) btn.classList.add('selected-start');
+                }
             });
+        }
+
+        function setQuickPeriod(start, end) {
+            evoFilterStart = start;
+            evoFilterEnd = end;
+            evoClickPhase = 0;
+            updateMonthButtonStyles();
+            document.getElementById('evo-filter-hint').innerHTML = `<i class="fa-solid fa-info-circle mr-1"></i>Hacé clic en un mes para seleccionar el inicio del período, luego clic en otro para definir el fin.`;
+            if(allYearsData) renderEvolution(allYearsData);
+        }
+
+        function clearPeriodFilter() {
+            evoFilterStart = null;
+            evoFilterEnd = null;
+            evoClickPhase = 0;
+            updateMonthButtonStyles();
+            document.getElementById('evo-filter-hint').innerHTML = `<i class="fa-solid fa-info-circle mr-1"></i>Hacé clic en un mes para seleccionar el inicio del período, luego clic en otro para definir el fin.`;
+            if(allYearsData) renderEvolution(allYearsData);
         }
 
         function loadEvolution() {
             document.getElementById('loader').classList.remove('hidden');
             fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
-                allYearsData = data; // Lo guardamos globalmente para que filterYTD() lo pueda usar
-                
-                const years = Object.keys(data).sort();
-                const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                const seriesUSD = {}, seriesKG = {};
-                
-                years.forEach(y => {
-                    seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0);
-                    data[y].forEach(i => { 
-                        const m = getMonthFromDate(i.fecha); 
-                        if(m >= 0 && m < 12) { seriesUSD[y][m] += i.precioTotal; seriesKG[y][m] += i.kgNeto; } 
-                    });
-                });
-                
-                if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
-                const createConfig = (dataset, label) => ({ type: 'line', data: { labels: months, datasets: years.map((y, idx) => ({ label: y, data: dataset[y], borderColor: idx===0?'#94a3b8':idx===1?'#3b82f6':'#16a34a', backgroundColor: 'transparent', tension: 0.3, borderWidth: 3 })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
-                evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD, 'USD'));
-                evoChartKG = new Chart(document.getElementById('evoChartKG'), createConfig(seriesKG, 'KG'));
-                
-                // Configurar fechas del filtro (1 Ene del año actual hasta hoy)
-                const today = new Date();
-                document.getElementById('ytd-start').value = `${today.getFullYear()}-01-01`;
-                document.getElementById('ytd-end').value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-                
-                // Ejecutar el filtro con las fechas por defecto para que la tabla se dibuje
-                filterYTD();
-
+                allYearsData = data;
+                renderEvolution(data);
                 document.getElementById('loader').classList.add('hidden');
-            }).catch(e=>{console.log(e); document.getElementById('loader').classList.add('hidden');});
+            }).catch(e => { console.log(e); document.getElementById('loader').classList.add('hidden'); });
+        }
+
+        function renderEvolution(data) {
+            const years = Object.keys(data).sort();
+
+            // Determinar rango efectivo
+            const rangeStart = evoFilterStart !== null ? evoFilterStart : 0;
+            const rangeEnd   = evoFilterEnd   !== null ? evoFilterEnd   : 11;
+            const hasFilter  = evoFilterStart !== null && evoFilterEnd !== null;
+
+            // Labels de meses para el eje X (solo los del rango)
+            const monthLabels = MONTHS.slice(rangeStart, rangeEnd + 1);
+
+            // Actualizar badge y etiquetas
+            const badge = document.getElementById('evo-period-badge');
+            const periodText = document.getElementById('evo-period-text');
+            const tablePeriod = document.getElementById('evo-table-period');
+            const chartLabelUSD = document.getElementById('evo-chart-label-usd');
+            const chartLabelKG  = document.getElementById('evo-chart-label-kg');
+
+            if(hasFilter) {
+                const label = `${MONTHS[rangeStart]} – ${MONTHS[rangeEnd]}`;
+                badge.classList.remove('hidden');
+                periodText.innerText = label;
+                tablePeriod.innerText = label;
+                chartLabelUSD.innerText = label;
+                chartLabelKG.innerText  = label;
+            } else {
+                badge.classList.add('hidden');
+                tablePeriod.innerText = 'YTD Completo';
+                chartLabelUSD.innerText = 'Comparativa Anual';
+                chartLabelKG.innerText  = 'Comparativa Anual';
+            }
+
+            const seriesUSD = {}, seriesKG = {}, totals = {};
+            years.forEach(y => {
+                seriesUSD[y] = Array(rangeEnd - rangeStart + 1).fill(0);
+                seriesKG[y]  = Array(rangeEnd - rangeStart + 1).fill(0);
+                let yUSD = 0, yKG = 0;
+                data[y].forEach(i => {
+                    const m = getMonthFromDate(i.fecha);
+                    if(m >= rangeStart && m <= rangeEnd) {
+                        const idx = m - rangeStart;
+                        seriesUSD[y][idx] += i.precioTotal;
+                        seriesKG[y][idx]  += i.kgNeto;
+                        yUSD += i.precioTotal;
+                        yKG  += i.kgNeto;
+                    }
+                });
+                totals[y] = { usd: yUSD, kg: yKG };
+            });
+
+            // Destruir charts anteriores
+            if(evoChartUSD) evoChartUSD.destroy();
+            if(evoChartKG)  evoChartKG.destroy();
+
+            const colors = ['#94a3b8', '#3b82f6', '#16a34a'];
+            const createConfig = (seriesData) => ({
+                type: 'line',
+                data: {
+                    labels: monthLabels,
+                    datasets: years.map((y, idx) => ({
+                        label: y,
+                        data: seriesData[y],
+                        borderColor: colors[idx] || '#888',
+                        backgroundColor: 'transparent',
+                        tension: 0.3,
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }))
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
+                    }
+                }
+            });
+
+            evoChartUSD = new Chart(document.getElementById('evoChartUSD'), createConfig(seriesUSD));
+            evoChartKG  = new Chart(document.getElementById('evoChartKG'),  createConfig(seriesKG));
+
+            // Tabla resumen
+            const tb = document.getElementById('evoTableBody');
+            tb.innerHTML = "";
+            years.forEach(y => {
+                const mesesConDatos = seriesUSD[y].filter(v => v > 0).length || 1;
+                tb.innerHTML += `
+                    <tr class="bg-white border-b hover:bg-purple-50 transition">
+                        <td class="p-3 font-bold text-purple-900">${y}</td>
+                        <td class="p-3 text-right font-mono text-green-700 font-bold">$${totals[y].usd.toLocaleString()}</td>
+                        <td class="p-3 text-right font-mono">${totals[y].kg.toLocaleString()}</td>
+                        <td class="p-3 text-right text-gray-500">${mesesConDatos} ${hasFilter ? `de ${rangeEnd - rangeStart + 1}` : 'de 12'}</td>
+                        <td class="p-3 text-right text-gray-500">$${(totals[y].usd / mesesConDatos).toLocaleString('es-AR', {maximumFractionDigits:0})}</td>
+                    </tr>`;
+            });
         }
 
         function downloadExcelPL() {
@@ -507,19 +790,80 @@
             XLSX.writeFile(wb, `Reporte_Freddo_${currentYear}.xlsx`);
         }
 
-        // --- COTIZADOR INIT ---
+        // --- COTIZADOR ---
         const eqOpts = {"Marítimo":["20' STD","40' STD","40' HC","20' Reefer","40' Reefer"],"Terrestre":["Camión FTL","Sider","Furgón"],"Aéreo":["General","Perecedera"]};
         function updateEq() { const m=document.getElementById('modalidadSelect').value; const s=document.getElementById('equipoSelect'); s.innerHTML=""; eqOpts[m].forEach(o=>{let e=document.createElement("option");e.value=o;e.innerText=o;s.appendChild(e)}); }
         document.getElementById('comexForm').addEventListener('submit',e=>{e.preventDefault();fetch(API_URL,{method:'POST',body:new FormData(e.target)}).then(r=>r.json()).then(d=>{alert('Guardado');loadCot();});});
-        async function loadCot() { try{const r=await fetch(API_URL);const d=await r.json();rawCot=d||[];applyFilter();}catch(e){}}
+        
+        async function loadCot() { 
+            try{ const r=await fetch(API_URL); const d=await r.json(); rawCot=d||[]; populateFilter(); applyFilter(); } catch(e){} 
+        }
+        
+        function populateFilter() { 
+            const s = document.getElementById('filterCountry'); 
+            const cur = s.value; 
+            const c = [...new Set(rawCot.map(r => r[2]).filter(x => x))].sort(); 
+            s.innerHTML = '<option value="ALL">🌎 Global</option>'; 
+            c.forEach(x => s.innerHTML += `<option value="${x}">${x}</option>`); 
+            s.value = cur; 
+        }
+
         function applyFilter() {
+            const c=document.getElementById('filterCountry').value; 
+            filteredData=(c==="ALL")?rawCot:rawCot.filter(r=>r[2]===c);
+            let tc=0,tt=0,ct=0,st={};
+            if(filteredData.length>0){
+                filteredData.forEach(r=>{
+                    let k=(c==="ALL")?(r[2]||"S/D"):(r[6]||"S/D");
+                    let co=(parseFloat(r[8])||0)+(parseFloat(r[9])||0);
+                    let t=parseFloat(r[7])||0;
+                    if(!st[k])st[k]={cs:0,ts:0,c:0}; st[k].cs+=co;st[k].ts+=t;st[k].c++; tc+=co; if(t>0){tt+=t;ct++;}
+                });
+                document.getElementById('kpiCount').innerText=filteredData.length;
+                document.getElementById('kpiAvgCost').innerText=filteredData.length?`$${(tc/filteredData.length).toFixed(0)}`:"0";
+                document.getElementById('kpiAvgTime').innerText=ct?(tt/ct).toFixed(1)+"d":"-";
+                let top=Object.keys(st).length?Object.keys(st).reduce((a,b)=>st[a].c>st[b].c?a:b):'-';
+                document.getElementById('kpiTop').innerText=top;
+                renderCotCharts(Object.keys(st), Object.keys(st).map(k=>(st[k].cs/st[k].c).toFixed(0)), Object.keys(st).map(k=>(st[k].ts/st[k].c).toFixed(1)), c!=="ALL");
+            }
+            renderCotTable();
+        }
+
+        function renderCotCharts(l,c,t,isC){
+            if(chartCost)chartCost.destroy(); if(chartTime)chartTime.destroy();
+            const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+            chartCost=new Chart(document.getElementById('costChart'),{type:'bar',data:{labels:l,datasets:[{label:'USD',data:c,backgroundColor:isC?'#f97316':'#1e3a8a',borderRadius:4}]},options:o});
+            chartTime=new Chart(document.getElementById('timeChart'),{type:'line',data:{labels:l,datasets:[{label:'Días',data:t,borderColor:'#4f46e5',backgroundColor:'rgba(79,70,229,0.1)',fill:true}]},options:o});
+        }
+
+        function renderCotTable() {
             const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
-            rawCot.slice().reverse().slice(0,50).forEach(r=>{
+            if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{
                 let d=r[0]?new Date(r[0]).toLocaleDateString():'-';
-                tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${d}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`;
+                tb.innerHTML+=`<tr class="bg-white border-b hover:bg-gray-50"><td class="px-4 py-2">${d}</td><td class="px-4 py-2 font-bold text-xs">${r[1]||''}</td><td class="px-4 py-2">${r[2]||''}</td><td class="px-4 py-2 text-xs truncate max-w-[100px]">${r[6]||''}</td><td class="px-4 py-2 text-right font-bold text-green-700">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(2)}</td></tr>`;
             });
         }
-        function downloadExcelCot() {} // Placeholder para no romper
+
+        function downloadExcelCot() {
+            if(!filteredData.length){alert("Nada para exportar"); return;}
+            const filterName = document.getElementById('filterCountry').value;
+            const data = filteredData.map(r => ({
+                Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-',
+                Ref: r[1],
+                Destino: r[2],
+                Modalidad: r[3],
+                Incoterm: r[4],
+                Equipo: r[5],
+                Carrier: r[6],
+                TransitTime: r[7],
+                Flete: parseFloat(r[8])||0,
+                Gastos: parseFloat(r[9])||0,
+                Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0)
+            }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Cotizaciones");
+            XLSX.writeFile(wb, `Cotizaciones_${filterName}.xlsx`);
+        }
     </script>
 </body>
 </html>
