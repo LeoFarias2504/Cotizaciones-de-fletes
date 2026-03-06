@@ -43,7 +43,7 @@
     </nav>
 
     <div id="error-banner" class="hidden bg-red-600 text-white text-center p-3 font-bold shadow-lg z-50 sticky top-16">
-        ⚠️ ATENCIÓN: El código de Google Apps Script está desactualizado o hay un error de conexión. Por favor, actualiza el servidor.
+        ⚠️ Error de conexión con Google Drive. Revisa la URL o el script.
     </div>
 
     <div id="view-cotizador" class="p-6 max-w-screen-2xl mx-auto fade-in">
@@ -51,7 +51,7 @@
             <div class="w-full lg:w-1/3 bg-white rounded-xl shadow border-t-4 border-blue-600 p-6 h-fit">
                 <h2 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-plus-circle mr-2"></i>Nueva Cotización</h2>
                 <form id="comexForm" class="space-y-4">
-                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required></div>
+                    <div><label class="text-xs font-bold text-gray-500 uppercase">Referencia</label><input type="text" name="referencia" class="w-full border p-2 rounded text-sm bg-gray-50" required placeholder="Ej: EXP-001"></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Destino</label><input type="text" name="destino" list="destinosList" class="w-full border p-2 rounded text-sm" required><datalist id="destinosList"><option value="Uruguay"><option value="Chile"><option value="Paraguay"><option value="Brasil"><option value="USA"><option value="Mexico"></datalist></div>
                         <div><label class="text-xs font-bold text-gray-500 uppercase">Modalidad</label><select name="modalidad" id="modalidadSelect" onchange="updateEq()" class="w-full border p-2 rounded text-sm bg-white"><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Aéreo">Aéreo</option></select></div>
@@ -62,11 +62,11 @@
                     </div>
                     <div><label class="text-xs font-bold text-gray-500 uppercase">Carrier</label><input type="text" name="carrier" class="w-full border p-2 rounded text-sm" required></div>
                     <div class="bg-blue-50 p-3 rounded border border-blue-100 grid grid-cols-3 gap-2">
-                        <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center"></div>
-                        <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center" required></div>
-                        <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center" required></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">TT (Días)</label><input type="number" name="transit_time" class="w-full border p-1 rounded text-sm text-center bg-white"></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Flete USD</label><input type="number" step="0.01" name="flete" class="w-full border p-1 rounded text-sm font-bold text-center bg-white" required></div>
+                        <div><label class="text-[10px] font-bold text-gray-500">Gastos</label><input type="number" step="0.01" name="gastos_locales" class="w-full border p-1 rounded text-sm text-center bg-white" required></div>
                     </div>
-                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded transition shadow-lg">GUARDAR</button>
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-900 text-white font-bold py-3 rounded transition shadow-lg hover:bg-blue-800">GUARDAR</button>
                 </form>
             </div>
             <div class="w-full lg:w-2/3 space-y-6">
@@ -106,13 +106,31 @@
                     <div><h3 id="dash-title" class="text-xl font-bold text-[#003366]">Resumen</h3><span id="dash-sub" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-bold">General</span></div>
                     <button onclick="downloadExcelPL()" class="text-green-700 text-sm font-bold border border-green-200 px-3 py-1 rounded hover:bg-green-50"><i class="fa-solid fa-file-excel mr-2"></i>Descargar Excel</button>
                 </div>
+                
                 <div class="grid grid-cols-3 gap-4">
                     <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900"><p class="text-xs text-gray-400 font-bold">TOTAL USD</p><p id="kpi-usd" class="text-2xl font-bold text-blue-900">-</p></div>
                     <div class="bg-white p-4 rounded-xl shadow border-l-4 border-orange-500"><p class="text-xs text-gray-400 font-bold">TOTAL KG</p><p id="kpi-kg" class="text-2xl font-bold text-gray-800">-</p></div>
                     <div class="bg-white p-4 rounded-xl shadow border-l-4 border-purple-600"><p class="text-xs text-gray-400 font-bold">ITEMS / OPS</p><p id="kpi-items" class="text-2xl font-bold text-gray-800">-</p></div>
                 </div>
+
+                <div class="grid grid-cols-2 gap-4 h-64">
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (USD)</h4><div class="h-48"><canvas id="chartType"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2" id="title-bar">Top 5 (USD)</h4><div class="h-48"><canvas id="chartBar"></canvas></div></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 h-64">
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Mix (KG)</h4><div class="h-48"><canvas id="chartTypeKg"></canvas></div></div>
+                    <div class="bg-white p-4 rounded-xl shadow border"><h4 class="text-xs font-bold text-center mb-2">Top 5 (KG)</h4><div class="h-48"><canvas id="chartBarKg"></canvas></div></div>
+                </div>
+
                 <div class="bg-white rounded-xl shadow overflow-hidden border">
-                    <div class="overflow-x-auto max-h-96"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr><th class="p-2">Fecha</th><th class="p-2">SKU</th><th class="p-2">Desc</th><th class="p-2">Tipo</th><th class="p-2 text-right">Kg</th><th class="p-2 text-right">USD</th></tr></thead><tbody id="pl-table"></tbody></table></div>
+                    <div class="overflow-x-auto max-h-80"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-600 bg-gray-100 sticky top-0"><tr>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('fecha')">Fecha ↕</th>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('sku')">SKU ↕</th>
+                        <th class="p-2 cursor-pointer hover:bg-gray-200" onclick="sortT('desc')">Desc ↕</th>
+                        <th class="p-2">Tipo</th>
+                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('kg')">Kg ↕</th>
+                        <th class="p-2 text-right cursor-pointer hover:bg-gray-200" onclick="sortT('usd')">USD ↕</th>
+                    </tr></thead><tbody id="pl-table"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -124,22 +142,24 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
                     <h3 class="text-2xl font-bold text-gray-800">📊 Rendimiento Mismo Período (YTD)</h3>
-                    <p class="text-sm text-gray-500">Compara las ventas exactas generadas entre dos fechas en distintos años.</p>
+                    <p class="text-sm text-gray-500">Selecciona el rango de fechas para comparar la evolución real año tras año.</p>
                 </div>
-                <div class="flex items-center gap-3 bg-purple-50 p-3 rounded-lg border border-purple-200">
+                <div class="flex items-center gap-3 bg-purple-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                    <div class="text-purple-800 font-bold text-sm mr-2"><i class="fa-regular fa-calendar mr-1"></i> Filtro:</div>
                     <div>
                         <label class="text-[10px] font-bold text-gray-500 uppercase block">Desde</label>
-                        <input type="date" id="yoy-start" class="bg-white border rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none" onchange="renderYOY()">
+                        <input type="date" id="yoy-start" class="bg-white border border-purple-300 rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none cursor-pointer" onchange="renderYOY()">
                     </div>
                     <div class="text-purple-400 font-bold">-</div>
                     <div>
                         <label class="text-[10px] font-bold text-gray-500 uppercase block">Hasta</label>
-                        <input type="date" id="yoy-end" class="bg-white border rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none" onchange="renderYOY()">
+                        <input type="date" id="yoy-end" class="bg-white border border-purple-300 rounded px-2 py-1 text-sm font-bold text-purple-800 outline-none cursor-pointer" onchange="renderYOY()">
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div class="lg:col-span-5 overflow-x-auto">
+                    <h4 class="text-sm font-bold text-gray-500 uppercase mb-2">Período Seleccionado: <span id="yoy-range-lbl" class="text-purple-600 font-bold"></span></h4>
                     <table class="w-full text-sm text-left border rounded shadow-sm">
                         <thead class="bg-purple-100 text-purple-900 font-bold text-xs uppercase">
                             <tr><th class="p-3">Año</th><th class="p-3 text-right">USD (FOB)</th><th class="p-3 text-right">Kilos</th><th class="p-3 text-center">Ops</th></tr>
@@ -151,6 +171,7 @@
             </div>
         </div>
 
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">📈 Evolución Anual Completa</h2>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-green-500"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Ventas Mes a Mes (USD)</h3></div><div class="h-72"><canvas id="evoChartUSD"></canvas></div></div>
             <div class="bg-white p-6 rounded-xl shadow border-l-4 border-orange-500"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-700">Volumen Mes a Mes (KG)</h3></div><div class="h-72"><canvas id="evoChartKG"></canvas></div></div>
@@ -166,12 +187,12 @@
     </div>
 
     <div id="loader" class="hidden fixed inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-50">
-        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i><p class="font-bold text-gray-700 text-lg" id="loader-msg">Procesando...</p>
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i><p class="font-bold text-gray-700 text-lg mt-2" id="loader-msg">Procesando...</p>
     </div>
 
     <script>
         // =========================================================
-        // 🚨 CONFIGURACIÓN URL EXACTA
+        // 🚨 CONFIGURACIÓN URL (NO TOCAR)
         // =========================================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbxt6q4_tPIqVrS5Tzxu_vtGXq0bwVRZzh4VGCcHvEjq2uNaU82Y485BH7xnu9wjoXXwIg/exec';
         // =========================================================
@@ -179,69 +200,69 @@
         let currentYear = '2026';
         let currentData = [], viewData = [], rawCot = [], filteredData = [];
         let allYearsData = {}; 
+        let sortDir = 1;
         
-        let chartCost = null, chartTime = null, chartYOY = null, evoChartUSD = null, evoChartKG = null;
+        let activeChartType = null, activeChartBar = null, activeChartTypeKg = null, activeChartBarKg = null;
+        let evoChartUSD = null, evoChartKG = null, chartYOY = null;
+        let chartCost = null, chartTime = null;
 
-        // INICIO SEGURO
-        window.addEventListener('load', () => {
-            try {
-                switchTab('cotizador'); 
-                updateEq(); 
-                loadCot(); 
-            } catch(err) {
-                console.error(err);
-                document.getElementById('error-banner').classList.remove('hidden');
-            }
-        });
+        window.addEventListener('load', () => { switchTab('cotizador'); updateEq(); loadCot(); });
 
         function showLoader(msg) { document.getElementById('loader-msg').innerText = msg || "Procesando..."; document.getElementById('loader').classList.remove('hidden'); }
         function hideLoader() { document.getElementById('loader').classList.add('hidden'); }
 
         function switchTab(tab) {
-            try {
-                ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            ['view-cotizador', 'view-gestion', 'view-evolucion'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-                if (tab === 'cotizador') {
-                    document.getElementById('view-cotizador').classList.remove('hidden');
-                    document.getElementById('btn-cotizador').classList.add('active');
-                    if(rawCot.length > 0) applyFilter();
-                } else if (tab === 'evolucion') {
-                    document.getElementById('view-evolucion').classList.remove('hidden');
-                    document.getElementById('btn-evolucion').classList.add('active');
-                    loadEvolution();
-                } else {
-                    currentYear = tab;
-                    document.getElementById('view-gestion').classList.remove('hidden');
-                    document.getElementById('btn-' + tab).classList.add('active');
-                    document.getElementById('lbl-year').innerText = tab;
-                    document.getElementById('lbl-year-btn').innerText = tab;
-                    document.getElementById('lbl-year-modal').innerText = tab;
-                    loadData(tab);
-                }
-            } catch(e) { console.error("Error switching tabs:", e); }
+            if (tab === 'cotizador') {
+                document.getElementById('view-cotizador').classList.remove('hidden');
+                document.getElementById('btn-cotizador').classList.add('active');
+                if(rawCot.length > 0) applyFilter();
+            } else if (tab === 'evolucion') {
+                document.getElementById('view-evolucion').classList.remove('hidden');
+                document.getElementById('btn-evolucion').classList.add('active');
+                loadEvolution();
+            } else {
+                currentYear = tab;
+                document.getElementById('view-gestion').classList.remove('hidden');
+                document.getElementById('btn-' + tab).classList.add('active');
+                document.getElementById('lbl-year').innerText = tab;
+                document.getElementById('lbl-year-btn').innerText = tab;
+                document.getElementById('lbl-year-modal').innerText = tab;
+                loadData(tab);
+            }
         }
 
-        // --- MANEJO DE FECHAS (SÚPER BLINDADO) ---
-        function parseDateSafely(val) {
+        // --- PARSEO DE FECHAS SEGURO (MANTENIENDO HORARIO LOCAL) ---
+        function parseDateLocal(val) {
             if(!val) return null;
-            let d = new Date(val);
-            if(isNaN(d.getTime()) && typeof val === 'string') {
-                if(val.includes('/')) {
-                    let p = val.split('/');
-                    if(p.length === 3) d = new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}T12:00:00Z`);
-                }
+            let str = String(val).trim();
+            if(str.includes('/')) { // DD/MM/YYYY
+                let p = str.split('/');
+                if(p.length === 3) return new Date(p[2], parseInt(p[1])-1, p[0]);
             }
-            return isNaN(d.getTime()) ? null : d;
+            if(str.includes('-')) { // YYYY-MM-DD
+                let p = str.split('T')[0].split('-');
+                if(p.length === 3) return new Date(p[0], parseInt(p[1])-1, p[2]);
+            }
+            let d = new Date(val);
+            return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
         }
 
         function formatDate(dVal) {
-            let d = parseDateSafely(dVal);
+            let d = parseDateLocal(dVal);
             if(!d) return '-';
-            return `${String(d.getUTCDate()).padStart(2,'0')}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${d.getUTCFullYear()}`;
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+        
+        function getMMDDLocal(dVal) {
+            let d = parseDateLocal(dVal);
+            if(!d) return null;
+            return `${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // --- GESTIÓN DATOS EXCEL ---
+        // --- GESTIÓN DATOS ---
         function openImportModal() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('paste-area').value=''; }
         function closeModal() { document.getElementById('importModal').classList.add('hidden'); }
         function parseVal(s) { if(!s) return 0; let c = s.toString().replace(/[$\sA-Za-z]/g,''); if(c.indexOf(',')>-1 && c.indexOf('.')>-1) c=c.replace(/\./g,'').replace(',','.'); else if(c.indexOf(',')>-1) c=c.replace(',','.'); return parseFloat(c)||0; }
@@ -254,9 +275,7 @@
             const data = [];
             rows.forEach(r => {
                 const c = r.split('\t');
-                if(c.length >= 13) {
-                    data.push({ nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: c[4]?.trim()||c[3]?.trim()||'', sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13]) });
-                }
+                if(c.length >= 13) data.push({ nroExpo: c[0]?.trim(), destino: c[1]?.trim(), tipo: c[2]?.trim(), fecha: c[4]?.trim()||c[3]?.trim()||'', sku: c[5]?.trim(), desc: c[6]?.trim(), kgNeto: parseVal(c[9]), precioTotal: parseVal(c[13]) });
             });
             if(data.length > 0) {
                 const fd = new FormData(); fd.append('action', 'save_pl'); fd.append('year', currentYear); fd.append('data', JSON.stringify(data));
@@ -265,18 +284,15 @@
         }
 
         function loadData(year) {
-            showLoader(`Cargando ${year}...`);
+            showLoader(`Cargando Año ${year}...`);
             fetch(`${API_URL}?action=get_pl&year=${year}`).then(r => r.json()).then(d => {
-                if(d.length > 0 && Array.isArray(d[0])) {
-                    document.getElementById('error-banner').classList.remove('hidden');
-                    d = [];
-                }
                 currentData = d || [];
                 renderList();
                 hideLoader();
             }).catch(e => { console.log(e); hideLoader(); });
         }
 
+        // --- RENDER GESTION ---
         function renderList() {
             const sel = document.getElementById('pl-filter-dest');
             if(sel.options.length === 1 && currentData.length > 0) {
@@ -308,25 +324,70 @@
             renderView(filter, null);
         }
 
+        function cleanName(n) { return n ? n.toUpperCase().replace(/^F-\s*|^HELADO\s+|^PINTA\s+/, '').trim() : "OTROS"; }
+
         function renderView(destFilter, expoId) {
             let data = currentData;
             if(destFilter !== 'TODOS') data = data.filter(i => i.destino === destFilter);
-            if(expoId) data = data.filter(i => i.nroExpo === expoId);
-            
-            document.getElementById('dash-title').innerText = expoId ? `Op: ${expoId}` : `Resumen ${destFilter}`;
+            if(expoId) {
+                data = data.filter(i => i.nroExpo === expoId);
+                document.getElementById('dash-title').innerText = `Operación: ${expoId}`;
+                document.getElementById('dash-sub').innerText = "Detalle";
+            } else {
+                document.getElementById('dash-title').innerText = `Resumen ${destFilter}`;
+                document.getElementById('dash-sub').innerText = "Acumulado " + currentYear;
+            }
             viewData = data;
             
             let tUSD = 0, tKG = 0;
-            data.forEach(i => { tUSD += (i.precioTotal||0); tKG += (i.kgNeto||0); });
+            const bt = {}, btk = {}, bp = {}, bpk = {};
+            data.forEach(i => { 
+                tUSD += (i.precioTotal||0); tKG += (i.kgNeto||0); 
+                let t = i.tipo || "Otros";
+                bt[t] = (bt[t]||0) + i.precioTotal; 
+                btk[t] = (btk[t]||0) + i.kgNeto;
+                let k = expoId ? (i.desc || i.sku) : cleanName(i.desc);
+                bp[k] = (bp[k]||0) + i.precioTotal; 
+                bpk[k] = (bpk[k]||0) + i.kgNeto;
+            });
             
             document.getElementById('kpi-usd').innerText = `$ ${tUSD.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
-            document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})}`;
+            document.getElementById('kpi-kg').innerText = `${tKG.toLocaleString('es-AR', {maximumFractionDigits:0})} Kg`;
             document.getElementById('kpi-items').innerText = expoId ? data.length : new Set(data.map(x=>x.nroExpo)).size;
             
+            renderTable();
+            renderMgmtCharts(bt, bp, btk, bpk); // AQUI SE DIBUJAN LOS GRÁFICOS RESTAURADOS
+        }
+
+        function renderMgmtCharts(bt, bi, btk, bik) {
+            [activeChartType, activeChartBar, activeChartTypeKg, activeChartBarKg].forEach(c => { if(c) c.destroy(); });
+            const commonOpt = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: {size: 9} } } } };
+            const barOpt = { ...commonOpt, plugins: { legend: { display: false } }, indexAxis: 'y' };
+            activeChartType = new Chart(document.getElementById('chartType'), { type: 'doughnut', data: { labels: Object.keys(bt), datasets: [{ data: Object.values(bt), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
+            const topI = Object.entries(bi).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            activeChartBar = new Chart(document.getElementById('chartBar'), { type: 'bar', data: { labels: topI.map(x=>x[0].substring(0,20)), datasets: [{ data: topI.map(x=>x[1]), backgroundColor: '#1e3a8a', borderRadius: 4 }] }, options: barOpt });
+            activeChartTypeKg = new Chart(document.getElementById('chartTypeKg'), { type: 'doughnut', data: { labels: Object.keys(btk), datasets: [{ data: Object.values(btk), backgroundColor: ['#1e3a8a','#f97316','#10b981','#6366f1'] }] }, options: commonOpt });
+            const topIK = Object.entries(bik).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            activeChartBarKg = new Chart(document.getElementById('chartBarKg'), { type: 'bar', data: { labels: topIK.map(x=>x[0].substring(0,20)), datasets: [{ data: topIK.map(x=>x[1]), backgroundColor: '#f97316', borderRadius: 4 }] }, options: barOpt });
+        }
+
+        function sortT(col) {
+            sortDir *= -1;
+            viewData.sort((a,b) => {
+                let va = a[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
+                let vb = b[col==="desc"? "desc" : col==="sku"? "sku" : col==="tipo"? "tipo" : col==="fecha"? "fecha" : col==="kg"? "kgNeto" : "precioTotal"];
+                if (col === "fecha") return sortDir * ((parseDateLocal(va)?.getTime()||0) - (parseDateLocal(vb)?.getTime()||0));
+                if (col==="kg" || col==="usd") return sortDir * (va - vb);
+                return sortDir * String(va).localeCompare(String(vb));
+            });
+            renderTable();
+        }
+
+        function renderTable() {
             const tb = document.getElementById('pl-table');
             tb.innerHTML = "";
             viewData.slice(0, 100).forEach(i => {
-                tb.innerHTML += `<tr class="bg-white border-b text-xs hover:bg-gray-50"><td class="p-2">${formatDate(i.fecha)}</td><td class="p-2">${i.sku||'-'}</td><td class="p-2 truncate max-w-xs font-bold">${i.desc||'-'}</td><td class="p-2">${i.tipo||'-'}</td><td class="p-2 text-right">${(i.kgNeto||0).toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${(i.precioTotal||0).toLocaleString()}</td></tr>`;
+                tb.innerHTML += `<tr class="bg-white border-b text-xs hover:bg-gray-50"><td class="p-2">${formatDate(i.fecha)}</td><td class="p-2 font-mono">${i.sku||'-'}</td><td class="p-2 truncate max-w-xs font-bold">${i.desc||'-'}</td><td class="p-2">${i.tipo||'-'}</td><td class="p-2 text-right">${(i.kgNeto||0).toLocaleString()}</td><td class="p-2 text-right font-bold text-green-700">$${(i.precioTotal||0).toLocaleString()}</td></tr>`;
             });
         }
 
@@ -334,11 +395,14 @@
         function loadEvolution() {
             showLoader("Analizando Historia...");
             fetch(`${API_URL}?action=get_all_years`).then(r => r.json()).then(data => {
-                if(Array.isArray(data)) { document.getElementById('error-banner').classList.remove('hidden'); hideLoader(); return; }
                 allYearsData = data; 
+                
                 const today = new Date();
-                document.getElementById('yoy-start').value = `${today.getFullYear()}-01-01`;
-                document.getElementById('yoy-end').value = today.toISOString().split('T')[0];
+                const startStr = `${today.getFullYear()}-01-01`;
+                const endStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                document.getElementById('yoy-start').value = startStr;
+                document.getElementById('yoy-end').value = endStr;
+                
                 renderYOY();
                 renderEvoCharts();
                 hideLoader();
@@ -350,8 +414,11 @@
             const endVal = document.getElementById('yoy-end').value;
             if(!startVal || !endVal) return;
 
-            const startMMDD = startVal.substring(5); 
-            const endMMDD = endVal.substring(5);     
+            const startMMDD = startVal.substring(5); // e.g. "01-01"
+            const endMMDD = endVal.substring(5);     // e.g. "02-28"
+            
+            document.getElementById('yoy-range-lbl').innerText = `${startMMDD.replace('-','/')} al ${endMMDD.replace('-','/')}`;
+
             const years = Object.keys(allYearsData).sort();
             const usdData = [], kgData = [], opsData = [];
             const tb = document.getElementById('yoy-table-body');
@@ -360,17 +427,14 @@
             years.forEach(y => {
                 let usd = 0, kg = 0, ops = new Set();
                 allYearsData[y].forEach(i => {
-                    let d = parseDateSafely(i.fecha);
-                    if(d) {
-                        let itemMMDD = String(d.getUTCMonth()+1).padStart(2,'0') + "-" + String(d.getUTCDate()).padStart(2,'0');
-                        if(itemMMDD >= startMMDD && itemMMDD <= endMMDD) {
-                            usd += (i.precioTotal||0); kg += (i.kgNeto||0);
-                            if(i.nroExpo) ops.add(i.nroExpo);
-                        }
+                    let itemMMDD = getMMDDLocal(i.fecha);
+                    if(itemMMDD && itemMMDD >= startMMDD && itemMMDD <= endMMDD) {
+                        usd += (i.precioTotal||0); kg += (i.kgNeto||0);
+                        if(i.nroExpo) ops.add(i.nroExpo);
                     }
                 });
                 usdData.push(usd); kgData.push(kg); opsData.push(ops.size);
-                tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right text-green-700 font-bold">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-right text-orange-600 font-bold">${kg.toLocaleString('es-AR', {maximumFractionDigits:0})} kg</td><td class="p-3 text-center font-bold text-blue-900">${ops.size}</td></tr>`;
+                tb.innerHTML += `<tr class="bg-white border-b hover:bg-purple-50 transition"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right text-green-700 font-bold">$${usd.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-right text-orange-600 font-bold">${kg.toLocaleString('es-AR', {maximumFractionDigits:0})} kg</td><td class="p-3 text-center font-bold text-blue-900">${ops.size}</td></tr>`;
             });
 
             if(chartYOY) chartYOY.destroy();
@@ -380,16 +444,14 @@
         function renderEvoCharts() {
             const years = Object.keys(allYearsData).sort();
             const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const seriesUSD = {}, seriesKG = {}, totals={};
+            const seriesUSD = {}, seriesKG = {};
             
             years.forEach(y => {
                 seriesUSD[y] = Array(12).fill(0); seriesKG[y] = Array(12).fill(0);
-                let ty=0, tk=0;
                 allYearsData[y].forEach(i => { 
-                    let d = parseDateSafely(i.fecha);
-                    if(d) { let m = d.getUTCMonth(); seriesUSD[y][m] += (i.precioTotal||0); seriesKG[y][m] += (i.kgNeto||0); ty+=(i.precioTotal||0); tk+=(i.kgNeto||0); }
+                    let d = parseDateLocal(i.fecha);
+                    if(d) { let m = d.getMonth(); seriesUSD[y][m] += (i.precioTotal||0); seriesKG[y][m] += (i.kgNeto||0); }
                 });
-                totals[y] = {u:ty, k:tk};
             });
             
             if(evoChartUSD) evoChartUSD.destroy(); if(evoChartKG) evoChartKG.destroy();
@@ -397,9 +459,14 @@
             
             evoChartUSD = new Chart(document.getElementById('evoChartUSD'), cfg(seriesUSD));
             evoChartKG = new Chart(document.getElementById('evoChartKG'), cfg(seriesKG));
-            
-            const tb = document.getElementById('evoTableBody'); tb.innerHTML = "";
-            years.forEach(y => { tb.innerHTML += `<tr class="bg-white border-b"><td class="p-3 font-bold">${y}</td><td class="p-3 text-right text-green-700">$${totals[y].u.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-right">${totals[y].k.toLocaleString('es-AR', {maximumFractionDigits:0})}</td><td class="p-3 text-right text-gray-500">$${(totals[y].u/12).toLocaleString('es-AR', {maximumFractionDigits:0})}</td></tr>`; });
+        }
+
+        function downloadExcelPL() {
+            if(!viewData.length) { alert("Sin datos"); return; }
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(viewData.map(i => ({ "Fecha": formatDate(i.fecha), "Op": i.nroExpo, "Dest": i.destino, "SKU": i.sku, "Desc": i.desc, "Tipo": i.tipo, "Kg": i.kgNeto, "USD": i.precioTotal })));
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+            XLSX.writeFile(wb, `Reporte_Freddo_${currentYear}.xlsx`);
         }
 
         // --- COTIZADOR ---
@@ -424,7 +491,6 @@
             const tb=document.getElementById('historyTableBody'); tb.innerHTML="";
             if(filteredData.length>0) filteredData.slice().reverse().slice(0,50).forEach(r=>{ tb.innerHTML+=`<tr class="bg-white border-b"><td class="p-2">${r[0]?new Date(r[0]).toLocaleDateString():'-'}</td><td class="p-2 font-bold">${r[1]}</td><td class="p-2">${r[2]}</td><td class="p-2">${r[6]}</td><td class="p-2 text-right">$${((parseFloat(r[8])||0)+(parseFloat(r[9])||0)).toFixed(0)}</td></tr>`; });
         }
-
         function downloadExcelCot() {
             if(!filteredData.length){alert("Vacío"); return;}
             const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filteredData.map(r => ({ Fecha: r[0]? new Date(r[0]).toLocaleDateString():'-', Ref: r[1], Destino: r[2], Modalidad: r[3], Incoterm: r[4], Equipo: r[5], Carrier: r[6], TT: r[7], Flete: r[8], Gastos: r[9], Total: (parseFloat(r[8])||0) + (parseFloat(r[9])||0) }))), "Cot"); XLSX.writeFile(wb, `Cotizaciones.xlsx`);
